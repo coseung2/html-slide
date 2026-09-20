@@ -47,8 +47,9 @@ with its target, and fails if the coverage drops or the alignment drifts by
 more than one stage unit. The reference deck and the ring/pulse patterns
 measure 100% coverage and 0.00 drift at every size.
 
-**Motion that carries meaning.** Only `transform`, `opacity`, `filter` and
-`clip-path` animate — `top`, `width`, `height`, `margin` trigger layout and
+**Motion that carries meaning.** `transform` and `opacity` are the default
+animation properties. `filter` and `clip-path` are conditional effects only
+when they explain the scene without moving target geometry. `top`, `width`, `height`, `margin` trigger layout and
 paint, which is how a target moves out from under its own highlight. This is
 also why the typewriter here does not animate `width`: the box is reserved and
 the glyphs fade in, so a Korean syllable is never clipped through its interior. Duration and easing are
