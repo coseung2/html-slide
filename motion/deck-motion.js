@@ -93,6 +93,9 @@
     this.stage = root.querySelector('[data-stage]') || root;
     this.slides = Array.prototype.slice.call(root.querySelectorAll('[data-slide]'));
     this.reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // `deck-ready` gates the interactive single-slide viewport. Without JS the
+    // base CSS leaves complete slides in document order for print/capture/fallback.
+    document.documentElement.classList.add('deck-ready');
     this.slide = 0;
     this.prevSlide = null;          // no transition on the first render
     this.phase = this.start(0);
@@ -159,6 +162,10 @@
         getComputedStyle(this.stage).getPropertyValue('--d-trans')) || 560;
       this._cut = setTimeout(() => this.stage.classList.remove('is-cutting'), ms / 2);
     }
+
+    // Presentation chrome is an optional observer. The core runtime owns state;
+    // shells, remotes and test harnesses subscribe instead of duplicating it.
+    global.dispatchEvent(new CustomEvent('deck:state', { detail: this.state() }));
   };
 
   Deck.prototype.next = function () {
@@ -186,12 +193,26 @@
     this.slides.forEach(s => s.dispatchEvent(new CustomEvent('deck:reflow')));
   };
 
-  Deck.prototype.goto = function (n) {
+  Deck.prototype.state = function () {
+    return {
+      slide: this.slide,
+      phase: this.phase,
+      steps: this.phases(this.slide),
+      slideCount: this.slides.length,
+      reducedMotion: this.reduce
+    };
+  };
+
+  Deck.prototype.goto = function (n, p) {
     if (n < 0 || n >= this.slides.length) return null;
     this.slide = n;
-    this.phase = this.start(n);
+    const max = this.phases(n);
+    const requested = Number(p);
+    this.phase = Number.isFinite(requested)
+      ? Math.max(0, Math.min(max, requested))
+      : this.start(n);
     this.render();
-    return { slide: this.slide, phase: this.phase, steps: this.phases(n) };
+    return this.state();
   };
 
   /* ----------------------------------------------------------------- boot --
@@ -202,9 +223,10 @@
     typeSplit();
     const deck = new Deck(document.body);
     global.deck = deck;
-    global.__deckGoto = n => deck.goto(n);
+    global.__deckGoto = (n, p) => deck.goto(n, p);
     global.__deckNext = () => deck.next();
     global.__deckPrev = () => deck.prev();
+    global.__deckState = () => deck.state();
     global.deckFlip = flip;
 
     addEventListener('keydown', e => {
