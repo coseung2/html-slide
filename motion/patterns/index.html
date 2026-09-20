@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motion patterns — index</title>
+<link rel="stylesheet" href="../_base.css">
+<style>
+  /* Gallery only. It is a real slide, so it obeys the same geometry rules:
+     everything inside the 5% inset, nothing over the stage edge. */
+  .idx{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:1600px}
+  .idx a{
+    display:flex;flex-direction:column;gap:6px;
+    padding:20px 24px;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    color:inherit;text-decoration:none;
+  }
+  .idx a:active{transform:scale(.98)}
+  .idx .g{
+    font-size:22px;font-weight:600;color:var(--accent);
+  }
+  .idx .k{font-size:28px;line-height:1.35}
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+  <section class="slide is-active" data-slide="index">
+    <div class="scene scene--stack">
+      <div class="copy" data-copy style="align-items:center;text-align:center">
+        <h1 class="title">모션 패턴 12</h1>
+        <p class="body">무엇을 설명하는지로 고른다</p>
+      </div>
+      <div class="idx" data-visual>
+        <a href="emphasis-ring-trace.html"><span class="g">EMPHASIS</span><span class="k">대상의 외곽을 그린다</span></a>
+        <a href="emphasis-cell-pulse.html"><span class="g">EMPHASIS</span><span class="k">그리드의 한 칸만 강조</span></a>
+        <a href="emphasis-recede.html"><span class="g">EMPHASIS</span><span class="k">나머지가 물러난다</span></a>
+        <a href="reveal-group-stagger.html"><span class="g">REVEAL</span><span class="k">클러스터가 하나로 등장</span></a>
+        <a href="reveal-line-step.html"><span class="g">REVEAL</span><span class="k">한 줄씩, 완전한 줄로</span></a>
+        <a href="swap-text-in-place.html"><span class="g">SWAP</span><span class="k">같은 자리에서 값만 교체</span></a>
+        <a href="transform-before-after.html"><span class="g">TRANSFORM</span><span class="k">이전 상태에서 지금 상태로</span></a>
+        <a href="transform-flip-move.html"><span class="g">TRANSFORM</span><span class="k">하나가 자리를 옮긴다</span></a>
+        <a href="quantity-number-roll.html"><span class="g">QUANTITY</span><span class="k">숫자가 새 값으로 구른다</span></a>
+        <a href="quantity-bar-grow.html"><span class="g">QUANTITY</span><span class="k">크기를 길이로</span></a>
+        <a href="sequence-reversible-steps.html"><span class="g">SEQUENCE</span><span class="k">단계는 되돌릴 수 있다</span></a>
+        <a href="connective-path-draw.html"><span class="g">CONNECTIVE</span><span class="k">둘의 관계를 그린다</span></a>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>

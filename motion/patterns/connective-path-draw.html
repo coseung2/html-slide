@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-path — 둘의 관계를 그린다</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* One SVG over the pair, with its viewBox in the same coordinate space as the
+     boxes it connects. No screen coordinates are computed anywhere, so there is
+     nothing to go stale. */
+  .pair{position:relative;width:700px;height:320px}
+  .pair svg{position:absolute;inset:0;width:100%;height:100%}
+  .node{
+    position:absolute;width:240px;
+    display:flex;flex-direction:column;gap:8px;
+    padding:24px 28px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+  }
+  .node--a{left:0;top:0}
+  .node--b{right:0;bottom:0}
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+  <section class="slide is-active" data-slide="path">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">관계는 선으로</h1>
+        <p class="body">좌표는 한 좌표계 안에</p>
+        <p class="body">먼저 그리고, 나중에 채운다</p>
+      </div>
+
+      <div class="visual" data-visual>
+        <div class="pair pat-path">
+          <svg viewBox="0 0 700 320" aria-hidden="true">
+            <path d="M240 86 C 330 86, 330 234, 420 234" style="--len:270"></path>
+          </svg>
+          <div class="node node--a">
+            <span class="label">수집</span><span class="body num">12ms</span>
+          </div>
+          <div class="node node--b">
+            <span class="label">합성</span><span class="body num">58ms</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>

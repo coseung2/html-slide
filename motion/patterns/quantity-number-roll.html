@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-roll — 숫자가 새 값으로 구른다</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* The value box is sized once, so the label beside it never shifts. */
+  .metrics{display:flex;flex-direction:column;gap:26px;width:560px}
+  .metric{
+    display:flex;align-items:baseline;justify-content:space-between;gap:24px;
+    padding:26px 32px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+  }
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+  <section class="slide is-active" data-slide="roll" data-step="1" data-start="0">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">값이 바뀐다</h1>
+        <p class="body">박스는 그대로</p>
+        <p class="body">숫자만 구른다</p>
+      </div>
+
+      <div class="visual" data-visual>
+        <div class="metrics">
+          <div class="metric">
+            <span class="label">첫 화면</span>
+            <span class="body num pat-roll">
+              <span data-phase="1">1.42초</span>
+              <span data-phase="2">0.61초</span>
+            </span>
+          </div>
+          <div class="metric">
+            <span class="label">두 번째 화면</span>
+            <span class="body num pat-roll">
+              <span data-phase="1">1.38초</span>
+              <span data-phase="2">0.74초</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>

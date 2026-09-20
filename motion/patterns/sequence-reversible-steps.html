@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-phase — 단계는 되돌릴 수 있다</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* Three phases of one explanation. The accepted frame shows all three; the
+     later ones only dim while the presenter is still on phase 1. */
+  .steps{display:flex;flex-direction:column;gap:20px;width:620px}
+  .step{
+    display:flex;align-items:center;gap:28px;
+    padding:28px 32px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+  }
+  .step > .n{width:64px}
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+  <section class="slide is-active" data-slide="steps" data-step="3" data-start="1">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">세 단계, 하나씩</h1>
+        <p class="body">뒤로 가면 한 단계씩 되돌아간다</p>
+        <p class="body">마지막 프레임은 완성된 상태</p>
+      </div>
+
+      <div class="visual" data-visual>
+        <div class="steps">
+          <div class="step pat-phase" data-phase="1">
+            <span class="body num n">1</span><span class="body">재료를 올린다</span>
+          </div>
+          <div class="step pat-phase" data-phase="2">
+            <span class="body num n">2</span><span class="body">온도를 맞춘다</span>
+          </div>
+          <div class="step pat-phase" data-phase="3">
+            <span class="body num n">3</span><span class="body">시간을 잰다</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>

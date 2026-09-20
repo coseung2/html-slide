@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-swap — 같은 자리에서 값만 교체</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* Both strings are real elements in the same grid cell, so the line height
+     and the row width are decided once and never re-measured. */
+  .report{display:flex;flex-direction:column;gap:24px;width:600px}
+  .line{
+    display:flex;align-items:baseline;justify-content:space-between;gap:24px;
+    padding:24px 32px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+  }
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+  <section class="slide is-active" data-slide="swap" data-step="1" data-start="0">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">같은 자리, 새 값</h1>
+        <p class="body">문장은 DOM에 남는다</p>
+        <p class="body">바뀌는 건 투명도뿐</p>
+      </div>
+
+      <div class="visual" data-visual>
+        <div class="report">
+          <div class="line">
+            <span class="label">판정</span>
+            <span class="body pat-swap">
+              <span data-phase="1">보류</span>
+              <span data-phase="2">승인</span>
+            </span>
+          </div>
+          <div class="line">
+            <span class="label">담당</span>
+            <span class="body pat-swap">
+              <span data-phase="1">미정</span>
+              <span data-phase="2">2팀</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>

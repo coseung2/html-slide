@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>참조 덱 — AI Commercial Slide Director</title>
+<style>
+  /* ---------------------------------------------------------------- font --
+     Self-hosted. A CDN font is a defect: offline the fallback metrics differ
+     and every alignment you verified is invalid. font-display:block because a
+     late metric swap reflows the deck and moves every bound highlight. */
+  @font-face {
+    font-family: 'Pretendard Variable';
+    src: url('../assets/fonts/PretendardVariable.woff2') format('woff2-variations');
+    font-weight: 45 920;
+    font-style: normal;
+    font-display: block;
+  }
+
+  :root{
+    --ink:#16181D;
+    --muted:#5A5F6B;      /* 5.87:1 on --paper, 6.29:1 on --card */
+    --accent:#C0392B;     /* 5.07:1 on --paper; white on it is 5.44:1 */
+    --paper:#F7F7F5;
+    --card:#FFFFFF;
+    --line:#E3E2DE;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:#0E0F12;            /* letterbox: never stretched, never cropped */
+    color:var(--ink);
+    font-family:'Pretendard Variable',system-ui,-apple-system,sans-serif;
+    font-synthesis:none;
+    overflow:hidden;
+  }
+
+  /* --------------------------------------------------------------- stage --
+     1920x1080 fixed, scaled as a whole. Reflowing layout is what makes
+     emphasis drift; so there is exactly one coordinate system. */
+  #stage{
+    position:absolute; top:0; left:0;
+    width:1920px; height:1080px;
+    background:var(--paper);
+    transform-origin:top left;
+    overflow:hidden;
+  }
+
+  .slide{
+    position:absolute; inset:0;
+    padding:120px;                 /* > 5% safe inset on every side */
+    opacity:0; visibility:hidden;
+    transition:opacity 460ms ease-out;
+    word-break:keep-all;           /* the mechanical form of "never break a
+                                      phrase to balance a text box" */
+    line-height:1.65;
+  }
+  .slide.is-active{opacity:1;visibility:visible}
+
+  .scene{height:100%}
+  /* copy cluster and example share one frame, bound by a tight gap */
+  .scene--split{
+    display:grid;
+    grid-template-columns:620px 1fr;
+    gap:72px;
+    align-items:center;
+  }
+  .scene--single{display:grid;place-items:center}
+
+  /* ---------------------------------------------------------------- copy -- */
+  .copy{display:flex;flex-direction:column;gap:18px}   /* title<->body 12-24px */
+  .title{
+    font-size:76px; line-height:1.22; font-weight:700;
+    text-wrap:balance;
+  }
+  .body{font-size:32px; line-height:1.7; font-weight:400}
+  .label{font-size:24px; line-height:1.5; color:var(--muted)}
+  .num{font-size:32px; line-height:1.6; font-weight:600; font-variant-numeric:tabular-nums}
+
+  /* -------------------------------------------------------------- visual -- */
+  .visual{display:flex;align-items:center;justify-content:center}
+
+  .mock{
+    width:720px;
+    display:flex; flex-direction:column; gap:20px;
+    padding:40px 44px;
+    background:var(--card);
+    border:1px solid var(--line);   /* a product surface, not decoration */
+    border-radius:18px;
+  }
+  .mock__head,.mock__row{display:flex;align-items:center;justify-content:space-between;gap:24px}
+
+  .prev{display:inline-block;width:104px;height:56px;background:var(--paper);border:1px solid var(--line)}
+  .prev--sm{border-radius:4px}
+  .prev--lg{position:relative;border-radius:14px}   /* the inspected target */
+
+  .cta{
+    align-self:flex-start;
+    display:inline-flex; align-items:center; justify-content:center;
+    height:64px; padding:0 40px;
+    border:0; border-radius:14px;
+    background:var(--accent); color:#fff;
+    font:inherit; font-size:24px; font-weight:600;
+    cursor:pointer;
+    transition:transform 160ms ease-out;
+  }
+  .cta:active{transform:scale(0.97)}
+  .cta__label{display:block;text-align:center}
+
+  /* ------------------------------------------------- target-bound effect --
+     §9. The highlight is a CHILD of its target, inset:0, radius inherited.
+     There is no coordinate to get wrong, and it follows any resize because
+     it is the target's own box. */
+  .hl-trace{
+    position:absolute; inset:0;
+    border-radius:inherit;              /* the actual rounded corner */
+    border:3px solid var(--accent);     /* 5.07:1 — paired with thickness, so
+                                           the emphasis also reads in grayscale */
+    pointer-events:none;
+    clip-path:inset(0);
+    animation:trace-draw 260ms cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes trace-draw{
+    from{ clip-path:inset(0 100% 100% 0); }
+    to  { clip-path:inset(0); }
+  }
+
+  /* ------------------------------------------------------- transformation -- */
+  .card-wrap{position:relative;display:inline-block}
+  .card{
+    width:720px;
+    display:flex; flex-direction:column; gap:20px;
+    padding:40px 44px;
+    background:var(--card);
+    border:1px solid var(--line); border-radius:18px;
+    opacity:1;
+    transition:opacity 320ms ease-out;
+  }
+  .skeleton{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; gap:20px;
+    padding:40px 44px;
+    background:var(--card);
+    border:1px solid var(--line); border-radius:18px;
+    opacity:0;
+    transition:opacity 320ms ease-out;
+  }
+  .bar{display:block;height:32px;border-radius:8px;background:#EDECE8}
+  .bar--w2{width:62%}
+  .bar--sm{width:38%}
+
+  .hl-ring{
+    position:absolute; inset:0;
+    border:3px solid var(--accent);
+    border-radius:18px;
+    pointer-events:none;
+    opacity:1;                           /* the end state IS the visible state */
+    clip-path:inset(0);
+    transition:opacity 240ms ease-out;
+  }
+  @keyframes ring-draw{
+    from{ clip-path:inset(0 100% 100% 0); }
+    to  { clip-path:inset(0); }
+  }
+  /* phase 1 replays how the finished UI got there; the slide is complete
+     without it, so the static frame is always a valid frame */
+  .slide.phase-1 .card{opacity:0}
+  .slide.phase-1 .skeleton{opacity:1}
+  .slide.phase-1 .hl-ring{opacity:0}
+  .slide.phase-2 .hl-ring{animation:ring-draw 260ms cubic-bezier(.2,.8,.2,1) both}
+
+  /* --------------------------------------------------------------- pager -- */
+  .pager{
+    position:absolute; right:120px; bottom:110px;
+    font-size:26px; color:var(--muted);
+    font-variant-numeric:tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;animation:none !important}
+  }
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+
+  <!-- ============================================================ 01 ===
+       text + example: copy cluster on the left, mockup immediately right -->
+  <section class="slide" data-slide="01-radius">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">radius가 만드는 인상</h1>
+        <p class="body">같은 색, 같은 문구</p>
+        <p class="body">모서리 하나로 달라진다</p>
+      </div>
+
+      <div class="visual" data-visual>
+        <div class="mock">
+          <div class="mock__head">
+            <span class="label">버튼 스타일</span>
+            <span class="num">radius</span>
+          </div>
+          <div class="mock__row">
+            <span class="label">기본</span>
+            <span class="prev prev--sm"></span>
+          </div>
+          <div class="mock__row">
+            <span class="label">조정</span>
+            <span class="prev prev--lg">
+              <span class="hl-trace" data-hl></span>
+            </span>
+          </div>
+          <button class="cta" type="button"><span class="cta__label">생성하기</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="pager">01 / 03</div>
+  </section>
+
+  <!-- ============================================================ 02 ===
+       text-only thesis: no mockup to dilute the point; the cluster sits at
+       the optical centre rather than being parked in the top-left -->
+  <section class="slide" data-slide="02-thesis">
+    <div class="scene scene--single">
+      <div class="copy" data-copy>
+        <h1 class="title">AI Slop의 원인</h1>
+        <p class="body">같은 템플릿, 같은 여백, 같은 강조</p>
+        <p class="body">장면이 아니라 페이지를 채우기 때문</p>
+      </div>
+    </div>
+    <div class="pager">02 / 03</div>
+  </section>
+
+  <!-- ============================================================ 03 ===
+       transformation beat: the slide is complete as a static frame, and the
+       step replays how the finished UI got there -->
+  <section class="slide" data-slide="03-transform">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">스켈레톤에서 완성 UI로</h1>
+        <p class="body">생성 중: 자리만 잡힌 상태</p>
+        <p class="body">완성: 실제 UI가 들어온 상태</p>
+      </div>
+
+      <div class="visual" data-visual>
+        <div class="card-wrap">
+          <div class="card" id="done-card" data-step="2">
+            <div class="mock__head">
+              <span class="label">생성 결과</span>
+              <span class="num">완료</span>
+            </div>
+            <div class="mock__row">
+              <span class="label">항목</span>
+              <span class="num">42</span>
+            </div>
+            <div class="mock__row">
+              <span class="label">오류</span>
+              <span class="num">0</span>
+            </div>
+            <button class="cta" type="button"><span class="cta__label">다시 생성</span></button>
+          </div>
+          <div class="skeleton" data-step="1">
+            <span class="bar bar--w2"></span>
+            <span class="bar"></span>
+            <span class="bar bar--sm"></span>
+          </div>
+          <!-- sibling overlay bound by data-target: allowed form 3 -->
+          <span class="hl-ring" data-hl data-target="#done-card" data-step="2"></span>
+        </div>
+      </div>
+    </div>
+    <div class="pager">03 / 03</div>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  const slides = [...document.querySelectorAll('[data-slide]')];
+  const stage  = document.querySelector('[data-stage]');
+
+  // ---- stage fit: letterbox with min(), never separate x/y scales ---------
+  function fit() {
+    const k = Math.min(innerWidth / 1920, innerHeight / 1080);
+    stage.style.transform =
+      `translate(${(innerWidth - 1920 * k) / 2}px, ${(innerHeight - 1080 * k) / 2}px) scale(${k})`;
+  }
+  addEventListener('resize', fit);
+  fit();
+  if (document.fonts) document.fonts.ready.then(fit);
+
+  // ---- step state machine (§10) -------------------------------------------
+  // The last phase is not an extra state: it is the slide's static frame, so
+  // phase 0 already shows the finished result.
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const STEPS = reduce ? {} : { 2: 2 };   // slide index -> number of phases
+  let i = 0, phase = 0;
+
+  function render() {
+    slides.forEach((s, n) => {
+      s.classList.toggle('is-active', n === i);
+      const max = STEPS[n] || 0;
+      for (let p = 1; p <= max; p++) s.classList.toggle('phase-' + p, n === i && phase === p);
+    });
+  }
+
+  // Back reverses one phase before it changes slides; re-measure afterwards so
+  // a highlight is never left bound to a stale box.
+  function next() {
+    const max = STEPS[i] || 0;
+    if (phase < max) { phase++; render(); return; }
+    if (i < slides.length - 1) { i++; phase = 0; render(); }
+  }
+  function prev() {
+    if (phase > 0) { phase--; render(); return; }
+    if (i > 0) { i--; phase = STEPS[i] || 0; render(); }
+  }
+
+  addEventListener('keydown', e => {
+    if (['ArrowRight', 'ArrowDown', ' ', 'Enter', 'PageDown'].includes(e.key)) { e.preventDefault(); next(); }
+    if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); prev(); }
+  });
+
+  // Hook for tools/slide_lint.py: measure every slide, not just the visible one.
+  window.__deckGoto = n => {
+    if (n < 0 || n >= slides.length) return;
+    i = n; phase = 0; render();
+    return { slide: i, phase: phase, steps: STEPS[i] || 0 };
+  };
+  window.__deckNext = next;
+  window.__deckPrev = prev;
+
+  render();
+})();
+</script>
+</body>
+</html>

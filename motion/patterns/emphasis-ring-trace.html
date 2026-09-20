@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-ring — 대상에 묶인 강조</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* demo layout only — no font sizes, no motion values */
+  .surface{position:relative}
+  .tile{
+    position:relative; display:block; width:104px; height:56px;
+    background:var(--paper); border:1px solid var(--line); border-radius:14px;
+  }
+  .tile--sm{border-radius:4px}
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+  <section class="slide is-active" data-slide="ring">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">강조는 대상 위에</h1>
+        <p class="body">테두리는 타일의 자식</p>
+        <p class="body">좌표를 적지 않는다</p>
+      </div>
+
+      <div class="visual" data-visual>
+        <div class="surface">
+          <div class="row"><span class="label">기본</span><span class="tile tile--sm"></span></div>
+          <div class="row">
+            <span class="label">조정</span>
+            <span class="tile"><span class="pat-ring" data-hl></span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>

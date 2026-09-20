@@ -1,0 +1,301 @@
+/* ===========================================================================
+   motion/motion.css — the deck motion library.
+
+   Twelve recipes, grouped by *what the motion explains*:
+
+     EMPHASIS     this is the thing I mean          pat-ring, pat-cell-pulse,
+                                                    pat-recede
+     REVEAL       this appears, in this order       pat-group, pat-line-step
+     TRANSFORM    this became that                  pat-before-after, pat-flip
+     QUANTITY     this changed by this much         pat-roll, pat-bar
+     SEQUENCE     this happens in these steps       pat-steps
+     CONNECTIVE   these two are related             pat-path
+     SWAP         this replaced that, in place      pat-swap
+
+   Three rules hold for every recipe:
+
+     1. Only `transform`, `opacity` and `clip-path` animate. `top/left/width/
+        height/margin/padding` are never animated — that is what makes an
+        emphasis drift off its target.
+     2. The end state is the static state. Declared in plain CSS, no animation
+        required. Motion replays *how* the frame got there; it never carries the
+        meaning. Capture the slide, or set prefers-reduced-motion, and the
+        emphasis is still on screen.
+     3. The effect's target is its own DOM ancestor or `data-target` — there is
+        no coordinate to keep in sync, so a resize cannot break the alignment.
+
+   Step phases (the `.deck-live` contract):
+     A slide may explain itself in phases — `data-phase="1..n"` on the parts,
+     `data-step="n"` on the slide, and `data-start` for the phase it opens on.
+     None of that is allowed to change the accepted frame:
+
+       static / reduced motion / screenshot / PDF / linter  -> complete frame
+       presenting (`.deck-live` on the root)                -> data-start, then
+                                                               one phase forward
+                                                               per advance, until
+                                                               the frame is complete
+
+     So every phase rule below is gated on `.deck-live`. Without it — and with
+     prefers-reduced-motion, which is how the deck-motion.js boot decides —
+     the browser renders the complete frame from plain CSS alone.
+
+   Timing values come from the standing motion standards (see motion/README.md):
+   press 100-160ms, small UI 150-250ms, explanatory steps longer, stagger
+   30-80ms, easing ease-out on entry / ease-in-out on movement, never ease-in.
+   =========================================================================== */
+
+/* ===========================================================================
+   EMPHASIS — "this is the thing I mean"
+   =========================================================================== */
+
+/* --- pat-ring: trace the outline of the target ----------------------------
+   Use when: one object among several is the subject of the sentence.
+   Do not use: to decorate a container, or to outline something the copy does
+   not talk about.
+   Markup: the ring is a CHILD of its target — `<div class="target"> <span
+   class="pat-ring" data-hl></span> </div>`. `inset:0` + `border-radius:inherit`
+   means the ring is the target's own box, at its own radius, forever.
+   Reduced motion: ring arrives fully drawn (no wipe). */
+.pat-ring{
+  position:absolute; inset:0;
+  border-radius:inherit;              /* the real corner radius, not a guess */
+  border:3px solid var(--accent);     /* paired with 3px thickness, so the
+                                         emphasis also reads in grayscale */
+  pointer-events:none;
+  clip-path:inset(0);                 /* fully drawn without the animation */
+  animation:pat-ring-draw var(--d-step) var(--ease-out) both;
+}
+@keyframes pat-ring-draw{
+  from{clip-path:inset(0 100% 100% 0)}   /* draw from the top-left corner */
+  to  {clip-path:inset(0)}
+}
+
+/* --- pat-cell-pulse: mark one cell of a grid ------------------------------
+   The grid keeps every track; only the overlay moves, so nothing reflows and
+   the pulse cannot point at the wrong cell.
+   Markup: `<div class="grid"><div class="cell is-marked">…<span class=
+   "pat-pulse" data-hl></span></div></div>` */
+.pat-pulse{
+  position:absolute; inset:0;
+  border-radius:inherit;
+  border:3px solid var(--accent);
+  pointer-events:none;
+  opacity:1;                          /* the state, not the animation */
+  animation:pat-pulse-in var(--d-step) var(--ease-out) both;
+}
+.pat-pulse::after{                    /* a halo, drawn outward from the cell */
+  content:'';
+  position:absolute; inset:-3px;
+  border-radius:inherit;
+  border:3px solid var(--accent);
+  opacity:0;
+  animation:pat-pulse-halo 900ms var(--ease-out) 120ms both;
+}
+@keyframes pat-pulse-in{
+  from{opacity:0; transform:scale(.94)}
+  to  {opacity:1; transform:scale(1)}
+}
+@keyframes pat-pulse-halo{
+  from{opacity:.5; transform:scale(1)}
+  to  {opacity:0;  transform:scale(1.06)}
+}
+
+/* --- pat-recede: the rest steps back --------------------------------------
+   The emphasis is the target KEEPING its weight while the others lose theirs.
+   Use when: the target is one of a row of similar objects and the sentence is
+   "and this one is different".
+   Do not use: on a list where every item gets its turn in the same frame.
+   `data-recede-keep` is not decoration: the linter reads it to prove the
+   emphasis did not land on the wrong element. */
+[data-recede] > *{
+  opacity:.35;
+  transition:opacity var(--d-ui) var(--ease-out);
+}
+[data-recede] > [data-recede-keep]{opacity:1}
+
+/* ===========================================================================
+   REVEAL — "this appears, in this order"
+   =========================================================================== */
+
+/* --- pat-group: the cluster arrives as one object -------------------------
+   The base state is the FINAL state — the animation only replays the arrival.
+   Writing `opacity: 0` here instead would delete the cluster the moment motion
+   is switched off, which is the failure the whole document is about.
+   One group, one animation, small stagger between members. Not one animation
+   per element — the group is the unit of arrival.
+   `--i` is set per child in the markup (or by the layout); it is not a
+   coordinate, so nothing drifts. */
+.pat-group > *{
+  opacity:1;
+  transform:none;
+  animation:pat-rise var(--d-ui) var(--ease-out) both;
+  animation-delay:calc(var(--i, 0) * var(--stagger));
+}
+@keyframes pat-rise{
+  from{opacity:0; transform:translateY(10px)}
+  to  {opacity:1; transform:translateY(0)}
+}
+
+/* --- pat-line-step: lines wipe in one complete line at a time -------------
+   Line-level, not character-level: a half-clipped sentence is not readable at
+   projection distance, and a typewriter implies the audience is waiting.
+   The box never changes size, so nothing below it moves. */
+.pat-line-step > *{
+  clip-path:inset(0);
+  animation:pat-line-wipe var(--d-step) var(--ease-out) both;
+  animation-delay:calc(var(--i, 0) * 90ms);
+}
+@keyframes pat-line-wipe{
+  from{clip-path:inset(0 0 100% 0)}    /* wipe down, top edge first */
+  to  {clip-path:inset(0)}
+}
+
+/* ===========================================================================
+   TRANSFORM — "this became that"
+   =========================================================================== */
+
+/* --- pat-before-after: two states of the same object ----------------------
+   Both states occupy the same box; only opacity (and a 2px blur mid-way)
+   changes. The blur is what stops a crossfade from reading as two overlapping
+   images. Never animate height between the states: the frame is fixed.
+   Markup: both children carry `data-step` — the linter reads that as "these
+   coexist on purpose" rather than as overlapping copy. */
+.pat-state{
+  position:absolute; inset:0;
+  transition:opacity var(--d-step) var(--ease-out),
+             filter   var(--d-step) var(--ease-out);
+}
+.pat-state--before{opacity:0; filter:blur(2px)}   /* the earlier state */
+.pat-state--after {opacity:1; filter:blur(0)}     /* the accepted frame */
+/* Live presentation opens on data-start="0": the earlier state first, then one
+   advance to the accepted frame. Without .deck-live there are no phases. */
+.deck-live .deck-step-0 .pat-state--before{opacity:1; filter:blur(0)}
+.deck-live .deck-step-0 .pat-state--after {opacity:0; filter:blur(2px)}
+
+/* --- pat-flip: shared-element move (FLIP) ---------------------------------
+   For "this object moved here from there". First: measure. Last: let the DOM
+   change. Invert: apply the delta as a transform. Play: animate it back to
+   none. The element really lives in its new place the whole time; only the
+   transform is animated, so layout is never the animation.
+   JS lives in deck-motion.js (`window.deckFlip`). Do not hand-write
+   `left/top` frames for this. */
+.pat-flip-item{will-change:transform}
+.pat-flip-empty{                            /* the slot the object left behind */
+  border:1px dashed var(--line);
+  border-radius:14px;
+}
+
+/* ===========================================================================
+   QUANTITY — "this changed by this much"
+   =========================================================================== */
+
+/* --- pat-roll: a number rolls to its new value ----------------------------
+   The old and the new value occupy the same box; only transform and opacity
+   change. The box is sized once, so nothing beside it moves — which is the
+   whole reason a number looks like it jumps when you animate innerText.
+   Use for: a quantity the sentence is about. Not for: a label that happens to
+   contain digits (use pat-swap).
+   Tabular figures keep the digits on their own columns while they move. */
+.pat-roll{
+  position:relative; display:inline-grid;
+  font-variant-numeric:tabular-nums;
+}
+.pat-roll > span{
+  grid-area:1 / 1;
+  transition:transform var(--d-step) var(--ease-out),
+             opacity   var(--d-step) var(--ease-out);
+}
+.pat-roll > span[data-phase="1"]{opacity:0; transform:translateY(-.7em)}   /* leaving */
+.pat-roll > span[data-phase="2"]{opacity:1; transform:translateY(0)}      /* the value */
+/* Live presentation opens on data-start="0": the old value first, then one
+   advance rolls to the new one. */
+.deck-live .deck-step-0 .pat-roll > span[data-phase="1"]{opacity:1; transform:translateY(0)}
+.deck-live .deck-step-0 .pat-roll > span[data-phase="2"]{opacity:0; transform:translateY(.7em)}
+
+/* --- pat-bar: magnitude as length ----------------------------------------
+   scaleY from the baseline, never `height` — height is a layout property and
+   animating it repaints the whole row (and moves anything bound to it).
+   Scale is a real quantity here: the bar exists to be compared. */
+.pat-bar{
+  display:block; width:100%;
+  transform-origin:bottom center;
+  transform:scaleY(1);
+  animation:pat-bar-grow var(--d-step) var(--ease-out) both;
+  animation-delay:calc(var(--i, 0) * var(--stagger));
+}
+@keyframes pat-bar-grow{
+  from{transform:scaleY(.02); opacity:0}
+  to  {transform:scaleY(1);   opacity:1}
+}
+
+/* ===========================================================================
+   SEQUENCE — "this happens in these steps"
+   =========================================================================== */
+
+/* --- pat-steps: one phase at a time, reversible ---------------------------
+   Back is not a rewind animation: it reverses one phase of the explanation.
+   The step classes are toggled by deck-motion.js, which also re-measures
+   after a resize so a bound emphasis is never left on a stale box.
+   A transforming slide carries data-start="0": it opens on the earlier state
+   and one advance completes it. Phase 0 is never "empty" — it is the state the
+   presenter starts from. */
+.pat-phase{
+  opacity:1;                                 /* phase 0 = everything accepted */
+  transition:opacity var(--d-step) var(--ease-out);
+}
+/* The later phases are dimmed, not deleted: the structure stays legible while
+   the presenter is on phase 1, and the frame is complete the moment stepping
+   is over. Extend the list if your slide has more phases. */
+.deck-live .deck-step-1 .pat-phase[data-phase="2"],
+.deck-live .deck-step-1 .pat-phase[data-phase="3"]{opacity:.18}
+.deck-live .deck-step-2 .pat-phase[data-phase="3"]{opacity:.18}
+
+/* ===========================================================================
+   CONNECTIVE — "these two are related"
+   =========================================================================== */
+
+/* --- pat-path: draw the relation between two objects ----------------------
+   The path is authored in the same coordinate space as the boxes it connects
+   (one SVG over the pair, viewBox in stage units). Nothing computes screen
+   coordinates, so nothing can be off by a resize.
+   Draw, then fill: outline first because the relation is the message; fill
+   after, because the object is the subject. */
+.pat-path svg{display:block; width:100%; height:auto; overflow:visible}
+.pat-path path{
+  fill:none;
+  stroke:var(--accent);
+  stroke-width:3px;
+  stroke-linecap:round;
+  stroke-dasharray:var(--len);
+  stroke-dashoffset:0;                        /* drawn = the static state */
+  animation:pat-draw 600ms var(--ease-in-out) both;
+}
+.pat-path .pat-path-fill{
+  fill:var(--accent); fill-opacity:.08; stroke:none;
+  opacity:1;
+  animation:pat-fill var(--d-ui) var(--ease-out) 480ms both;
+}
+@keyframes pat-draw{
+  from{stroke-dashoffset:var(--len)}
+  to  {stroke-dashoffset:0}
+}
+@keyframes pat-fill{
+  from{opacity:0}
+  to  {opacity:1}
+}
+
+/* ===========================================================================
+   SWAP — "this replaced that, in place"
+   =========================================================================== */
+
+/* --- pat-swap: replace a value without moving anything --------------------
+   The outgoing text stays in the DOM as the readable copy (screen readers and
+   PDF export both get the real string); only its opacity changes in place. */
+.pat-swap{position:relative; display:inline-grid}
+.pat-swap > span{grid-area:1 / 1; transition:opacity var(--d-ui) var(--ease-out)}
+.pat-swap > span[data-phase="1"]{opacity:0}          /* the value being replaced */
+.pat-swap > span[data-phase="2"]{opacity:1}          /* the accepted value */
+/* Live presentation opens on data-start="0": the old value first, then one
+   advance swaps to the accepted one. */
+.deck-live .deck-step-0 .pat-swap > span[data-phase="1"]{opacity:1}
+.deck-live .deck-step-0 .pat-swap > span[data-phase="2"]{opacity:0}

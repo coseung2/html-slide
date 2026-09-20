@@ -1,0 +1,114 @@
+/* ===========================================================================
+   motion/_base.css — demo scaffold for motion/patterns/*.html
+
+   This is the *verified* scaffold: the same stage, type scale and colour tokens
+   the reference deck uses, so a pattern can be dropped in and linted on its own.
+   Pattern code itself lives in motion.css.
+
+   Three font sizes only (76 / 32 / 24) — that is the whole typography budget.
+   =========================================================================== */
+
+@font-face {
+  font-family: 'Pretendard Variable';
+  src: url('../assets/fonts/PretendardVariable.woff2') format('woff2-variations');
+  font-weight: 45 920;
+  font-style: normal;
+  font-display: block;          /* a late metric swap would reflow the stage */
+}
+
+:root{
+  --ink:#16181D;
+  --muted:#5A5F6B;              /* 5.9:1 on --paper */
+  --accent:#C0392B;             /* 5.1:1 on --paper, white on it 5.4:1 */
+  --paper:#F7F7F5;
+  --card:#FFFFFF;
+  --soft:#EDECE8;
+  --line:#E3E2DE;
+
+  /* timing vocabulary — the values the recipes are tuned to */
+  --ease-out:cubic-bezier(.23, 1, .32, 1);      /* entering / responding */
+  --ease-in-out:cubic-bezier(.77, 0, .175, 1);  /* moving on screen */
+  --d-press:140ms;              /* press feedback 100-160ms */
+  --d-ui:220ms;                 /* small UI state 150-250ms */
+  --d-step:300ms;               /* one explanatory step */
+  --d-scene:520ms;              /* slide-level change */
+  --stagger:50ms;               /* 30-80ms between group members */
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:#0E0F12;            /* letterbox bars: never stretched, never cropped */
+  color:var(--ink);
+  font-family:'Pretendard Variable',system-ui,-apple-system,sans-serif;
+  font-synthesis:none;
+  overflow:hidden;
+}
+
+/* --- stage: one coordinate system, scaled as a whole --------------------- */
+#stage{
+  position:absolute; top:0; left:0;
+  width:1920px; height:1080px;
+  background:var(--paper);
+  transform-origin:top left;
+  overflow:hidden;
+}
+
+.slide{
+  position:absolute; inset:0;
+  padding:120px;                 /* > the 5% safe inset on every side */
+  opacity:0; visibility:hidden;
+  transition:opacity var(--d-scene) var(--ease-out);
+  word-break:keep-all;           /* never split a Korean word to fit a box */
+  line-height:1.65;
+}
+.slide.is-active{opacity:1;visibility:visible}
+
+.scene{height:100%}
+.scene--split{
+  display:grid;
+  grid-template-columns:620px 1fr;
+  gap:72px;                      /* copy and example stay one cluster */
+  align-items:center;
+}
+.scene--single{display:grid;place-items:center}
+.scene--stack{display:grid;align-content:center;gap:56px;justify-items:center}
+
+/* --- copy ---------------------------------------------------------------- */
+.copy{display:flex;flex-direction:column;gap:18px}
+.title{font-size:76px; line-height:1.22; font-weight:700; text-wrap:balance}
+.body{font-size:32px; line-height:1.7; font-weight:400}
+.label{font-size:24px; line-height:1.5; color:var(--muted)}
+.num{font-weight:600; font-variant-numeric:tabular-nums}
+
+/* --- surfaces ------------------------------------------------------------ */
+.visual{display:flex;align-items:center;justify-content:center}
+.surface{
+  width:720px;
+  display:flex; flex-direction:column; gap:20px;
+  padding:40px 44px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+}
+.row{display:flex;align-items:center;justify-content:space-between;gap:24px}
+
+.btn{
+  align-self:flex-start;
+  display:inline-flex; align-items:center; justify-content:center;
+  height:64px; padding:0 40px;
+  border:0; border-radius:14px;
+  background:var(--accent); color:#fff;
+  font:inherit; font-size:24px; font-weight:600;
+  cursor:pointer;
+  transition:transform var(--d-press) var(--ease-out);
+}
+.btn:active{transform:scale(.97)}
+.btn > span{display:block;text-align:center}
+
+/* --- accessibility: fewer and gentler, not zero -------------------------- */
+/* Movement goes; comprehension stays. Every recipe's end state is already the
+   static state, so a deck that ignores motion is still a complete deck. */
+@media (prefers-reduced-motion: reduce){
+  *{transition:none !important;animation:none !important}
+}

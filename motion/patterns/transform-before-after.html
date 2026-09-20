@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-state — 이전 상태에서 지금 상태로</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* Both states are laid out in the same box, not stacked in flow: the frame
+     must not change height when the state changes. */
+  .surface--state{position:relative;display:block;height:236px}
+  .bar{display:block;height:18px;border-radius:9px;background:var(--soft)}
+  .bar--long{width:88%}
+  .bar--short{width:46%}
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+  <section class="slide is-active" data-slide="before-after" data-start="0">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">같은 자리, 두 상태</h1>
+        <p class="body">전후가 겹쳐 있다</p>
+        <p class="body">크기는 바뀌지 않는다</p>
+      </div>
+
+      <div class="visual" data-visual>
+        <div class="surface surface--state">
+          <div class="pat-state pat-state--before" data-step="1">
+            <span class="bar bar--long"></span>
+            <span class="bar bar--short"></span>
+          </div>
+          <div class="pat-state pat-state--after" data-step="1">
+            <div class="row"><span class="label">총 예산</span><span class="label num">1,240만원</span></div>
+            <div class="row"><span class="label">집행률</span><span class="label num">68%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>

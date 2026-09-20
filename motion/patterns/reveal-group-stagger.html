@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-group — 클러스터가 하나로 등장</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* --i is an ordinal, not a coordinate: it only sets the stagger order. */
+  .stack{display:flex;flex-direction:column;gap:20px}
+  .item{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:24px; height:96px; padding:0 32px;
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+  }
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+  <section class="slide is-active" data-slide="group">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">한 덩어리로 등장</h1>
+        <p class="body">항목마다 따로 움직이지 않는다</p>
+        <p class="body">간격은 50ms</p>
+      </div>
+
+      <div class="visual" data-visual>
+        <div class="stack pat-group">
+          <div class="item" style="--i:0"><span class="label">수집</span><span class="label num">12ms</span></div>
+          <div class="item" style="--i:1"><span class="label">정렬</span><span class="label num">34ms</span></div>
+          <div class="item" style="--i:2"><span class="label">합성</span><span class="label num">58ms</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>

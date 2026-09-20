@@ -1,0 +1,100 @@
+# html-slide
+
+An agent skill for building presentation decks as HTML — with the discipline
+enforced by a linter, not by good intentions.
+
+The problem this solves: an agent asked to "highlight the second column" writes
+`left: 412px; top: 268px`. It looks right in the screenshot and breaks the
+moment the layout or the window changes. Decks also slide into decoration —
+every element animating, motion that explains nothing, captions under the
+visual, a title in the corner. Those are habits, and habits need a check that
+runs.
+
+So this repo is two things at once: a **specification** (`SKILL.md`, the
+author's rules tightened into a normative document) and an **enforcement layer**
+(`tools/slide_lint.py`, `tests/motion_check.py`) that fails a deck which breaks
+the rules — including the rules that can only be checked by rendering the page
+in a real browser and measuring boxes.
+
+## What's here
+
+```
+SKILL.md                    the rules — §1 type, §3 spacing, §8 motion, §9 binding, §10 state machine
+tools/slide_lint.py         the linter: static pass + instrumented browser geometry pass
+tests/motion_check.py       behaviour tests: static completeness, phase walk, resize binding
+examples/reference-3slides.html    a 3-slide deck that passes, used as the baseline
+motion/                     twelve motion recipes, grouped by what the motion explains
+motion/README.md            the contract, the pattern index, and the source trail
+references/SOURCES.md       where every timing value and method came from
+assets/fonts/               Pretendard Variable (OFL) — self-hosted, no CDN call
+```
+
+## The two failures worth naming
+
+**Emphasis that leaves its target.** The rule is that a highlight is a child of
+its target, or a sibling bound by `data-target`, or a clone derived from it —
+never a box drawn at slide coordinates. The linter proves the binding: it
+renders at 1920×1080, 1280×720 and 1024×768, measures the highlight's overlap
+with its target, and fails if the coverage drops or the alignment drifts by
+more than one stage unit. The reference deck and the ring/pulse patterns
+measure 100% coverage and 0.00 drift at every size.
+
+**Motion that carries meaning.** Only `transform`, `opacity` and `clip-path`
+animate — `top`, `width`, `height`, `margin` trigger layout and paint, which is
+how a target moves out from under its own highlight. Duration and easing are
+not invented here; they come from the published references (see
+`references/SOURCES.md`) and the recipes implement them verbatim.
+
+## Running it
+
+```bash
+# one deck, geometry and rules (~10s)
+~/.venvs/pw/bin/python tools/slide_lint.py examples/reference-3slides.html
+
+# with screenshots written out
+~/.venvs/pw/bin/python tools/slide_lint.py deck.html --shots /tmp/shots
+
+# every motion recipe's behaviour, in a live browser
+~/.venvs/pw/bin/python tests/motion_check.py
+```
+
+Current state: `reference-3slides.html` and all 12 patterns pass the linter
+with 0 errors and 0 warnings; `motion_check.py` runs 106 behaviour checks, 0
+failed.
+
+Requires Playwright (`pip install playwright && playwright install chromium`).
+
+## The motion library
+
+`motion/patterns/index.html` is the gallery. Twelve recipes, grouped by what
+the motion *explains* rather than how it looks:
+
+| Group | Explains | Recipes |
+|---|---|---|
+| EMPHASIS | this object is the subject | `pat-ring`, `pat-pulse`, `pat-recede` |
+| REVEAL | how the material arrives | `pat-group`, `pat-line-step` |
+| TRANSFORM | before became after | `pat-state`, FLIP move |
+| QUANTITY | this changed by this much | `pat-roll`, `pat-bar` |
+| SEQUENCE | this happens in these steps | `pat-steps` (reversible) |
+| CONNECTIVE | these two are related | `pat-path` |
+| SWAP | this replaced that | `pat-swap` |
+
+Each pattern is a runnable page, documented with *use-when / do-not-use* notes
+at its recipe, and linted like any other slide. Start with
+`motion/patterns/index.html`; read `motion/README.md` before adding one.
+
+## Layout
+
+The stage is a fixed 16:9 box fitted with a `transform: scale()`, so slide
+coordinates are stable and layout never animates on resize. Step phases are
+scoped to `.deck-live`, which the runtime only adds when motion is wanted — so
+a captured frame, a PDF export, or `prefers-reduced-motion` all show the same
+complete slide.
+
+## License and provenance
+
+The specification, linter, tests, examples and motion library are this repo's
+own work. The motion timing values are sourced from MIT-licensed references and
+public documentation; `references/SOURCES.md` gives the trail and
+`references/` keeps the attributed excerpts. Pretendard Variable is licensed
+under the SIL Open Font License (`assets/fonts/`).

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-line-step — 한 줄씩, 완전한 줄로</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* clip-path wipes the line; the box never changes size, so nothing below
+     the paragraph moves while it arrives. */
+  .lines{display:flex;flex-direction:column;gap:22px;width:700px}
+  .line{display:flex;align-items:center;justify-content:space-between;gap:24px;
+        background:var(--card);border:1px solid var(--line);border-radius:14px;
+        padding:26px 32px}
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+  <section class="slide is-active" data-slide="line-step">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">한 줄씩 도착</h1>
+        <p class="body">글자 단위가 아니라 줄 단위</p>
+        <p class="body">박스 크기는 고정</p>
+      </div>
+
+      <div class="visual" data-visual>
+        <div class="lines pat-line-step">
+          <p class="body line" style="--i:0"><span>1. 재료</span><span class="num">240g</span></p>
+          <p class="body line" style="--i:1"><span>2. 온도</span><span class="num">180°C</span></p>
+          <p class="body line" style="--i:2"><span>3. 시간</span><span class="num">14분</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>

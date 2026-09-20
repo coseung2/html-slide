@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-flip — 하나가 자리를 옮긴다 (FLIP)</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* FLIP: the marked chip is really laid out in its new slot the whole time.
+     Only the transform is animated, so the move never goes through layout. */
+  .fliplist{display:flex;flex-direction:column;gap:18px;width:560px}
+  .task{
+    display:flex;align-items:center;justify-content:space-between;gap:24px;
+    height:88px;padding:0 32px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+  }
+  .task--marked{background:var(--card);border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+  <section class="slide is-active" data-slide="flip">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">자리를 옮긴 하나</h1>
+        <p class="body">나머지는 즉시 재배치</p>
+        <p class="body">움직임은 transform 하나</p>
+      </div>
+
+      <div class="visual" data-visual style="flex-direction:column;gap:28px">
+        <div class="fliplist">
+          <div class="task task--marked pat-flip-item"><span class="label">합성</span><span class="label num">58ms</span></div>
+          <div class="task"><span class="label">수집</span><span class="label num">12ms</span></div>
+          <div class="task"><span class="label">정렬</span><span class="label num">34ms</span></div>
+          <div class="task pat-flip-empty"><span class="label">대기</span></div>
+        </div>
+        <button class="btn" type="button" id="move"><span>순서 바꾸기</span></button>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+<script>
+  // One object moves; the others step aside instantly. FLIP measures first,
+  // lets the DOM change, then animates only the difference.
+  const list = document.querySelector('.fliplist');
+  const marked = list.querySelector('.pat-flip-item');
+  const rest = list.querySelector('.pat-flip-empty');
+  document.getElementById('move').addEventListener('click', () => {
+    const isLast = marked.nextElementSibling === rest;
+    window.deckFlip(marked, () => {
+      if (isLast) list.insertBefore(marked, list.firstElementChild);
+      else list.insertBefore(marked, rest);
+    }, { duration: 320 });
+  });
+</script>
+</body>
+</html>

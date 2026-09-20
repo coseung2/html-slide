@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-pulse — 그리드 한 칸만 강조</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* A fixed grid: the tracks never move, so the marked cell cannot slide. */
+  .grid{display:grid;grid-template-columns:repeat(2,206px);gap:20px}
+  .cell{
+    position:relative; height:132px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+  }
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+  <section class="slide is-active" data-slide="cell-pulse">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">칸은 움직이지 않는다</h1>
+        <p class="body">오버레이는 칸의 자식</p>
+        <p class="body">레이아웃은 그대로</p>
+      </div>
+
+      <div class="visual" data-visual>
+        <div class="grid">
+          <div class="cell"><span class="label">01</span></div>
+          <div class="cell"><span class="label">02</span></div>
+          <div class="cell"><span class="label">03</span></div>
+          <div class="cell">
+            <span class="label">04</span>
+            <span class="pat-pulse" data-hl></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>

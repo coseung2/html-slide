@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-recede — 나머지가 물러난다</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* Four equivalent objects; the emphasis is one of them staying at full
+     weight. There is no overlay, so there is nothing that can drift. */
+  .rowset{display:flex;flex-direction:column;gap:20px}
+  .item{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:24px; height:96px; padding:0 32px;
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+  }
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+  <section class="slide is-active" data-slide="recede">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">나머지는 물러난다</h1>
+        <p class="body">강조는 대상이 유지한 무게</p>
+        <p class="body">대상은 흐려지지 않는다</p>
+      </div>
+
+      <div class="visual" data-visual>
+        <div class="rowset" data-recede>
+          <div class="item"><span class="label">01</span><span class="label">지연 240ms</span></div>
+          <div class="item" data-recede-keep><span class="label">02</span><span class="label num">지연 80ms</span></div>
+          <div class="item"><span class="label">03</span><span class="label">지연 240ms</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>

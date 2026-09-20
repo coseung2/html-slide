@@ -1,0 +1,172 @@
+/* ===========================================================================
+   motion/deck-motion.js — stage fitting, step phases, FLIP.
+
+   Nothing here computes the position of an emphasis. Highlights are DOM
+   children of their targets, so they follow for free; this file only handles
+   what CSS cannot: the stage scale, the step state machine, and FLIP.
+
+   The `.deck-live` contract
+   -------------------------
+   The accepted frame must never depend on this file. Without it — file missing,
+   JS off, prefers-reduced-motion — the browser renders the complete frame from
+   plain CSS, because every phase rule in motion.css is gated on `.deck-live`.
+   When it does run, it adds `.deck-live` to <html> and the slide opens on its
+   `data-start` phase so the presenter can build the frame up.
+   =========================================================================== */
+(function (global) {
+  'use strict';
+
+  const STAGE_W = 1920, STAGE_H = 1080;
+  const LIVE = 'deck-live';
+
+  /* ---------------------------------------------------------------- stage --
+     Letterbox with min(): one scale for both axes. Separate x/y scales turn
+     circles into ellipses and make every traced radius a lie. */
+  function fit(stage) {
+    const k = Math.min(innerWidth / STAGE_W, innerHeight / STAGE_H);
+    stage.style.transform =
+      `translate(${(innerWidth - STAGE_W * k) / 2}px, ` +
+      `${(innerHeight - STAGE_H * k) / 2}px) scale(${k})`;
+    return k;
+  }
+
+  /* ----------------------------------------------------------------- FLIP --
+     First, Last, Invert, Play. Call it around any DOM change that moves an
+     element; the element is never animated through layout properties. */
+  function flip(el, mutate, opts) {
+    const o = opts || {};
+    const first = el.getBoundingClientRect();
+    mutate();                                        // Last (DOM update)
+    const last = el.getBoundingClientRect();
+    const dx = first.left - last.left;
+    const dy = first.top - last.top;
+    const sx = last.width ? first.width / last.width : 1;
+    const sy = last.height ? first.height / last.height : 1;
+    if (!dx && !dy && sx === 1 && sy === 1) return null;
+    const anim = el.animate([
+      // Invert: the element visually returns to where it was. Translate before
+      // scale — scaling first would move the element's own origin.
+      { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` },
+      { transform: 'none' }
+    ], {
+      duration: o.duration || 320,
+      easing: 'cubic-bezier(0.77, 0, 0.175, 1)',
+      fill: 'both'
+    });
+    anim.finished.then(() => { el.style.willChange = ''; }).catch(() => {});
+    return { dx: dx, dy: dy, sx: sx, sy: sy };
+  }
+
+  /* ---------------------------------------------------------------- steps --
+     Reversibility is a state machine, not a rewind: back walks down to the
+     slide's own start phase, then to the previous slide. A resize re-fits and
+     re-measures, so a bound emphasis is never left on a stale box. */
+  function Deck(root) {
+    this.root = root;
+    this.stage = root.querySelector('[data-stage]') || root;
+    this.slides = Array.prototype.slice.call(root.querySelectorAll('[data-slide]'));
+    this.reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.slide = 0;
+    this.phase = this.start(0);
+    if (!this.reduce) document.documentElement.classList.add(LIVE);
+    addEventListener('resize', () => this.reflow());
+    if (document.fonts) document.fonts.ready.then(() => this.reflow());
+    this.reflow();
+    this.render();
+  }
+
+  /* Re-fit the stage. A method on the prototype: the constructor calls it while
+     `this` already owns the stage, and nothing about it depends on a closure —
+     which is exactly the crash the background fix patched over. */
+  Deck.prototype.measure = function () { return fit(this.stage); };
+
+  /* Phases a slide declares — read from the DOM, never from a config table, so
+     the markup cannot drift away from the behaviour. */
+  Deck.prototype.phases = function (i) {
+    const s = this.slides[i];
+    if (!s || this.reduce) return 0;
+    let max = parseInt(s.getAttribute('data-step'), 10) || 0;
+    s.querySelectorAll('[data-step]').forEach(el => {
+      if (el !== s) max = Math.max(max, parseInt(el.getAttribute('data-step'), 10) || 0);
+    });
+    return max;
+  };
+
+  Deck.prototype.start = function (i) {
+    const s = this.slides[i];
+    if (!s || this.reduce) return 0;
+    const n = parseInt(s.getAttribute('data-start'), 10);
+    return Number.isFinite(n) ? Math.min(Math.max(n, 0), this.phases(i)) : 0;
+  };
+
+  Deck.prototype.render = function () {
+    this.slides.forEach((s, n) => {
+      s.classList.toggle('is-active', n === this.slide);
+      const max = Math.max(this.phases(n), 1);
+      for (let p = 0; p <= max; p++) {
+        s.classList.toggle('deck-step-' + p, n === this.slide && this.phase === p);
+      }
+    });
+  };
+
+  Deck.prototype.next = function () {
+    if (this.phase < this.phases(this.slide)) { this.phase++; this.render(); return; }
+    if (this.slide < this.slides.length - 1) {
+      this.slide++;
+      this.phase = this.start(this.slide);
+      this.render();
+    }
+  };
+
+  Deck.prototype.prev = function () {
+    if (this.phase > this.start(this.slide)) { this.phase--; this.render(); return; }
+    if (this.slide > 0) {
+      this.slide--;
+      this.phase = this.start(this.slide);
+      this.render();
+    }
+  };
+
+  /* A resize can change text metrics; re-fit and let the slide re-measure
+     anything it positions from geometry (FLIP anchors, SVG paths). */
+  Deck.prototype.reflow = function () {
+    this.measure();
+    this.slides.forEach(s => s.dispatchEvent(new CustomEvent('deck:reflow')));
+  };
+
+  Deck.prototype.goto = function (n) {
+    if (n < 0 || n >= this.slides.length) return null;
+    this.slide = n;
+    this.phase = this.start(n);
+    this.render();
+    return { slide: this.slide, phase: this.phase, steps: this.phases(n) };
+  };
+
+  /* ----------------------------------------------------------------- boot --
+     The linter drives the deck through `__deckGoto` and measures each slide
+     under prefers-reduced-motion, where this file adds no phase state at all:
+     it sees the complete frame. */
+  function boot() {
+    const deck = new Deck(document.body);
+    global.deck = deck;
+    global.__deckGoto = n => deck.goto(n);
+    global.__deckNext = () => deck.next();
+    global.__deckPrev = () => deck.prev();
+    global.deckFlip = flip;
+
+    addEventListener('keydown', e => {
+      if (['ArrowRight', 'ArrowDown', ' ', 'Enter', 'PageDown'].indexOf(e.key) >= 0) {
+        e.preventDefault(); deck.next();
+      }
+      if (['ArrowLeft', 'ArrowUp', 'PageUp'].indexOf(e.key) >= 0) {
+        e.preventDefault(); deck.prev();
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})(typeof window !== 'undefined' ? window : globalThis);

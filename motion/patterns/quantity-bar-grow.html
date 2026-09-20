@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-bar — 크기를 길이로</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* The bars grow along the y axis only: scaleY from the baseline. Animating
+     height instead would repaint the row and move anything anchored to it. */
+  .bars{display:flex;align-items:flex-end;gap:28px;height:340px}
+  .bars > figure{display:flex;flex-direction:column;align-items:center;gap:16px}
+  .bar{width:104px;background:var(--accent);border-radius:8px 8px 0 0}
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+  <section class="slide is-active" data-slide="bars">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">길이가 곧 크기</h1>
+        <p class="body">세로로만 자란다</p>
+        <p class="body">기준선은 고정</p>
+      </div>
+
+      <div class="visual" data-visual>
+        <div class="bars">
+          <figure>
+            <span class="bar pat-bar" style="height:120px;--i:0"></span>
+            <span class="label">1분기</span>
+          </figure>
+          <figure>
+            <span class="bar pat-bar" style="height:216px;--i:1"></span>
+            <span class="label">2분기</span>
+          </figure>
+          <figure>
+            <span class="bar pat-bar" style="height:296px;--i:2"></span>
+            <span class="label">3분기</span>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>
