@@ -193,6 +193,32 @@ PROBE_ACTIVE = r"""() => {
 }"""
 
 
+# Advance the deck and sample the pair of scenes while it moves. A transition
+# that is really a hard cut produces one distinct frame (the destination) no
+# matter how many times you look; a real one produces a spread.
+PROBE_TRANSIT = r"""() => new Promise(resolve => {
+  const slides = Array.from(document.querySelectorAll('[data-slide]'));
+  const seen = new Set();
+  const sample = [];
+  window.__deckGoto(1);                      // drive it from here
+  let n = 0;
+  const tick = () => {
+    const sig = slides.map(s => {
+      const r = s.getBoundingClientRect();
+      const cs = getComputedStyle(s);
+      return [Math.round(r.left), Math.round(+cs.opacity * 100),
+              Math.round(parseFloat((cs.filter.match(/blur\(([\d.]+)px\)/) || [0, 0])[1]) * 10) / 10];
+    });
+    const key = JSON.stringify(sig);
+    if (!seen.has(key)) { seen.add(key); if (sample.length < 3) sample.push(sig); }
+    // ~600ms: enough to cover a 400-700ms scene change at 60fps
+    if (++n < 36) requestAnimationFrame(tick);
+    else resolve({ distinct: seen.size, sample: sample });
+  };
+  requestAnimationFrame(tick);
+})"""
+
+
 # A hidden [data-phase] element is superseded content when a visible
 # [data-phase] sibling in the same slot stands in for it (the old value in a
 # swap, the outgoing digit in a roll). Anything else hidden is a defect: the
@@ -437,9 +463,13 @@ def check_pattern(page, path, res):
                    f"whole sentence after {end['waited']}ms of typing")
 
     # ---- transition: the stage returns to rest between scenes --------------
-    # A wipe that never resets leaves slides parked off-stage, so the next
-    # render starts from a moved box. Walk the deck twice and require the
-    # stage to be back at rest on the second arrival.
+    # A transition is a pair of states. Two things can go wrong, and a check
+    # that only looks at the resting position catches neither:
+    #   * it never resets, so the next render starts from a moved box
+    #   * it never plays, so "transition" is a hard cut wearing a class name
+    # So walk the deck twice and require (a) the active scene to settle inside
+    # the stage at rest, and (b) the pair to actually occupy distinct positions
+    # mid-flight.
     has_trans = page.evaluate(
         "() => !!(document.querySelector('[data-transition]'))")
     if not has_trans:
@@ -452,11 +482,13 @@ def check_pattern(page, path, res):
             page.evaluate("() => window.__deckGoto(0)")
             page.wait_for_timeout(700)
             first = page.evaluate(PROBE_ACTIVE)
-            page.evaluate("() => window.__deckGoto(1)")
-            page.wait_for_timeout(900)
+
+            # sample the pair while the transition runs
+            mid = page.evaluate(PROBE_TRANSIT)
+            page.wait_for_timeout(950)
             second = page.evaluate(PROBE_ACTIVE)
             page.evaluate("() => window.__deckGoto(0)")
-            page.wait_for_timeout(900)
+            page.wait_for_timeout(950)
             third = page.evaluate(PROBE_ACTIVE)
             if None in (first, second, third):
                 res.bad(f"{tag}: transition", "active slide is not measurable")
@@ -466,10 +498,14 @@ def check_pattern(page, path, res):
             elif max(s["x"] for s in (first, third)) - min(s["x"] for s in (first, third)) > BIND_TOL:
                 res.bad(f"{tag}: transition",
                         "returning to slide 1 does not restore its position")
+            elif mid["distinct"] < 4:
+                res.bad(f"{tag}: transition",
+                        f"only {mid['distinct']} distinct frame(s) mid-flight — the scene "
+                        f"change is a cut, not a transition ({mid['sample']})")
             else:
                 res.ok(f"{tag}: transition",
-                       f"active scene settles at x=0 across a round trip "
-                       f"({n_slides} slides)")
+                       f"active scene settles at x=0 across a round trip, "
+                       f"{mid['distinct']} distinct frames while it plays")
 
 
 def main():

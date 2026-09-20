@@ -27,7 +27,7 @@ tests/motion_check.py       behaviour tests: reduced-motion completeness, phase 
 tests/linter_selftest.py    proves each rule still fires (fixture vs clean baseline)
 tests/fixtures/broken-deck.html    a deck that breaks every checkable rule on purpose
 examples/reference-3slides.html    a 3-slide deck that passes, used as the baseline
-motion/                     twelve motion recipes, grouped by what the motion explains
+motion/                     fifteen motion recipes, grouped by what the motion explains
 motion/README.md            the contract, the pattern index, and the source trail
 references/SOURCES.md       where every timing value and method came from
 references/runtime-contract.md     the `.deck-live` / `data-start` contract, in full
@@ -47,9 +47,11 @@ with its target, and fails if the coverage drops or the alignment drifts by
 more than one stage unit. The reference deck and the ring/pulse patterns
 measure 100% coverage and 0.00 drift at every size.
 
-**Motion that carries meaning.** Only `transform`, `opacity` and `clip-path`
-animate — `top`, `width`, `height`, `margin` trigger layout and paint, which is
-how a target moves out from under its own highlight. Duration and easing are
+**Motion that carries meaning.** Only `transform`, `opacity`, `filter` and
+`clip-path` animate — `top`, `width`, `height`, `margin` trigger layout and
+paint, which is how a target moves out from under its own highlight. This is
+also why the typewriter here does not animate `width`: the box is reserved and
+the glyphs fade in, so a Korean syllable is never clipped through its interior. Duration and easing are
 not invented here; they come from the published references (see
 `references/SOURCES.md`) and the recipes implement them verbatim.
 
@@ -66,16 +68,16 @@ not invented here; they come from the published references (see
 bash tools/verify.sh
 ```
 
-Current state: `reference-3slides.html` and all 12 patterns pass the linter
+Current state: `reference-3slides.html` and all 15 patterns pass the linter
 with 0 errors and 0 warnings; `linter_selftest.py` confirms the fixture still
 triggers 17 rule codes (9 errors) while the baseline stays clean;
-`motion_check.py` runs 106 behaviour checks, 0 failed.
+`motion_check.py` runs 134 behaviour checks, 0 failed.
 
 Requires Playwright (`pip install playwright && playwright install chromium`).
 
 ## The motion library
 
-`motion/patterns/index.html` is the gallery. Twelve recipes, grouped by what
+`motion/patterns/index.html` is the gallery. Fifteen recipes, grouped by what
 the motion *explains* rather than how it looks:
 
 | Group | Explains | Recipes |
@@ -87,6 +89,8 @@ the motion *explains* rather than how it looks:
 | SEQUENCE | this happens in these steps | `pat-steps` (reversible) |
 | CONNECTIVE | these two are related | `pat-path` |
 | SWAP | this replaced that | `pat-swap` |
+| TYPE | this text is being written | `pat-type` (per 음절) |
+| TRANSITION | this scene gave way to that one | `pat-wipe`, `pat-focus-pull` |
 
 Each pattern is a runnable page, documented with *use-when / do-not-use* notes
 at its recipe, and linted like any other slide. Start with
@@ -99,6 +103,8 @@ coordinates are stable and layout never animates on resize. Step phases are
 scoped to `.deck-live`, which the runtime only adds when motion is wanted — so
 a captured frame, a PDF export, or `prefers-reduced-motion` all show the same
 complete slide.
+
+A Korean translation lives in `README.ko.md`.
 
 ## License and provenance
 
