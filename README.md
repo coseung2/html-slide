@@ -75,6 +75,7 @@ triggers 17 rule codes (9 errors) while the baseline stays clean;
 `motion_check.py` runs 134 behaviour checks, 0 failed.
 
 Requires Playwright (`pip install playwright && playwright install chromium`).
+PPTX export also requires `python-pptx`; the exporter auto-detects an installed system Chrome/Chromium when available.
 
 ## The motion library
 
