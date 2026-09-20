@@ -33,6 +33,22 @@ Exit code 0 means no errors. Warnings do not block; errors do. Deliver a deck on
 
 A slide is not "done" because the markup looks right. It is done when the linter agrees.
 
+### Standard delivery export
+
+For a finished deck, do **not** hand-build PDF or PPTX. Run the exporter:
+
+```bash
+python tools/export_deck.py deck.html
+# optional destination
+python tools/export_deck.py deck.html --out dist/deck
+```
+
+The exporter is the standard delivery path. It runs the linter first, captures every accepted static final frame at **1920×1080**, then builds both **PDF** and **16:9 PPTX** from the exact same PNG frames. This keeps HTML/PDF/PPTX visually identical. It also writes `lint.json`, `manifest.json`, and `frames/slide-NNN.png`.
+
+Use `--skip-lint` only when the user explicitly wants an unverified emergency export. Normal delivery must stop on linter errors. PPTX is intentionally a full-frame static rendition; HTML remains the source for live motion and presenter controls.
+
+Runtime dependencies: Python Playwright + Chromium and `python-pptx`. The exporter uses an installed system Chrome/Chromium automatically when available.
+
 ### The linter is itself tested
 
 A rule that stops firing produces a clean report, and a clean report is indistinguishable from a passing deck. `tests/fixtures/broken-deck.html` is a deck that breaks every checkable rule on purpose, and `tests/linter_selftest.py` asserts each rule still fires while `examples/reference-3slides.html` stays clean. Silence from the linter is therefore always a decision, never an accident.
@@ -462,7 +478,7 @@ Avoid adding frameworks unless the interaction complexity justifies them.
 9. Check alignment at presentation size — with the linter, not by eye.
 10. Check that nothing important is cropped.
 11. Confirm the slide is understandable in a static frame before relying on animation.
-12. Run `tools/slide_lint.py`; fix errors; deliver at 0 errors.
+12. Run `python tools/export_deck.py deck.html`; fix any QA errors it reports, then deliver the HTML plus generated PDF/PPTX at 0 errors.
 
 ## 16. QA checklist
 
