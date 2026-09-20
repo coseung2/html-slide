@@ -43,8 +43,9 @@ assets/fonts/               Pretendard Variable (OFL) — 자체 호스팅, CDN 
 1개를 넘게 어긋나면 실패시킵니다. 기준 덱과 ring/pulse 패턴은 모든 크기에서
 100% 커버리지, 0.00 드리프트를 기록합니다.
 
-**의미를 나르는 모션.** `transform`, `opacity`, `filter`, `clip-path`만
-애니메이션합니다. `top`, `width`, `height`, `margin`은 레이아웃과 페인트를
+**의미를 나르는 모션.** 기본 애니메이션 속성은 `transform`, `opacity`입니다.
+`filter`, `clip-path`는 대상 기하를 움직이지 않으면서 장면 설명에 꼭 필요할 때만
+조건부로 사용합니다. `top`, `width`, `height`, `margin`은 레이아웃과 페인트를
 유발하고, 그것이 대상이 자기 강조 밑에서 빠져나가는 방식입니다. 여기 타이핑
 효과가 `width`를 애니메이션하지 않는 이유도 같습니다 — 박스를 미리 확보하고
 글자만 페이드인하므로, 한글 음절이 내부 획에서 잘리는 일이 없습니다. 길이·이징은

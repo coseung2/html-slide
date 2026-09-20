@@ -39,33 +39,44 @@
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
+html,body{min-height:100%}
 body{
   background:#0E0F12;            /* letterbox bars: never stretched, never cropped */
   color:var(--ink);
   font-family:'Pretendard Variable',system-ui,-apple-system,sans-serif;
   font-synthesis:none;
-  overflow:hidden;
+  overflow-x:hidden;
+  overflow-y:auto;
 }
 
-/* --- stage: one coordinate system, scaled as a whole --------------------- */
+/* --- static fallback: complete frames exist without the runtime ---------- */
 #stage{
-  position:absolute; top:0; left:0;
-  width:1920px; height:1080px;
+  position:relative;
+  width:1920px; height:auto;
   background:var(--paper);
-  transform-origin:top left;
-  overflow:hidden;
 }
-
 .slide{
-  position:absolute; inset:0;
+  position:relative;
+  width:1920px; height:1080px;
   padding:120px;                 /* > the 5% safe inset on every side */
-  opacity:0; visibility:hidden;
-  transition:opacity var(--d-scene) var(--ease-out);
   word-break:keep-all;           /* never split a Korean word to fit a box */
   line-height:1.65;
 }
-.slide.is-active{opacity:1;visibility:visible}
+
+/* --- live stage: one coordinate system, scaled as a whole ---------------- */
+.deck-ready body{height:100%;overflow:hidden}
+.deck-ready #stage{
+  position:absolute; top:0; left:0;
+  width:1920px; height:1080px;
+  transform-origin:top left;
+  overflow:hidden;
+}
+.deck-ready .slide{
+  position:absolute; inset:0;
+  opacity:0; visibility:hidden;
+  transition:opacity var(--d-scene) var(--ease-out);
+}
+.deck-ready .slide.is-active{opacity:1;visibility:visible}
 
 .scene{height:100%}
 .scene--split{

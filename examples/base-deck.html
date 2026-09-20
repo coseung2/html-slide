@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>HTML Slide</title>
+  <link rel="stylesheet" href="../motion/_base.css">
+  <link rel="stylesheet" href="../motion/deck-shell.css">
+</head>
+<body>
+  <main id="stage" data-stage>
+    <section class="slide" data-slide="0" data-start="0" data-title="첫 장">
+      <div class="scene scene--split">
+        <div class="copy" data-copy>
+          <h1 class="title">첫 장</h1>
+          <p class="body">한 슬라이드 · 한 핵심 메시지</p>
+        </div>
+        <div class="visual" data-visual>
+          <div class="surface">
+            <p class="label">EXAMPLE</p>
+            <p class="body">정적 프레임이 이미 완성 상태입니다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="1" data-start="0" data-title="단계가 있는 장">
+      <div class="scene scene--split">
+        <div class="copy" data-copy>
+          <h1 class="title">단계가 있는 장</h1>
+          <p class="body">모션은 완성 프레임에 도달한 과정을 설명합니다.</p>
+        </div>
+        <div class="visual" data-visual>
+          <div class="surface">
+            <p class="body" data-step="1">1단계</p>
+            <p class="body" data-step="2">2단계</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../motion/deck-motion.js"></script>
+  <script src="../motion/deck-shell.js"></script>
+</body>
+</html>

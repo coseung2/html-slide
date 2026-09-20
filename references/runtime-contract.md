@@ -1,5 +1,7 @@
 # Deck runtime contract (`.deck-live`)
 
+Acceptance constants (stage, viewport set, motion properties) live in `references/acceptance.md`.
+
 Class lesson from building a verified deck repo: step/phase CSS that hides content will break the static frame (PDF, screenshot, reduced-motion user, linter) unless every phase rule is gated on a live class.
 
 ## The contract

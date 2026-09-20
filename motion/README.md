@@ -9,8 +9,10 @@ the step/stage runtime is `deck-motion.js`.
 
 Three rules hold for every recipe:
 
-1. **Only `transform`, `opacity`, `filter`, and `clip-path` animate.**
-   `top/left/width/height/margin/padding` are never animated — that is the
+1. **Default to `transform` and `opacity` only.** `filter` and `clip-path` are
+   conditional compositor effects: use them only when the visual explanation
+   requires them, they do not move the target box, and the static final frame
+   remains complete. `top/left/width/height/margin/padding` are never animated — that is the
    mechanism by which an emphasis drifts off its target. This is why there is
    no `width: 0 → 100%` typewriter anywhere in this library: the box is
    reserved and the glyphs fade.
