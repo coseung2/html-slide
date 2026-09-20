@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-type — 문장이 스스로 쓰인다 (음절 단위)</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* demo layout only — no font sizes, no motion values */
+  .quote{
+    width:880px;
+    display:flex; flex-direction:column; gap:26px;
+    padding:56px 60px;
+    background:var(--card); border:1px solid var(--line); border-radius:18px;
+  }
+  .quote .who{display:flex;align-items:center;gap:16px}
+  .rule{display:block;width:56px;height:3px;background:var(--accent);border-radius:2px}
+  /* The typed sentence is a real .body line; pat-type only writes it in. */
+  .typed{font-size:32px;line-height:1.7;display:block}
+</style>
+</head>
+<body>
+<div id="stage" data-stage>
+  <section class="slide is-active" data-slide="type">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">쓰이는 문장</h1>
+        <p class="body">한 글자씩, 음절 단위로</p>
+        <p class="body">정지 화면은 완성된 문장</p>
+      </div>
+
+      <div class="visual" data-visual>
+        <div class="quote">
+          <span class="rule"></span>
+          <span class="body typed" data-type>우리는 이미 답을 알고 있었다</span>
+          <div class="who">
+            <span class="label">제품 원칙 · 1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>

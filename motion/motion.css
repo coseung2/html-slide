@@ -137,8 +137,11 @@
 }
 
 /* --- pat-line-step: lines wipe in one complete line at a time -------------
-   Line-level, not character-level: a half-clipped sentence is not readable at
-   projection distance, and a typewriter implies the audience is waiting.
+   The default for BODY COPY. Line-level, not character-level: a reader can
+   read faster than an animation writes, so for ordinary prose a typewriter is
+   a cost with no payoff — the sentence is the message, not the writing of it.
+   (When the writing of it IS the message, that is `pat-type` below, and it
+   types per 음절.)
    The box never changes size, so nothing below it moves. */
 .pat-line-step > *{
   clip-path:inset(0);
@@ -299,3 +302,142 @@
    advance swaps to the accepted one. */
 .deck-live .deck-step-0 .pat-swap > span[data-phase="1"]{opacity:1}
 .deck-live .deck-step-0 .pat-swap > span[data-phase="2"]{opacity:0}
+
+/* ===========================================================================
+   TYPE — "this text is being written"
+
+   The typewriter is the one effect that is a liability by default, so it is
+   fenced. It types per 음절, never per code point, and it never animates width.
+   =========================================================================== */
+
+/* --- pat-type: text writes itself in, per syllable ------------------------
+   Why not the classic `width: 0 → 100%` + `steps()`:
+     1. It clips at a pixel boundary; a Korean syllable has interior strokes,
+        so the cursor slices 자모 in half — visibly wrong, not merely plain.
+     2. `width` is a layout property. Animating it reflows the line on every
+        frame, which is the exact defect the linter rejects everywhere else.
+     3. The text would be unreadable to a screen reader and absent from a
+        static capture until the animation ends.
+
+   So each 음절 is its own inline-block span and only opacity changes. The spans
+   are real text in the DOM, laid out once, so a static capture shows the
+   finished sentence and one clean reflow is impossible.
+
+   Use when: the sentence IS the moment — a quote, a definition, a one-line
+   payoff. The audience is meant to read at the writing pace.
+   Do not use: on body copy or a list. A reader outpaces the animation, so for
+   anything they could simply read, `pat-line-step` is strictly better.
+   Budget: ~45ms per 음절 (--d-type), so keep it under ~20 syllables. Longer
+   than that and the room is waiting for the animation, not reading.
+   Markup: `<span class="pat-type" data-type-delay="0">한 글자씩</span>` */
+.pat-type > span{
+  display:inline-block;
+  white-space:pre;                 /* spaces are spans too; keep them */
+  animation:pat-type-in var(--d-ui) var(--ease-out) both;
+  animation-delay:calc(var(--i, 0) * var(--d-type));
+}
+@keyframes pat-type-in{
+  from{opacity:0; transform:translateY(2px)}
+  to  {opacity:1; transform:translateY(0)}
+}
+/* The caret is the only part allowed to look like typing, and it exists only
+   while the deck is live: a static frame must show a finished sentence, not a
+   cursor waiting for input it will never get. */
+.pat-type::after{
+  content:'';
+  display:inline-block; width:3px; height:1em;
+  margin-left:.08em; vertical-align:-.12em;
+  background:var(--accent);
+  opacity:0;
+}
+.deck-live .pat-type.is-typing::after{
+  animation:pat-caret 900ms steps(2, jump-none) infinite;
+}
+@keyframes pat-caret{from{opacity:1} to{opacity:0}}
+/* Reduced motion: no caret and no arrival — the sentence is simply there. */
+@media (prefers-reduced-motion: reduce){
+  .deck-live .pat-type.is-typing::after{animation:none;opacity:0}
+}
+
+/* ===========================================================================
+   TRANSITION — "this scene gave way to that scene"
+
+   A slide-to-slide move, as opposed to a within-slide change. Opt-in per
+   deck: transitions are not applied by default, because a deck that is read
+   straight through does not need a curtain between every page.
+
+   What they may animate: transform, opacity, filter (clip-path only where the
+   recipe names it). Never width/height/top/left/margin — a scene transition
+   that animates layout makes the whole stage reflow while it plays, and the
+   stage is where every bound emphasis is anchored.
+   =========================================================================== */
+
+/* --- pat-wipe: the outgoing scene is pushed off by the incoming one --------
+   Both scenes are stacked in the same box and only translated, so the frame
+   never changes size. Easing is ease-in-out rather than ease-out: this object
+   is already on screen and moving, not arriving.
+   Choose the axis once and keep it: a deck that wipes left on slide 2 and up
+   on slide 3 has no grammar, just variety.
+   Markup: the two slides are siblings inside one `[data-transition="wipe"]`
+   stage; `.is-active` is the incoming one. */
+[data-transition="wipe"] [data-slide]{
+  opacity:1;
+  transform:translateX(100%);
+  transition:transform var(--d-trans) var(--ease-in-out),
+             opacity   var(--d-trans) var(--ease-in-out);
+  visibility:hidden;
+}
+[data-transition="wipe"] [data-slide].is-active{
+  transform:translateX(0);
+  visibility:visible;
+}
+/* the scene that just left waits off-stage rather than jumping back */
+[data-transition="wipe"] [data-slide].is-leaving{
+  transform:translateX(-100%);
+  visibility:visible;
+}
+/* Going back, the pair swaps sides: the outgoing scene exits right and the
+   incoming one enters from the left. Without this a deck runs forward and
+   backward with the same motion, which reads as a bug. */
+[data-transition="wipe"].is-back [data-slide]{transform:translateX(-100%)}
+[data-transition="wipe"].is-back [data-slide].is-active{transform:translateX(0)}
+[data-transition="wipe"].is-back [data-slide].is-leaving{
+  transform:translateX(100%);
+  visibility:visible;
+}
+
+/* --- pat-match-cut: one object continues across the cut --------------------
+   For "the same thing, now at a different scale/place". The object is not
+   re-drawn for the new scene: it is the same element, moved with FLIP, so it
+   is provably the same thing. Pair with `window.deckFlip` (see
+   transform-flip-move.html).
+   The dimming layer is what sells the cut; blur would fake a focal change the
+   content does not actually have. */
+[data-transition="cut"] [data-slide]{
+  opacity:0;
+  transition:opacity var(--d-trans) var(--ease-out);
+}
+[data-transition="cut"] [data-slide].is-active{opacity:1}
+[data-transition="cut"]::after{          /* the curtain, between the two */
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:var(--ink); opacity:0;
+  transition:opacity calc(var(--d-trans) / 2) var(--ease-out);
+}
+[data-transition="cut"].is-cutting::after{opacity:.06}
+
+/* --- pat-focus-pull: the next scene resolves out of blur -------------------
+   Blur does the work, so nothing moves: the frame stays put and the audience's
+   attention refocuses. This is the quietest transition of the three, and the
+   right one when the two slides are the same subject at two levels of detail.
+   Blur is expensive to composite, so it runs once per scene change and never
+   on a large area that also carries a bound emphasis. */
+[data-transition="blur"] [data-slide]{
+  opacity:0;
+  filter:blur(10px);
+  transition:opacity var(--d-blur) var(--ease-out),
+             filter   var(--d-blur) var(--ease-out);
+  visibility:hidden;
+}
+[data-transition="blur"] [data-slide].is-active{
+  opacity:1; filter:blur(0); visibility:visible;
+}

@@ -107,6 +107,91 @@ PROBE_LAYOUT_STILL = r"""() => new Promise(resolve => {
   requestAnimationFrame(tick);
 })"""
 
+# A typewriter is only safe if it is one laid-out box that fades. So: the
+# sentence must be split into one span per glyph, the box must be reserved
+# BEFORE the animation runs, and the text must survive for a reader that never
+# sees the motion.
+#
+# The width check is the important one. The classic `width:0 -> 100%` +
+# `steps()` typewriter puts the animation on the CONTAINER, so inspecting only
+# the glyph spans misses it entirely — that was a real hole in an earlier
+# version of this probe. So: sample the container's width while the effect
+# plays and require it to stay put.
+PROBE_TYPE = r"""() => new Promise(resolve => {
+  const el = document.querySelector('[data-type]');
+  if (!el) return resolve({ skipped: 'no [data-type] in this pattern' });
+  const spans = el.querySelectorAll(':scope > span');
+  const whole = (el.getAttribute('aria-label') || '').replace(/\s+/g, '');
+  const joined = Array.prototype.map.call(spans, s => s.textContent)
+                   .join('').replace(/\s+/g, '');
+  const box = el.getBoundingClientRect();
+
+  // Any element in the chain that declares a layout property as animated: the
+  // container and every span. `width`, `left`, `margin`, `padding`, `top`.
+  const LAYOUT_PROP = /(^|,|\s)(width|height|left|top|right|bottom|margin|padding)(\s|,|$)/;
+  const declaresLayout = (node) => {
+    const cs = getComputedStyle(node);
+    const names = (cs.animationName || '') + ',' + (cs.transitionProperty || '');
+    return cs.animationName !== 'none' && LAYOUT_PROP.test(cs.animationName) ||
+           LAYOUT_PROP.test(cs.transitionProperty || '');
+  };
+
+  const widths = [];
+  const t0 = Date.now();
+  const tick = () => {
+    widths.push(el.getBoundingClientRect().width);
+    // ~700ms covers the whole typed sequence at any sane --d-type
+    if (Date.now() - t0 < 700) requestAnimationFrame(tick);
+    else resolve({
+      glyphs: Array.from(el.getAttribute('aria-label') || '').length,
+      spans: spans.length,
+      zeroWidth: Array.prototype.filter.call(spans,
+        s => s.getBoundingClientRect().width < 1).length,
+      textKept: whole.length > 0 && whole === joined,
+      reserved: Math.max(...widths) - Math.min(...widths) <= 1.5,
+      widthSpread: Math.round((Math.max(...widths) - Math.min(...widths)) * 10) / 10,
+      animatesLayout: declaresLayout(el) ||
+        Array.prototype.some.call(spans, declaresLayout)
+    });
+  };
+  requestAnimationFrame(tick);
+})"""
+
+# The sentence must be whole again once the animation is over: a typewriter that
+# leaves the last glyph hidden is a slide that never says its line.
+PROBE_TYPE_END = r"""() => new Promise(resolve => {
+  const el = document.querySelector('[data-type]');
+  if (!el) return resolve({ skipped: 'no [data-type]' });
+  const spans = el.querySelectorAll(':scope > span');
+  const hidden = () => Array.prototype.filter.call(spans,
+    s => parseFloat(getComputedStyle(s).opacity) < 0.95).length;
+  const t0 = Date.now();
+  const tick = () => {
+    if (hidden() === 0 || Date.now() - t0 > 4000) {
+      resolve({ remaining: hidden(), waited: Date.now() - t0 });
+    } else requestAnimationFrame(tick);
+  };
+  tick();
+})"""
+
+
+# Where the active scene actually is, in stage units. A transition must leave
+# it at rest (its natural place inside the stage), not parked off to one side.
+PROBE_ACTIVE = r"""() => {
+  const s = document.querySelector('[data-slide].is-active');
+  if (!s) return null;
+  const r = s.getBoundingClientRect();
+  const stage = (document.querySelector('[data-stage]') || document.body)
+                  .getBoundingClientRect();
+  return {
+    x: Math.round((r.left - stage.left) * 100) / 100,
+    y: Math.round((r.top - stage.top) * 100) / 100,
+    // settled = inside its stage, allowing for the subpixel of a re-fit
+    offscreen: r.left - stage.left < -1.5 || r.top - stage.top < -1.5 ||
+               r.right > stage.right + 1.5 || r.bottom > stage.bottom + 1.5
+  };
+}"""
+
 
 # A hidden [data-phase] element is superseded content when a visible
 # [data-phase] sibling in the same slot stands in for it (the old value in a
@@ -305,6 +390,86 @@ def check_pattern(page, path, res):
             res.bad(f"{tag}: still", f"target box moved {spread:.1f}px during its effect")
         else:
             res.ok(f"{tag}: still", f"target box stable ({spread:.2f}px)")
+
+    # ---- typed: a typewriter that is safe to project ----------------------
+    typed = page.evaluate(PROBE_TYPE)
+    if typed.get("skipped"):
+        pass
+    else:
+        # one span per glyph: a partial split silently renders the wrong text
+        if typed["spans"] != typed["glyphs"]:
+            res.bad(f"{tag}: typed",
+                    f"{typed['spans']} spans for {typed['glyphs']} glyphs")
+        elif not typed["textKept"]:
+            res.bad(f"{tag}: typed", "the readable sentence did not survive the split")
+        elif typed["zeroWidth"]:
+            res.bad(f"{tag}: typed", f"{typed['zeroWidth']} glyph spans collapsed to 0 width")
+        elif typed["animatesLayout"]:
+            res.bad(f"{tag}: typed",
+                    "an animated layout property is in the chain (width/left/…) — "
+                    "that reflows the line on every frame")
+        elif not typed["reserved"]:
+            res.bad(f"{tag}: typed",
+                    f"the text box resized by {typed['widthSpread']}px while typing — "
+                    f"the box must be reserved before the animation runs")
+        else:
+            res.ok(f"{tag}: typed",
+                   f"{typed['glyphs']} glyphs, one span each, box reserved "
+                   f"(±{typed['widthSpread']}px)")
+
+        # A fresh load: PROBE_TYPE above spent ~700ms watching the animation,
+        # so by now the sentence is long finished and this check would pass
+        # trivially. Reload so there is something to wait for.
+        page.goto(path.as_uri(), wait_until="load")
+        page.evaluate("() => document.fonts.ready")
+        end = page.evaluate(PROBE_TYPE_END)
+        if end.get("skipped"):
+            pass
+        elif end["remaining"]:
+            res.bad(f"{tag}: typed end",
+                    f"{end['remaining']} glyphs still hidden after {end['waited']}ms")
+        elif end["waited"] < 30:
+            res.bad(f"{tag}: typed end",
+                    f"every glyph was already visible at +{end['waited']}ms — "
+                    f"the sequence is not actually being driven")
+        else:
+            res.ok(f"{tag}: typed end",
+                   f"whole sentence after {end['waited']}ms of typing")
+
+    # ---- transition: the stage returns to rest between scenes --------------
+    # A wipe that never resets leaves slides parked off-stage, so the next
+    # render starts from a moved box. Walk the deck twice and require the
+    # stage to be back at rest on the second arrival.
+    has_trans = page.evaluate(
+        "() => !!(document.querySelector('[data-transition]'))")
+    if not has_trans:
+        pass
+    else:
+        n_slides = page.evaluate("() => document.querySelectorAll('[data-slide]').length")
+        if n_slides < 2:
+            res.bad(f"{tag}: transition", "declares a transition on a one-slide deck")
+        else:
+            page.evaluate("() => window.__deckGoto(0)")
+            page.wait_for_timeout(700)
+            first = page.evaluate(PROBE_ACTIVE)
+            page.evaluate("() => window.__deckGoto(1)")
+            page.wait_for_timeout(900)
+            second = page.evaluate(PROBE_ACTIVE)
+            page.evaluate("() => window.__deckGoto(0)")
+            page.wait_for_timeout(900)
+            third = page.evaluate(PROBE_ACTIVE)
+            if None in (first, second, third):
+                res.bad(f"{tag}: transition", "active slide is not measurable")
+            elif any(s["offscreen"] for s in (first, second, third)):
+                res.bad(f"{tag}: transition",
+                        "the active scene is not settled inside the stage after the transition")
+            elif max(s["x"] for s in (first, third)) - min(s["x"] for s in (first, third)) > BIND_TOL:
+                res.bad(f"{tag}: transition",
+                        "returning to slide 1 does not restore its position")
+            else:
+                res.ok(f"{tag}: transition",
+                       f"active scene settles at x=0 across a round trip "
+                       f"({n_slides} slides)")
 
 
 def main():

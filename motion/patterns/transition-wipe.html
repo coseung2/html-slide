@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-wipe — 장면이 밀려 나가고 다음 장면이 들어온다</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* The stage owns the transition; each slide is a scene inside it. All slides
+     are absolutely positioned in the same box, so nothing changes size. */
+  [data-transition="wipe"] [data-slide]{
+    position:absolute; inset:0;
+  }
+  .panels{display:flex;flex-direction:column;gap:22px;width:640px}
+  .panel{
+    display:flex;align-items:center;justify-content:space-between;gap:24px;
+    padding:30px 34px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+  }
+  .kicker{
+    font-size:24px;font-weight:600;color:var(--accent);
+  }
+</style>
+</head>
+<body>
+<div id="stage" data-stage data-transition="wipe">
+  <section class="slide is-active" data-slide="wipe-1">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">밀려 나가는 장면</h1>
+        <p class="body">두 장면이 같은 박스에 겹쳐 있다</p>
+        <span class="kicker">1 / 2</span>
+      </div>
+      <div class="visual" data-visual>
+        <div class="panels">
+          <div class="panel"><span class="label">진입</span><span class="label num">+0.8%</span></div>
+          <div class="panel"><span class="label">유지</span><span class="label num">62%</span></div>
+          <div class="panel"><span class="label">이탈</span><span class="label num">-1.4%</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-slide="wipe-2">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">들어오는 장면</h1>
+        <p class="body">앞으로 가면 왼쪽에서</p>
+        <span class="kicker">2 / 2</span>
+      </div>
+      <div class="visual" data-visual>
+        <div class="panels">
+          <div class="panel"><span class="label">오늘</span><span class="label num">1,240</span></div>
+          <div class="panel"><span class="label">지난주</span><span class="label num">1,118</span></div>
+          <div class="panel"><span class="label">증감</span><span class="label num">+10.9%</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>

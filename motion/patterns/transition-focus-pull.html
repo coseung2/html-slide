@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pat-focus-pull — 다음 장면이 초점이 맞으며 나타난다</title>
+<link rel="stylesheet" href="../_base.css">
+<link rel="stylesheet" href="../motion.css">
+<style>
+  /* No translation at all: the frame stays where it is and blur resolves. */
+  [data-transition="blur"] [data-slide]{
+    position:absolute; inset:0;
+  }
+  .rows{display:flex;flex-direction:column;gap:24px;width:660px}
+  .metric{
+    display:flex;align-items:baseline;justify-content:space-between;gap:24px;
+    padding:30px 34px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+  }
+  .big{
+    font-size:76px;font-weight:700;line-height:1.1;
+    font-variant-numeric:tabular-nums;
+  }
+</style>
+</head>
+<body>
+<div id="stage" data-stage data-transition="blur">
+  <section class="slide is-active" data-slide="blur-1">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">전체에서</h1>
+        <p class="body">같은 대상, 다른 배율</p>
+        <p class="body">아무것도 움직이지 않는다</p>
+      </div>
+      <div class="visual" data-visual>
+        <div class="rows">
+          <div class="metric"><span class="label">전체 응답</span><span class="label num">4,820</span></div>
+          <div class="metric"><span class="label">정상</span><span class="label num">4,681</span></div>
+          <div class="metric"><span class="label">지연</span><span class="label num">139</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-slide="blur-2">
+    <div class="scene scene--split">
+      <div class="copy" data-copy>
+        <h1 class="title">지연만 보면</h1>
+        <p class="body">초점이 맞으며 다음 장면</p>
+      </div>
+      <div class="visual" data-visual>
+        <div class="rows">
+          <div class="metric"><span class="label">지연 응답</span><span class="big num">139</span></div>
+          <div class="metric"><span class="label">전체 대비</span><span class="label num">2.9%</span></div>
+          <div class="metric"><span class="label">지난주</span><span class="label num">211</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../deck-motion.js"></script>
+</body>
+</html>

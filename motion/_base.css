@@ -32,6 +32,9 @@
   --d-ui:220ms;                 /* small UI state 150-250ms */
   --d-step:300ms;               /* one explanatory step */
   --d-scene:520ms;              /* slide-level change */
+  --d-trans:560ms;              /* slide-to-slide transition (opt-in) */
+  --d-blur:640ms;               /* defocus transition — it reads as heavier */
+  --d-type:45ms;                /* per character, when text types itself in */
   --stagger:50ms;               /* 30-80ms between group members */
 }
 

@@ -509,9 +509,11 @@ Before delivering a slide or deck, verify all of the following. The column on th
 
 ### Behaviour (only a live browser can run these)
 
-`tests/motion_check.py` drives every pattern in `motion/patterns/`: **complete** (nothing hides under reduced motion), **presenting** / **reversible** (opens on `data-start`, one phase per advance, Back undoes one), **settles** (last phase restores the full frame), **bound** (highlight covers ≥85% of its target at three viewports), **still** (the target does not move while its effect plays).
+`tests/motion_check.py` drives every pattern in `motion/patterns/`: **complete** (nothing hides under reduced motion), **presenting** / **reversible** (opens on `data-start`, one phase per advance, Back undoes one), **settles** (last phase restores the full frame), **bound** (highlight covers ≥85% of its target at three viewports), **still** (the target does not move while its effect plays), **typed** (one span per glyph, reserved box, no animated layout property in the chain), **transition** (the active scene settles at rest after a round trip).
 
-`motion/patterns/index.html` lists all twelve; open it in a browser to see each one move.
+`motion/patterns/index.html` lists all fifteen; open it in a browser to see each one move.
+
+The motion library is grouped by **what the motion explains**, never by how it looks: EMPHASIS (`pat-ring`, `pat-pulse`, `pat-recede`), REVEAL (`pat-group`, `pat-line-step`), TRANSFORM (`pat-state`, FLIP), QUANTITY (`pat-roll`, `pat-bar`), SEQUENCE (`pat-steps`), CONNECTIVE (`pat-path`), SWAP (`pat-swap`), TYPE (`pat-type`), TRANSITION (`pat-wipe`, `pat-focus-pull`). Pick the group from the sentence you are drawing, then the recipe from the group; each recipe carries its own *use-when / do-not-use* comment.
 
 ## 17. Pitfalls
 
@@ -525,6 +527,10 @@ These are failures that were made and fixed while building this repo. Each one p
 - **Follow local stylesheets.** A linter that only scans inline `<style>` silently checks nothing when the deck links its CSS. Resolve local `<link rel=stylesheet>` targets one hop; skip remote ones.
 - **Measure the frame the user exports.** Run the browser pass with transitions and animations disabled and step classes stripped. Anything existing only mid-animation disappears — which is exactly what a PDF or screenshot shows.
 - **Compare ratios across viewports, not pixels.** Stage scale shrinks absolute gaps on small viewports; binding drift must be judged on coverage ratio and scale-normalised offsets.
+- **A typewriter that animates `width` is a layout animation, and it clips Korean mid-syllable.** `width: 0 → 100%` with `steps()` is the canonical implementation and it is wrong twice: `width` reflows the line every frame, and the clip lands on a pixel boundary, so a 음절's interior strokes get sliced. Reserve the box and change opacity per glyph instead.
+- **Probe the whole chain, not the element you were thinking of.** The first version of the typewriter check inspected the glyph spans only, so the classic container-level `width` animation passed it cleanly — the check was green and the deck was broken. When a check guards a mechanism, widen it to every node that could implement the mechanism (here: the container *and* its children), and prove it fails on a deliberately broken fixture before trusting it.
+- **A check that runs after the thing it measures is not a check.** The "sentence is whole at the end" probe first ran ~700ms after load, by which time the animation was long over, so it passed at 0ms on a deck that never typed anything. Reload before measuring, and fail on an implausibly short duration as well as on a missing result.
+- **A transition is a pair, not a state.** Give the leaving scene its own class and clear it on the next render; do not leave every non-active slide translated, or the next render starts from a moved box. Direction matters too — forwards and backwards must not play the same motion, or Back reads as a bug.
 - **Do not hand-place a highlight.** `left: 412px; top: 268px` looks correct in a screenshot and breaks on the next resize. Slide-level coordinates for emphasis are an error, and the linter fails them. Use pseudo-elements, child overlays, or a target-derived clone.
 
 ## 18. Reference implementation

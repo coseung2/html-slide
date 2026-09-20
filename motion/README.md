@@ -1,6 +1,6 @@
 # Motion library — `motion/`
 
-Twelve motion recipes for HTML slide decks, grouped by **what the motion
+Fifteen motion recipes for HTML slide decks, grouped by **what the motion
 explains** — not by how it looks. Every recipe is a self-contained demo page
 in `patterns/`; the shared library is `motion.css` on top of `_base.css`, and
 the step/stage runtime is `deck-motion.js`.
@@ -9,9 +9,11 @@ the step/stage runtime is `deck-motion.js`.
 
 Three rules hold for every recipe:
 
-1. **Only `transform`, `opacity`, and `clip-path` animate.** `top/left/width/
-   height/margin/padding` are never animated — that is the mechanism by which
-   an emphasis drifts off its target.
+1. **Only `transform`, `opacity`, `filter`, and `clip-path` animate.**
+   `top/left/width/height/margin/padding` are never animated — that is the
+   mechanism by which an emphasis drifts off its target. This is why there is
+   no `width: 0 → 100%` typewriter anywhere in this library: the box is
+   reserved and the glyphs fade.
 2. **The end state is the static state.** Declared in plain CSS, no animation
    required. A captured frame, a PDF, or `prefers-reduced-motion` shows the
    same complete frame. Step phases follow the `.deck-live` contract: phase
@@ -36,6 +38,9 @@ Three rules hold for every recipe:
 | SEQUENCE | `pat-steps` | `sequence-reversible-steps.html` | phases, reversible one at a time |
 | CONNECTIVE | `pat-path` | `connective-path-draw.html` | these two are related |
 | SWAP | `pat-swap` | `swap-text-in-place.html` | this replaced that, in place |
+| TYPE | `pat-type` | `type-syllable-write.html` | the text is being written, per 음절 |
+| TRANSITION | `pat-wipe` | `transition-wipe.html` | this scene gave way to that one |
+| TRANSITION | `pat-focus-pull` | `transition-focus-pull.html` | same subject, focus resolved |
 
 Standard references: `patterns/index.html` is an annotated gallery — open it in
 the same browser window and click through. Each pattern is also documented with
@@ -53,9 +58,9 @@ Two layers, both runnable:
 ~/.venvs/pw/bin/python ../../tests/motion_check.py
 ```
 
-All 12 patterns pass the linter at 0 errors / 0 warnings, and `motion_check`
-drives 106 behaviour checks across them (complete / presenting / reversible /
-settles / bound / still).
+All 15 patterns pass the linter at 0 errors / 0 warnings, and `motion_check`
+drives 134 behaviour checks across them (complete / presenting / reversible /
+settles / bound / still / typed / transition).
 
 ## Where the numbers come from
 
@@ -80,7 +85,13 @@ Nothing here is invented timing. The budgets implemented by every recipe —
    analysis (transitions retarget mid-flight; keyframes restart — which is why
    rapid triggers use transitions, and why Back is a state machine, not
    a rewind).
-3. **The FLIP method** (Paul Lewis; Josh Comeau, CSS-Tricks, reactperf) — First,
+3. **Typewriter practice** (CodePen/steps() lineage, MDN `steps()`, and the
+   obfuscated-text article family) — the canonical implementation animates
+   `width` and is therefore rejected here. What survives the rejection is the
+   *per-glyph reveal at a metered pace*: `pat-type` keeps the sentence as real
+   laid-out text and changes only opacity. Per-glyph is also why it splits on
+   code points, not UTF-16 units.
+4. **The FLIP method** (Paul Lewis; Josh Comeau, CSS-Tricks, reactperf) — First,
    Last, Invert, Play. The element *lives* at its new layout position from the
    start and only the transform delta is animated (translate before scale).
    `deck-motion.js` implements this in `flip()`; the View Transitions API is

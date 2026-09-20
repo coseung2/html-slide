@@ -57,6 +57,33 @@
     return { dx: dx, dy: dy, sx: sx, sy: sy };
   }
 
+  /* ------------------------------------------------------------- typewriter --
+     Split a `[data-type]` element into per-음절 spans. Doing this by hand in the
+     markup is where it goes wrong: it is 40 wrapper elements nobody reviews,
+     and the readable string has to survive the split for screen readers and
+     static capture.
+
+     So the text is read from the element's own textContent, split on code
+     points (Array.from, so an emoji or a rare glyph is not cut in half), and
+     written back as spans. The element keeps its complete text in the
+     accessibility tree via aria-label. */
+  function typeSplit() {
+    document.querySelectorAll('[data-type]').forEach(el => {
+      if (el.dataset.typed) return;                 // idempotent across reflows
+      const text = el.textContent;
+      el.textContent = '';
+      el.setAttribute('aria-label', text);          // the sentence, whole
+      Array.from(text).forEach((ch, i) => {          // code points, not code units
+        const s = document.createElement('span');
+        s.textContent = ch;
+        s.style.setProperty('--i', i);
+        el.appendChild(s);
+      });
+      el.classList.add('pat-type', 'is-typing');
+      el.dataset.typed = '1';
+    });
+  }
+
   /* ---------------------------------------------------------------- steps --
      Reversibility is a state machine, not a rewind: back walks down to the
      slide's own start phase, then to the previous slide. A resize re-fits and
@@ -67,6 +94,7 @@
     this.slides = Array.prototype.slice.call(root.querySelectorAll('[data-slide]'));
     this.reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.slide = 0;
+    this.prevSlide = null;          // no transition on the first render
     this.phase = this.start(0);
     if (!this.reduce) document.documentElement.classList.add(LIVE);
     addEventListener('resize', () => this.reflow());
@@ -100,13 +128,37 @@
   };
 
   Deck.prototype.render = function () {
+    const from = this.prevSlide;                       // the scene we came from
+    const dir = (from === null || from === undefined || from === this.slide)
+      ? 0 : Math.sign(this.slide - from);
     this.slides.forEach((s, n) => {
-      s.classList.toggle('is-active', n === this.slide);
+      const active = n === this.slide;
+      // Only the scene we just left is "leaving". A transition is a pair, not a
+      // pile: any other slide is simply off-stage.
+      const leaving = !active && n === from;
+      s.classList.toggle('is-active', active);
+      s.classList.toggle('is-leaving', leaving);
       const max = Math.max(this.phases(n), 1);
       for (let p = 0; p <= max; p++) {
-        s.classList.toggle('deck-step-' + p, n === this.slide && this.phase === p);
+        s.classList.toggle('deck-step-' + p, active && this.phase === p);
       }
     });
+    this.prevSlide = this.slide;
+
+    if (!this.stage) return;
+    // Direction decides which side each scene enters and exits from, so a wipe
+    // means the same thing every time it plays.
+    if (dir) this.stage.classList.toggle('is-back', dir < 0);
+
+    // The cut curtain is a transition, not a state: it flashes between the two
+    // scenes and clears, so it is never on screen when nobody is moving.
+    if (dir && this.stage.hasAttribute('data-transition')) {
+      this.stage.classList.add('is-cutting');
+      clearTimeout(this._cut);
+      const ms = parseFloat(
+        getComputedStyle(this.stage).getPropertyValue('--d-trans')) || 560;
+      this._cut = setTimeout(() => this.stage.classList.remove('is-cutting'), ms / 2);
+    }
   };
 
   Deck.prototype.next = function () {
@@ -147,6 +199,7 @@
      under prefers-reduced-motion, where this file adds no phase state at all:
      it sees the complete frame. */
   function boot() {
+    typeSplit();
     const deck = new Deck(document.body);
     global.deck = deck;
     global.__deckGoto = n => deck.goto(n);
