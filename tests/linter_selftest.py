@@ -40,6 +40,7 @@ def codes(out: str) -> set[str]:
 # it matters. Removing the offending construct from the fixture must break this.
 EXPECTED = {
     "layout-animation":   "`transition: top` is the mechanism by which emphasis drifts",
+    "transition-all":      "`transition: all` silently includes layout properties",
     "scale-zero":         "nothing in the real world appears from nothing",
     "hardcoded-highlight": "a highlight drawn at slide coordinates cannot follow its target",
     "unbound-highlight":  "emphasis must point at a target that exists",

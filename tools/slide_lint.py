@@ -108,7 +108,7 @@ DRIFT_TOL = 1.5            # stage units
 CROWD = 0.40               # ≥40% overlap of the smaller box = overlap
 BOTTOM_BAND = 0.06         # §1 no bottom captions
 
-VIEWPORTS = [(1920, 1080), (1280, 720), (1440, 900)]
+VIEWPORTS = [(1920, 1080), (1280, 720), (1024, 768)]
 
 LAYOUT_PROPS = ("top", "left", "right", "bottom", "width", "height",
                 "margin", "padding", "inset")
@@ -177,6 +177,13 @@ def static_checks(path: Path, rep: Report) -> None:
     # --- layout-triggering animation (the root cause of drifting emphasis) ---
     for m in re.finditer(r"transition(?:-property)?\s*:\s*([^;{}]+)", css, re.I):
         decl = m.group(1)
+        if re.search(r"(^|[\s,])all($|[\s,])", decl, re.I) and not _motion_ok_near(m.group(0)):
+            rep.add("transition-all", ERROR,
+                    "transition: all can animate layout properties implicitly",
+                    "list only compositor-safe properties explicitly; normally "
+                    "transform and opacity (§8)",
+                    selector=f"transition: {decl.strip()[:60]}")
+            continue
         hit = [p for p in LAYOUT_PROPS if re.search(rf"(^|[\s,]){p}($|[\s,])", decl)]
         if hit and not _motion_ok_near(m.group(0)):
             rep.add("layout-animation", ERROR,
