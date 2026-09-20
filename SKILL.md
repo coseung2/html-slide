@@ -270,7 +270,8 @@ Deck timing is not invented here. Press feedback (100–160ms), small UI state
 responding, `ease-in-out` for moving on screen, never `ease-in` on UI), and
 `transform`/`opacity`-only animation are the standing consensus across the
 major web-animation references. The recipes implement those values verbatim —
-see `motion/README.md` for the source trail. Disagreeing with a number means
+see `motion/README.md` for the source trail and `references/motion-timing.md`
+for the full table with per-value provenance. Disagreeing with a number means
 disagreeing with the source, not the recipe.
 
 ## 9. Target-bound effects — mandatory
@@ -536,4 +537,4 @@ Run the linter on it to see what a passing deck looks like:
 python tools/slide_lint.py examples/reference-3slides.html --shots out/
 ```
 
-`tools/` also contains an earlier standalone geometry checker (`geometry_qa_stage1.py`) that `slide_lint.py` superseded; it is kept because its trap list in `references/linter-traps.md` documents how each check was made reliable.
+`tools/` also contains an earlier standalone geometry checker (`geometry_qa_stage1.py`) that `slide_lint.py` superseded. Its probe — the anchoring proof in `references/geometry-qa.md` — is what established that target-derived placement holds, so it is kept as the readable reference for the technique.

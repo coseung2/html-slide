@@ -31,7 +31,8 @@ motion/                     twelve motion recipes, grouped by what the motion ex
 motion/README.md            the contract, the pattern index, and the source trail
 references/SOURCES.md       where every timing value and method came from
 references/runtime-contract.md     the `.deck-live` / `data-start` contract, in full
-references/linter-traps.md  the false positives each check had to survive
+references/geometry-qa.md   the anchoring proof, the static checks, and the measurement traps
+references/motion-timing.md       every timing value with its source
 references/ecosystem-survey.md     the adjacent skill repos, read rather than summarised
 assets/fonts/               Pretendard Variable (OFL) — self-hosted, no CDN call
 ```

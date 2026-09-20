@@ -39,4 +39,4 @@ Measured result from the reference run: target Δ(31, 23) vs overlay Δ(31, 23),
 
 ## Extending
 
-For a real-world reference implementation of this class of validator, see `references/deck-skill-ecosystem.md` (notably `kaisersong/slide-creator`'s `browser_geometry_qa.py`, which measures `title_clipped` / `content_clipped` / `text_overflow` / `character_overlap` / contrast and waits for deterministic layout first).
+For a real-world reference implementation of this class of validator, see `references/ecosystem-survey.md` (notably `kaisersong/slide-creator`'s `browser_geometry_qa.py`, which measures `title_clipped` / `content_clipped` / `text_overflow` / `character_overlap` / contrast and waits for deterministic layout first).
