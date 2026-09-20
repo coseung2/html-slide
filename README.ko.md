@@ -19,6 +19,7 @@
 SKILL.md                    규칙 — §1 타이포, §3 간격, §8 모션, §9 바인딩, §10 상태기계, §17 함정
 tools/slide_lint.py         린터: 정적 검사 + 브라우저 계측 기하 검사
 tools/verify.sh             3개 게이트 순차 실행; exit 0 = 납품 가능
+tools/export_deck.py        최종 납품: QA → 1920×1080 PNG → PDF + PPTX
 tools/lint_all.sh           배포된 모든 덱을 한 번에 pass/fail
 tests/motion_check.py       거동 테스트: reduced-motion 완전성, 페이즈 워크, 리사이즈 바인딩
 tests/linter_selftest.py    각 규칙이 지금도 발화하는지 증명 (픽스처 vs 깨끗한 기준 덱)
@@ -63,14 +64,23 @@ assets/fonts/               Pretendard Variable (OFL) — 자체 호스팅, CDN 
 
 # 전체 게이트: 모든 덱 + 린터 셀프테스트 + 모션 거동
 bash tools/verify.sh
+
+# 최종 납품: QA 후 PNG/PDF/PPTX를 한 번에 생성
+python tools/export_deck.py deck.html
+# 결과: dist/deck/frames/*.png, deck.pdf, deck.pptx, lint.json, manifest.json
 ```
+
+`export_deck.py`는 **같은 1920×1080 정적 최종 프레임**을 PDF와 PPTX에 공통으로 사용합니다.
+따라서 HTML의 완성 프레임과 PDF/PPTX가 시각적으로 어긋나지 않습니다. PPTX는 각 장을
+16:9 풀프레임 이미지로 넣는 정적 납품본이며, 라이브 모션과 발표자 컨트롤은 HTML이 담당합니다.
+기본 동작은 린터 오류가 있으면 내보내기를 중단합니다.
 
 현재 상태: `reference-3slides.html`과 **패턴 15종 전부**가 오류 0·경고 0으로
 린터를 통과합니다. `linter_selftest.py`는 픽스처가 17개 규칙 코드(오류 9건)를
 여전히 발화하고 기준 덱은 깨끗함을 확인합니다. `motion_check.py`는 거동 검사
 **134개, 실패 0**.
 
-Playwright가 필요합니다 (`pip install playwright && playwright install chromium`).
+Playwright가 필요합니다 (`pip install playwright && playwright install chromium`). PPTX 출력에는 `python-pptx`도 필요합니다. `export_deck.py`는 시스템 Chrome/Chromium이 설치되어 있으면 그것을 자동 사용합니다.
 
 ## 모션 라이브러리
 
