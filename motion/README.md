@@ -54,7 +54,7 @@ Two layers, both runnable:
 ```
 
 All 12 patterns pass the linter at 0 errors / 0 warnings, and `motion_check`
-drives 74 behaviour checks across them (complete / presenting / reversible /
+drives 106 behaviour checks across them (complete / presenting / reversible /
 settles / bound / still).
 
 ## Where the numbers come from
