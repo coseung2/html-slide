@@ -22,6 +22,7 @@ in a real browser and measuring boxes.
 SKILL.md                    the rules — §1 type, §3 spacing, §8 motion, §9 binding, §10 state machine, §17 pitfalls
 tools/slide_lint.py         the linter: static pass + instrumented browser geometry pass
 tools/verify.sh             all three gates in order; exit 0 means deliverable
+tools/export_deck.py        final delivery: QA -> 1920x1080 PNG -> PDF + PPTX
 tools/lint_all.sh           every shipped deck, one pass/fail total
 tests/motion_check.py       behaviour tests: reduced-motion completeness, phase walk, resize binding
 tests/linter_selftest.py    proves each rule still fires (fixture vs clean baseline)
@@ -67,7 +68,16 @@ not invented here; they come from the published references (see
 
 # the whole gate: every deck + linter self-test + motion behaviour
 bash tools/verify.sh
+
+# final delivery: QA, static frames, PDF and PPTX in one command
+python tools/export_deck.py deck.html
+# -> dist/deck/frames/*.png + deck.pdf + deck.pptx + lint.json + manifest.json
 ```
+
+`export_deck.py` uses the same accepted 1920x1080 static frames for both PDF and
+PPTX, so the deliverables stay visually identical. The PPTX is a static 16:9
+full-frame rendition; HTML remains the source for live motion and presenter
+controls. Linter errors abort export by default.
 
 Current state: `reference-3slides.html` and all 15 patterns pass the linter
 with 0 errors and 0 warnings; `linter_selftest.py` confirms the fixture still
