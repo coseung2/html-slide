@@ -19,13 +19,20 @@ in a real browser and measuring boxes.
 ## What's here
 
 ```
-SKILL.md                    the rules — §1 type, §3 spacing, §8 motion, §9 binding, §10 state machine
+SKILL.md                    the rules — §1 type, §3 spacing, §8 motion, §9 binding, §10 state machine, §17 pitfalls
 tools/slide_lint.py         the linter: static pass + instrumented browser geometry pass
-tests/motion_check.py       behaviour tests: static completeness, phase walk, resize binding
+tools/verify.sh             all three gates in order; exit 0 means deliverable
+tools/lint_all.sh           every shipped deck, one pass/fail total
+tests/motion_check.py       behaviour tests: reduced-motion completeness, phase walk, resize binding
+tests/linter_selftest.py    proves each rule still fires (fixture vs clean baseline)
+tests/fixtures/broken-deck.html    a deck that breaks every checkable rule on purpose
 examples/reference-3slides.html    a 3-slide deck that passes, used as the baseline
 motion/                     twelve motion recipes, grouped by what the motion explains
 motion/README.md            the contract, the pattern index, and the source trail
 references/SOURCES.md       where every timing value and method came from
+references/runtime-contract.md     the `.deck-live` / `data-start` contract, in full
+references/linter-traps.md  the false positives each check had to survive
+references/ecosystem-survey.md     the adjacent skill repos, read rather than summarised
 assets/fonts/               Pretendard Variable (OFL) — self-hosted, no CDN call
 ```
 
@@ -54,13 +61,14 @@ not invented here; they come from the published references (see
 # with screenshots written out
 ~/.venvs/pw/bin/python tools/slide_lint.py deck.html --shots /tmp/shots
 
-# every motion recipe's behaviour, in a live browser
-~/.venvs/pw/bin/python tests/motion_check.py
+# the whole gate: every deck + linter self-test + motion behaviour
+bash tools/verify.sh
 ```
 
 Current state: `reference-3slides.html` and all 12 patterns pass the linter
-with 0 errors and 0 warnings; `motion_check.py` runs 106 behaviour checks, 0
-failed.
+with 0 errors and 0 warnings; `linter_selftest.py` confirms the fixture still
+triggers 17 rule codes (9 errors) while the baseline stays clean;
+`motion_check.py` runs 106 behaviour checks, 0 failed.
 
 Requires Playwright (`pip install playwright && playwright install chromium`).
 

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>broken fixture — every rule this file breaks is intentional</title>
+<!-- FIXTURE. Not a deck. Every violation here is deliberate and
+     tests/linter_selftest.py asserts the linter reports it.
+     If a check stops firing, the self-test fails and the silence is caught. -->
+<style>
+  /* external-font: CDN @font-face is a defect (§13) */
+  @font-face{font-family:Pretendard;src:url(https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/PretendardVariable.woff2)}
+
+  body{margin:0;font-family:Pretendard,sans-serif;background:#f5f5f7}
+  #stage{width:1920px;height:1080px;position:relative;background:#fff;overflow:hidden}
+  .slide{position:absolute;inset:0}
+  .is-active{opacity:1}
+
+  .title{font-size:120px;font-weight:700}          /* title-size: over the 96px cap */
+  .body{font-size:18px;line-height:1.6;letter-spacing:.06em}  /* min-font + letter-spacing on Hangul */
+  .side{font-size:22px}
+
+  .card{width:300px;height:180px;background:#fff;border:1px solid #ddd}
+  .card .cap{
+    font-size:22px;
+    transition:top 300ms ease-in;                   /* layout-animation + ease-in */
+    animation:pop 400ms ease-out;
+  }
+  @keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}  /* scale-zero */
+
+  .hl{
+    position:absolute;left:412px;top:268px;width:200px;height:60px;
+    border:4px solid red;                            /* hardcoded-highlight / detached-highlight */
+  }
+  .chip{border-radius:999px;padding:4px 14px;background:#eee}
+  .note{position:absolute;bottom:24px;left:40px;font-size:22px}  /* bottom-caption */
+</style>
+</head>
+<body>
+<div id="stage">
+  <section class="slide is-active" data-slide="broken">
+    <div class="copy" data-copy style="position:absolute;left:60px;top:40px">
+      <h1 class="title">이 슬라이드는 왜 이렇게 생겼나요</h1>
+      <p class="body">본문은 너무 작고 자간이 벌어져 있으며 단어가 중간에서 끊깁니다 프론트엔드처럼.</p>
+    </div>
+
+    <div class="visual" data-visual style="position:absolute;left:60px;top:520px">
+      <div class="card"><span class="cap">카드 1</span></div>
+      <span class="chip">pill chip</span>
+    </div>
+
+    <!-- detached emphasis: drawn at slide coordinates, bound to nothing -->
+    <div class="hl"></div>
+
+    <!-- emphasis declared but pointing at a selector that does not exist -->
+    <div data-hl="true" data-target="#missing-target" class="ring"></div>
+
+    <!-- 700px internal gap between things that are read together -->
+    <div class="side" data-copy style="position:absolute;left:60px;top:900px">멀리 떨어진 설명</div>
+    <div class="side" data-visual style="position:absolute;left:60px;top:1600px">짝인데 멀다</div>
+
+    <div class="note">하단 설명 캡션</div>
+  </section>
+</div>
+</body>
+</html>

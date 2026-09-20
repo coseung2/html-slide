@@ -16,16 +16,28 @@ The goal is a deck that reads instantly, feels visually intentional, and uses mo
 Every clause below that says *visually*, *tight*, *oversized*, *crooked*, or *aligned* is a claim about measured geometry. Do not assert those claims from reading source. Measure them:
 
 ```bash
+# everything, in order: all decks + linter self-test + motion behaviour
+bash tools/verify.sh
+
 # geometry + binding + contrast + spacing, per slide, with screenshots
 python tools/slide_lint.py deck.html --shots out/
 
 # static rules only (no browser; fast, runs on any machine)
 python tools/slide_lint.py deck.html --no-browser
+
+# behaviour: phase walk, resize binding, reduced-motion completeness
+python tests/motion_check.py
 ```
 
 Exit code 0 means no errors. Warnings do not block; errors do. Deliver a deck only at **0 errors**.
 
 A slide is not "done" because the markup looks right. It is done when the linter agrees.
+
+### The linter is itself tested
+
+A rule that stops firing produces a clean report, and a clean report is indistinguishable from a passing deck. `tests/fixtures/broken-deck.html` is a deck that breaks every checkable rule on purpose, and `tests/linter_selftest.py` asserts each rule still fires while `examples/reference-3slides.html` stays clean. Silence from the linter is therefore always a decision, never an accident.
+
+The linter answers *"is the static frame correct"*. A second layer answers what a linter cannot: whether the motion claims hold while the page is alive. `tests/motion_check.py` covers six categories — **complete** (nothing hidden under reduced motion), **presenting** (opens on `data-start`, one phase per advance), **reversible** (Back undoes one phase at a time), **settles** (last phase restores a complete frame), **bound** (a highlight covers ≥85% of its target at 1920×1080, 1280×720 and 1024×768, drift ≤1.0 stage unit), **still** (the target's box never moves while its effect plays).
 
 ### Markup contract
 
@@ -70,6 +82,8 @@ Apply these unless the user explicitly overrides them.
 - Do **not** use meaningless decoration: gradients, glow, shadows, borders, or rounded containers must have a reason.
 - One slide should communicate one core point.
 - Prefer showing over explaining. Default balance: example/visual **70%**, text **30%**.
+
+**The accepted frame must be complete without motion.** Gate every step/phase CSS rule on a `.deck-live` class that only the deck runtime adds to `<html>`. Without it — JS disabled, file opened from disk, `prefers-reduced-motion`, PDF export, screenshot — the browser renders the finished frame from plain CSS alone. A transforming slide (before/after, number roll, swap) opens on the *earlier* state via `data-start="0"` so that one advance completes it; `data-start="1"` on such a slide leaves nowhere to advance to. Motion replays how the frame got there; it never carries the meaning. Full contract: `references/runtime-contract.md`.
 
 ## 2. Stage and coordinate system
 
@@ -494,18 +508,25 @@ Before delivering a slide or deck, verify all of the following. The column on th
 
 ### Behaviour (only a live browser can run these)
 
-`tests/motion_check.py` drives every pattern in `motion/patterns/`:
+`tests/motion_check.py` drives every pattern in `motion/patterns/`: **complete** (nothing hides under reduced motion), **presenting** / **reversible** (opens on `data-start`, one phase per advance, Back undoes one), **settles** (last phase restores the full frame), **bound** (highlight covers ≥85% of its target at three viewports), **still** (the target does not move while its effect plays).
 
-- **complete** — under `prefers-reduced-motion` nothing hides: no `deck-live`,
-  phases read 0, every `data-phase` element visible.
-- **presenting** — opens on `data-start`, then forwards exactly one phase per
-  advance; **reversible** — backwards undoes one phase at a time.
-- **settles** — at the last phase the frame is complete again.
-- **bound** — a `data-hl` box covers ≥85% of its target at 1920×1080, 1280×720,
-  and 1024×768, with drift ≤1.0 stage unit.
-- **still** — the target's box never moves while its effect plays.
+`motion/patterns/index.html` lists all twelve; open it in a browser to see each one move.
 
-## 17. Reference implementation
+## 17. Pitfalls
+
+These are failures that were made and fixed while building this repo. Each one passed a visual check.
+
+- **Never write a phase/step CSS rule that hides content without gating it on the live class.** An ungated `opacity: 0` base state deletes the content the moment motion is off — the exact failure this deck type exists to prevent.
+- **Never define a runtime method as a constructor closure when the constructor calls it mid-construction.** A reorder then throws `this.measure is not a function`; the crash gets masked by a defensive closure and the page silently renders unmeasured. Put it on the prototype.
+- **Do not assert a step walk from a hand-counted loop.** Record the phase before the first advance and after the last one. Off-by-one walks (`[1,2,3,3]` vs `[1,2,3,3,3]`) pass eyeballing and fail the machine.
+- **Baselines are per-row, not per-class.** Group same-class texts by vertical overlap before comparing tops; the second row of a 2×2 grid is a different row, not a misaligned one. Same fix applies to any "repeated objects share X" check.
+- **Step membership is ancestor-aware.** An element belongs to a step phase if it *or any ancestor* declares it — walk with `closest('[data-step]')`, not a self-attribute read, or phase siblings read as overlapping copy.
+- **Follow local stylesheets.** A linter that only scans inline `<style>` silently checks nothing when the deck links its CSS. Resolve local `<link rel=stylesheet>` targets one hop; skip remote ones.
+- **Measure the frame the user exports.** Run the browser pass with transitions and animations disabled and step classes stripped. Anything existing only mid-animation disappears — which is exactly what a PDF or screenshot shows.
+- **Compare ratios across viewports, not pixels.** Stage scale shrinks absolute gaps on small viewports; binding drift must be judged on coverage ratio and scale-normalised offsets.
+- **Do not hand-place a highlight.** `left: 412px; top: 268px` looks correct in a screenshot and breaks on the next resize. Slide-level coordinates for emphasis are an error, and the linter fails them. Use pseudo-elements, child overlays, or a target-derived clone.
+
+## 18. Reference implementation
 
 `examples/reference-3slides.html` is a working three-slide reference: text + example, text-only thesis, and a transformation beat. Use it as a visual and structural reference. **Preserve the rules above rather than mechanically copying its layout.**
 
@@ -515,4 +536,4 @@ Run the linter on it to see what a passing deck looks like:
 python tools/slide_lint.py examples/reference-3slides.html --shots out/
 ```
 
-`tests/` contains a deliberately broken fixture and the expected findings, so the linter's own behaviour is pinned.
+`tools/` also contains an earlier standalone geometry checker (`geometry_qa_stage1.py`) that `slide_lint.py` superseded; it is kept because its trap list in `references/linter-traps.md` documents how each check was made reliable.

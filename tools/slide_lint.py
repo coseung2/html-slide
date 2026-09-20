@@ -114,7 +114,7 @@ LAYOUT_PROPS = ("top", "left", "right", "bottom", "width", "height",
                 "margin", "padding", "inset")
 
 HIGHLIGHT_RE = re.compile(
-    r"(highlight|hl-|hl_|ring|sweep|mask|dim|trace|zoom|focus|outline|marker)",
+    r"(highlight|\bhl\b|hl-|hl_|ring|sweep|mask|dim|trace|zoom|focus|outline|marker)",
     re.I)
 PILL_RE = re.compile(r"(\bpill\b|\bchip\b|callout|leader|footnote|"
                      r"\bcaption\b|annotation)", re.I)
@@ -223,6 +223,28 @@ def static_checks(path: Path, rep: Report) -> None:
                     "only modals are centred", selector=val)
 
     # --- hard-coded highlight coordinates ---
+    # ...and in a stylesheet rule. This is the form an agent actually writes:
+    # `.hl{position:absolute;left:412px;top:268px}`. A check that reads only
+    # inline styles reports nothing while the deck links its CSS.
+    for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+        sel, body = m.group(1).strip(), m.group(2)
+        if not HIGHLIGHT_RE.search(sel):
+            continue                                          # not a highlight rule
+        if re.search(r"@|:\s*(root|hover|active|focus)", sel):
+            continue                                          # at-rules / states
+        if "position" not in body or not re.search(
+                r"(^|;|\s)(left|top|right|bottom|inset)\s*:\s*-?\d+(\.\d+)?px", body):
+            continue                                          # not absolute pixel placement
+        if "inset" in body and re.search(r"inset\s*:\s*0\b", body):
+            continue                                          # inset:0 = child-fill, allowed
+        if _motion_ok_near(css[max(0, m.start() - 200):m.end() + 200]):
+            continue
+        rep.add("hardcoded-highlight", ERROR,
+                "highlight positioned with fixed pixel coordinates in a stylesheet rule",
+                "bind it with data-target, or make it a child with inset:0 (§9)",
+                selector=sel[:60])
+
+    # Inline style on the element itself.
     for m in re.finditer(r"<([a-zA-Z][\w-]*)([^>]*)>", html):
         tag, attrs = m.group(1), m.group(2)
         cls = re.search(r'class\s*=\s*"([^"]*)"', attrs)
