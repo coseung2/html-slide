@@ -92,7 +92,15 @@
     this.root = root;
     this.stage = root.querySelector('[data-stage]') || root;
     this.slides = Array.prototype.slice.call(root.querySelectorAll('[data-slide]'));
-    this.reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    this.reduce = reduce.matches;
+    reduce.addEventListener('change', e => {
+      this.reduce = e.matches;
+      const staticMode = global.__deckShell?.isStatic() || false;
+      document.documentElement.classList.toggle(LIVE, !this.reduce && !staticMode);
+      this.phase = this.start(this.slide);
+      this.render();
+    });
     // `deck-ready` gates the interactive single-slide viewport. Without JS the
     // base CSS leaves complete slides in document order for print/capture/fallback.
     document.documentElement.classList.add('deck-ready');
@@ -141,6 +149,11 @@
       const leaving = !active && n === from;
       s.classList.toggle('is-active', active);
       s.classList.toggle('is-leaving', leaving);
+      s.inert = !active;
+      s.setAttribute('aria-hidden', String(!active));
+      // Remove stale phases when reduced motion changes the declared range.
+      [...s.classList].filter(c => c.startsWith('deck-step-')).forEach(
+        c => s.classList.remove(c));
       const max = Math.max(this.phases(n), 1);
       for (let p = 0; p <= max; p++) {
         s.classList.toggle('deck-step-' + p, active && this.phase === p);
@@ -204,7 +217,7 @@
   };
 
   Deck.prototype.goto = function (n, p) {
-    if (n < 0 || n >= this.slides.length) return null;
+    if (!Number.isInteger(n) || n < 0 || n >= this.slides.length) return null;
     this.slide = n;
     const max = this.phases(n);
     const requested = Number(p);
@@ -230,6 +243,12 @@
     global.deckFlip = flip;
 
     addEventListener('keydown', e => {
+      // A focused button owns Enter/Space; dialogs and editors own their keys.
+      // Arrow navigation still works after clicking a presenter control.
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey ||
+          document.querySelector('dialog[open]') ||
+          e.target.closest?.('input,textarea,select,[contenteditable="true"]') ||
+          (['Enter', ' '].includes(e.key) && e.target.closest?.('a,button'))) return;
       if (['ArrowRight', 'ArrowDown', ' ', 'Enter', 'PageDown'].indexOf(e.key) >= 0) {
         e.preventDefault(); deck.next();
       }

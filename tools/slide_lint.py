@@ -234,7 +234,12 @@ def static_checks(path: Path, rep: Report) -> None:
     # `.hl{position:absolute;left:412px;top:268px}`. A check that reads only
     # inline styles reports nothing while the deck links its CSS.
     for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
-        sel, body = m.group(1).strip(), m.group(2)
+        # Comments preceding a rule are not part of its selector. In particular,
+        # the presenter-shell header mentions "highlight binding" but its fixed
+        # bottom position is chrome, not a detached emphasis. Preserve offsets
+        # in the original CSS for the explicit motion-exception lookup below.
+        sel = re.sub(r"/\*.*?\*/", "", m.group(1), flags=re.S).strip()
+        body = re.sub(r"/\*.*?\*/", "", m.group(2), flags=re.S)
         if not HIGHLIGHT_RE.search(sel):
             continue                                          # not a highlight rule
         if re.search(r"@|:\s*(root|hover|active|focus)", sel):

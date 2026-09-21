@@ -21,7 +21,7 @@ in a real browser and measuring boxes.
 ```
 SKILL.md                    the rules — §1 type, §3 spacing, §8 motion, §9 binding, §10 state machine, §17 pitfalls
 tools/slide_lint.py         the linter: static pass + instrumented browser geometry pass
-tools/verify.sh             all three gates in order; exit 0 means deliverable
+tools/verify.sh             all four gates in order; exit 0 means deliverable
 tools/export_deck.py        final delivery: QA -> 1920x1080 PNG -> PDF + PPTX
 tools/lint_all.sh           every shipped deck, one pass/fail total
 tests/motion_check.py       behaviour tests: reduced-motion completeness, phase walk, resize binding
@@ -86,6 +86,28 @@ triggers 17 rule codes (9 errors) while the baseline stays clean;
 
 Requires Playwright (`pip install playwright && playwright install chromium`).
 PPTX export also requires `python-pptx`; the exporter auto-detects an installed system Chrome/Chromium when available.
+
+## Sports reports and media safety
+
+For standings, scoreboards and fixture decks, see `references/sports-decks.md`.
+The opt-in `motion/sports.css` adds shared-scale comparison bars and target-bound
+record emphasis; normal labels, crests and tables stay static. The guide covers
+photo/information separation, alpha-fragment inspection, source labeling and
+save/reopen safety with the standard presenter shell.
+
+```bash
+python tools/sports_qa.py selfcontained-deck.html --out out/sports-qa
+python tests/sports_check.py
+# Select a Python environment without editing machine-specific paths:
+PYTHON=/path/to/venv/bin/python bash tools/verify.sh
+```
+
+The sports QA supplements the main linter. It checks five viewport sizes,
+including phone portrait and short landscape, with external requests blocked.
+It reports image/text collisions, clipping, broken images, chrome occlusion and
+layout drift. It does not verify match facts, image identity, rights or subject
+cropping; inspect the rendered screenshots. `verify.sh` also runs the 35 sports
+and presenter regression checks.
 
 ## The motion library
 

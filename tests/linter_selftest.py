@@ -19,6 +19,7 @@ from __future__ import annotations
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -101,6 +102,26 @@ def main() -> int:
     if rc_b != 0 or found_b:
         failures.append(
             f"baseline no longer clean: rc={rc_b} codes={sorted(found_b)}")
+
+    # A prose header mentioning highlight binding must not turn the next
+    # ordinary fixed-position rule into a highlight. Actual selectors still fail.
+    sys.path.insert(0, str(ROOT / "tools"))
+    from slide_lint import Report, static_checks
+    cases = [
+        ("comment-before-chrome", "/* highlight binding */ .deck-shell {position:fixed;bottom:12px}", False),
+        ("real-highlight-after-comment", "/* presenter chrome */ .hl {position:absolute;left:412px;top:268px}", True),
+        ("commented-coordinates", ".hl {position:relative;inset:0;/* left:412px */}", False),
+    ]
+    with tempfile.TemporaryDirectory(prefix="slide-lint-comments-") as tmp:
+        for name, css, expected in cases:
+            path = Path(tmp) / (name + ".html")
+            path.write_text("<!doctype html><style>" + css + "</style><p>Sample</p>", encoding="utf-8")
+            report = Report(path=str(path))
+            static_checks(path, report)
+            found_hardcoded = any(f.code == "hardcoded-highlight" for f in report.findings)
+            if found_hardcoded != expected:
+                failures.append("CSS comment regression: " + name)
+    print("CSS comment regressions: 3 checked")
 
     if failures:
         print("\nFAIL")

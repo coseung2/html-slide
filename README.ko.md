@@ -18,7 +18,7 @@
 ```
 SKILL.md                    규칙 — §1 타이포, §3 간격, §8 모션, §9 바인딩, §10 상태기계, §17 함정
 tools/slide_lint.py         린터: 정적 검사 + 브라우저 계측 기하 검사
-tools/verify.sh             3개 게이트 순차 실행; exit 0 = 납품 가능
+tools/verify.sh             4개 게이트 순차 실행; exit 0 = 납품 가능
 tools/export_deck.py        최종 납품: QA → 1920×1080 PNG → PDF + PPTX
 tools/lint_all.sh           배포된 모든 덱을 한 번에 pass/fail
 tests/motion_check.py       거동 테스트: reduced-motion 완전성, 페이즈 워크, 리사이즈 바인딩
@@ -81,6 +81,27 @@ python tools/export_deck.py deck.html
 **134개, 실패 0**.
 
 Playwright가 필요합니다 (`pip install playwright && playwright install chromium`). PPTX 출력에는 `python-pptx`도 필요합니다. `export_deck.py`는 시스템 Chrome/Chromium이 설치되어 있으면 그것을 자동 사용합니다.
+
+## 스포츠 리포트와 사진 배치 검사
+
+순위표·경기 결과·다음 경기 자료는 `references/sports-decks.md`를 참고합니다.
+`motion/sports.css`는 필요한 장면에만 같은 척도의 비교 막대나 기록 강조 테두리를
+적용합니다. 일반 텍스트·엠블럼·표는 움직이지 않습니다. 가이드에는 사진/정보 영역
+분리, 엠블럼의 불필요한 알파 조각 점검, 실제 경기 사진과 구단 그래픽 구분,
+표준 하단 컨트롤 유지 및 HTML 저장 후 재실행 조건을 정리했습니다.
+
+```bash
+python tools/sports_qa.py selfcontained-deck.html --out out/sports-qa
+python tests/sports_check.py
+# 특정 PC의 고정 경로를 수정하지 않고 Python 환경 지정
+PYTHON=/path/to/venv/bin/python bash tools/verify.sh
+```
+
+스포츠 QA는 기존 린터의 보조 검사입니다. 휴대폰 세로·짧은 가로 화면을 포함한
+5개 뷰포트에서 사진/텍스트 겹침, 잘림, 깨진 이미지, 컨트롤 가림, 외부 요청과
+배치 이동을 검사합니다. 경기 사실·사진의 인물/경기 일치·권리·피사체 크롭은
+별도 확인해야 합니다. 생성한 스크린샷도 직접 검토합니다. `verify.sh`에는
+스포츠/발표자 컨트롤 회귀 검사 35개도 연결되어 있습니다.
 
 ## 모션 라이브러리
 

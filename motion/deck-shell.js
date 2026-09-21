@@ -41,6 +41,8 @@
     let staticMode = new URLSearchParams(location.search).get('mode') === 'static';
     let previousFocus = null;
     let lastHash = '';
+    // Save this before the first update replaces the address with slide 1.
+    const initialHash = location.hash;
 
     const nav = document.createElement('nav');
     nav.className = 'deck-shell';
@@ -189,6 +191,7 @@
 
     addEventListener('deck:state', update);
     REDUCE.addEventListener('change', () => {
+      deck.reduce = REDUCE.matches;
       document.documentElement.classList.toggle('deck-live', live());
       deck.phase = live() ? deck.start(deck.slide) : 0;
       deck.render();
@@ -198,7 +201,7 @@
     // Capture-phase interception is deliberate: in static mode Space/Arrows
     // advance slides, not invisible phases handled by the core runtime.
     addEventListener('keydown', e => {
-      if (overview.open) return;
+      if (e.defaultPrevented || document.querySelector('dialog[open]')) return;
       if (e.altKey || e.ctrlKey || e.metaKey ||
           e.target.closest?.('input,textarea,select,[contenteditable="true"]')) return;
 
@@ -208,6 +211,7 @@
       if (k === 's' && !REDUCE.matches) {
         e.preventDefault(); e.stopImmediatePropagation(); setStatic(!staticMode); return;
       }
+      if (['Enter', ' '].includes(e.key) && e.target.closest?.('a,button')) return;
       if (e.key === 'Home') {
         e.preventDefault(); e.stopImmediatePropagation(); goSlide(0); return;
       }
@@ -222,17 +226,20 @@
       }
     }, true);
 
-    addEventListener('hashchange', () => {
-      if (location.hash === lastHash) return;
-      const m = location.hash.match(/^#(\d+)(?:\.(\d+))?$/);
-      if (!m) return;
+    function applyHash(hash) {
+      const m = hash.match(/^#(\d+)(?:\.(\d+))?$/);
+      if (!m) return false;
       const n = Math.min(deck.slides.length - 1, Math.max(0, Number(m[1]) - 1));
       const p = Math.max(0, Number(m[2] || 0));
       deck.goto(n, live() ? p : 0);
+      return true;
+    }
+    addEventListener('hashchange', () => {
+      if (location.hash !== lastHash) applyHash(location.hash);
     });
 
     document.documentElement.classList.toggle('deck-live', live());
-    update();
+    if (!applyHash(initialHash)) update();
 
     global.__deckShell = {
       openOverview,

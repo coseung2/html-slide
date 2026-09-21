@@ -2,7 +2,8 @@
 # Lint every shipped deck and report a single pass/fail total.
 set -u
 cd "$(dirname "$0")/.." || exit 2
-PY=~/.venvs/pw/bin/python
+PY=${PYTHON:-$HOME/.venvs/pw/bin/python}
+[ -x "$PY" ] || PY=python3
 fail=0
 for f in examples/*.html motion/patterns/*.html; do
   out=$("$PY" tools/slide_lint.py "$f" 2>&1)
