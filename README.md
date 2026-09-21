@@ -2,166 +2,292 @@
 
 **English** · [한국어 README](README.ko.md)
 
-An agent skill for building presentation decks as HTML — with the discipline
-enforced by a linter, not by good intentions.
+A reusable skill for building HTML presentation decks with **measured layout, deterministic QA, motion discipline, Korean copy checks, and one-command export**.
 
-The problem this solves: an agent asked to "highlight the second column" writes
-`left: 412px; top: 268px`. It looks right in the screenshot and breaks the
-moment the layout or the window changes. Decks also slide into decoration —
-every element animating, motion that explains nothing, captions under the
-visual, a title in the corner. Those are habits, and habits need a check that
-runs.
+The repository does not prescribe one visual style. The core is a **specification + enforcement layer** that applies to any deck. Optional visual directions live under `templates/` and should be used only when they match the requested format.
 
-So this repo is two things at once: a **specification** (`SKILL.md`, the
-author's rules tightened into a normative document) and an **enforcement layer**
-(`tools/slide_lint.py`, `tests/motion_check.py`) that fails a deck which breaks
-the rules — including the rules that can only be checked by rendering the page
-in a real browser and measuring boxes.
+## Core pieces
 
-## What's here
+- `SKILL.md` — authoring rules and markup contract
+- `tools/slide_lint.py` — static checks + real-browser geometry checks
+- `tests/motion_check.py` — motion, phase and target-binding regressions
+- `tools/copy_lint.py` — Korean-first visible-copy lint
+- `tools/export_deck.py` — accepted frames -> PNG + PDF + PPTX
+- `templates/` — optional visual starting points
+- `motion/` — reusable motion patterns grouped by what they explain
 
-```
-SKILL.md                    the rules — §1 type, §3 spacing, §8 motion, §9 binding, §10 state machine, §17 pitfalls
-tools/slide_lint.py         the linter: static pass + instrumented browser geometry pass
-tools/verify.sh             all four gates in order; exit 0 means deliverable
-tools/export_deck.py        final delivery: QA -> 1920x1080 PNG -> PDF + PPTX
-tools/lint_all.sh           every shipped deck, one pass/fail total
-tests/motion_check.py       behaviour tests: reduced-motion completeness, phase walk, resize binding
-tests/linter_selftest.py    proves each rule still fires (fixture vs clean baseline)
-tests/fixtures/broken-deck.html    a deck that breaks every checkable rule on purpose
-examples/reference-3slides.html    a 3-slide deck that passes, used as the baseline
-motion/                     fifteen motion recipes, grouped by what the motion explains
-motion/README.md            the contract, the pattern index, and the source trail
-references/SOURCES.md       where every timing value and method came from
-references/runtime-contract.md     the `.deck-live` / `data-start` contract, in full
-references/geometry-qa.md   the anchoring proof, the static checks, and the measurement traps
-references/motion-timing.md       every timing value with its source
-references/ecosystem-survey.md     the adjacent skill repos, read rather than summarised
-assets/fonts/               Pretendard Variable (OFL) — self-hosted, no CDN call
-```
+The goal is simple:
 
-## The two failures worth naming
+> **Do not ship a deck that only looks correct in one screenshot.**
 
-**Emphasis that leaves its target.** The rule is that a highlight is a child of
-its target, or a sibling bound by `data-target`, or a clone derived from it —
-never a box drawn at slide coordinates. The linter proves the binding: it
-renders at 1920×1080, 1280×720 and 1024×768, measures the highlight's overlap
-with its target, and fails if the coverage drops or the alignment drifts by
-more than one stage unit. The reference deck and the ring/pulse patterns
-measure 100% coverage and 0.00 drift at every size.
+---
 
-**Motion that carries meaning.** `transform` and `opacity` are the default
-animation properties. `filter` and `clip-path` are conditional effects only
-when they explain the scene without moving target geometry. `top`, `width`, `height`, `margin` trigger layout and
-paint, which is how a target moves out from under its own highlight. This is
-also why the typewriter here does not animate `width`: the box is reserved and
-the glyphs fade in, so a Korean syllable is never clipped through its interior. Duration and easing are
-not invented here; they come from the published references (see
-`references/SOURCES.md`) and the recipes implement them verbatim.
-
-## Running it
+## Quick start
 
 ```bash
-# one deck, geometry and rules (~10s)
-~/.venvs/pw/bin/python tools/slide_lint.py examples/reference-3slides.html
+pip install playwright
+playwright install chromium
+```
 
-# with screenshots written out
-~/.venvs/pw/bin/python tools/slide_lint.py deck.html --shots /tmp/shots
+For PPTX export:
 
-# the whole gate: every deck + linter self-test + motion behaviour
+```bash
+pip install python-pptx
+```
+
+Lint one deck:
+
+```bash
+python tools/slide_lint.py examples/reference-3slides.html
+```
+
+Save QA screenshots:
+
+```bash
+python tools/slide_lint.py examples/reference-3slides.html --shots out/shots
+```
+
+Run the whole repository gate:
+
+```bash
 bash tools/verify.sh
-
-# final delivery: QA, static frames, PDF and PPTX in one command
-python tools/export_deck.py deck.html
-# -> dist/deck/frames/*.png + deck.pdf + deck.pptx + lint.json + manifest.json
 ```
 
-`export_deck.py` uses the same accepted 1920x1080 static frames for both PDF and
-PPTX, so the deliverables stay visually identical. The PPTX is a static 16:9
-full-frame rendition; HTML remains the source for live motion and presenter
-controls. Linter errors abort export by default.
+A deliverable state ends with:
 
-Current state: `reference-3slides.html` and all 15 patterns pass the linter
-with 0 errors and 0 warnings; `linter_selftest.py` confirms the fixture still
-triggers 17 rule codes (9 errors) while the baseline stays clean;
-`motion_check.py` runs 134 behaviour checks, 0 failed.
-
-Requires Playwright (`pip install playwright && playwright install chromium`).
-PPTX export also requires `python-pptx`; the exporter auto-detects an installed system Chrome/Chromium when available.
-
-## Sports reports and media safety
-
-For standings, scoreboards and fixture decks, see `references/sports-decks.md`.
-The opt-in `motion/sports.css` adds shared-scale comparison bars and target-bound
-record emphasis; normal labels, crests and tables stay static. The guide covers
-photo/information separation, alpha-fragment inspection, source labeling and
-save/reopen safety with the standard presenter shell.
-
-```bash
-python tools/sports_qa.py selfcontained-deck.html --out out/sports-qa
-python tests/sports_check.py
-# Select a Python environment without editing machine-specific paths:
-PYTHON=/path/to/venv/bin/python bash tools/verify.sh
+```text
+ALL GREEN
 ```
 
-The sports QA supplements the main linter. It checks five viewport sizes,
-including phone portrait and short landscape, with external requests blocked.
-It reports image/text collisions, clipping, broken images, chrome occlusion and
-layout drift. It does not verify match facts, image identity, rights or subject
-cropping; inspect the rendered screenshots. `verify.sh` also runs the 35 sports
-and presenter regression checks.
+---
+
+## Core rules
+
+### Bind emphasis to the real target
+
+A highlight must be structurally linked to what it emphasizes: as a child, through `data-target`, or from a target-derived clone.
+
+Do not draw a highlight at arbitrary slide coordinates.
+
+The linter measures target/highlight geometry across multiple viewport sizes and fails drifting emphasis.
+
+### One core point per slide
+
+The title, explanation and visual should all support one claim or relationship.
+
+Prefer showing over explaining. A useful default is roughly **70% visual / 30% copy**, adjusted to the content rather than enforced as a template.
+
+### Motion explains relationships
+
+Default animation properties are `transform` and `opacity`.
+
+Use motion to explain things such as:
+
+- this object is the subject
+- before became after
+- this value changed by this much
+- these steps happen in order
+- these objects are connected
+
+Do not animate every object for decoration.
+
+### Static state is the accepted state
+
+A captured frame, reduced-motion mode, print, PDF and PPTX must still show the complete message.
+
+Live presentation motion is scoped to `.deck-live`.
+
+### Keep one fixed coordinate system
+
+Author at 1920×1080 and scale the stage as one unit with `transform: scale()`.
+
+This keeps geometry, line breaks, emphasis and accepted-frame export stable across windows and projectors.
+
+### Templates are optional starting points
+
+Files under `templates/` are **visual grammars, not core rules**.
+
+Use one when it matches the user's requested format. If the content does not fit, recompose the scene instead of forcing the template.
+
+---
+
+## Templates
+
+Two reference directions are currently included.
+
+### Broadcast data report
+
+`templates/sports-broadcast.html`
+
+A dark, high-contrast, data-heavy direction for scoreboards, rankings, comparisons and media-heavy reports.
+
+Domain-specific details stay in [its own guide](templates/sports-broadcast.md), not in the core README.
+
+### Lecture / editorial explanation
+
+`templates/lecture-editorial.html`
+
+A light editorial direction with one accent color, large examples, cause/result scenes, steps and before/after comparison.
+
+See [its guide](templates/lecture-editorial.md).
+
+Template policy and extension rules live in [templates/README.ko.md](templates/README.ko.md).
+
+---
 
 ## Korean-first copy
 
-For Korean decks, read `references/korean-copy.md` before final layout polish.
-The rule is not "translate every English word"; it is to write titles, section
-labels and explanatory copy in natural Korean first, retaining only abbreviations,
-brands and quoted/original spellings that genuinely help the audience.
+For Korean decks, write audience-facing copy in Korean first rather than translating English scaffolding after layout.
+
+Keep English when it is genuinely faster or canonical: technical acronyms, official product names, standards, quoted phrases, sources or metadata.
+
+Examples:
+
+| Avoid by default | Prefer |
+|---|---|
+| KEY TAKEAWAYS | 핵심 정리 |
+| NEXT STEPS | 다음 단계 |
+| PROJECT OVERVIEW | 프로젝트 개요 |
+| STATUS | 상태 |
+| SUMMARY | 요약 |
+
+Run:
 
 ```bash
 python tools/copy_lint.py deck.html --strict
 ```
 
-The copy linter checks `lang="ko"` decks for English-heavy visible strings and
-common English template labels. Mark a deliberately retained item with
-`data-copy-en-ok`. The linter cannot judge naturalness or translationese reliably;
-that remains an editorial pass using the examples in the reference guide.
+Mark a reviewed exception with `data-copy-en-ok`.
 
-## The motion library
+Detailed editorial guidance is in [references/korean-copy.md](references/korean-copy.md).
 
-`motion/patterns/index.html` is the gallery. Fifteen recipes, grouped by what
-the motion *explains* rather than how it looks:
+---
 
-| Group | Explains | Recipes |
+## Verification gates
+
+`tools/verify.sh` runs five layers:
+
+1. all shipped deck lint
+2. linter self-test
+3. motion behaviour regressions
+4. presenter and template regressions
+5. Korean-copy linter self-test
+
+`tools/lint_all.sh` covers HTML in:
+
+- `examples/`
+- `motion/patterns/`
+- `templates/`
+
+The linter checks clipping, safe insets, text overflow, target binding, typography budgets, Korean `keep-all`, spacing, bottom-caption patterns and animation properties that move layout.
+
+`tests/motion_check.py` currently drives **134 behaviour checks**.
+
+The presenter/template regression suite currently contains **35 checks**.
+
+The copy-lint self-test currently contains **8 checks**.
+
+---
+
+## Motion library
+
+`motion/patterns/index.html` is the gallery.
+
+Patterns are grouped by **what the motion explains**:
+
+| Group | Explains | Patterns |
 |---|---|---|
 | EMPHASIS | this object is the subject | `pat-ring`, `pat-pulse`, `pat-recede` |
-| REVEAL | how the material arrives | `pat-group`, `pat-line-step` |
-| TRANSFORM | before became after | `pat-state`, FLIP move |
-| QUANTITY | this changed by this much | `pat-roll`, `pat-bar` |
-| SEQUENCE | this happens in these steps | `pat-steps` (reversible) |
-| CONNECTIVE | these two are related | `pat-path` |
+| REVEAL | how material arrives | `pat-group`, `pat-line-step` |
+| TRANSFORM | before became after | `pat-state`, FLIP |
+| QUANTITY | how much changed | `pat-roll`, `pat-bar` |
+| SEQUENCE | ordered phases | `pat-steps` |
+| CONNECTIVE | these objects are related | `pat-path` |
 | SWAP | this replaced that | `pat-swap` |
-| TYPE | this text is being written | `pat-type` (per 음절) |
-| TRANSITION | this scene gave way to that one | `pat-wipe`, `pat-focus-pull` |
+| TYPE | text is being written | `pat-type` |
+| TRANSITION | one scene gives way to another | `pat-wipe`, `pat-focus-pull` |
 
-Each pattern is a runnable page, documented with *use-when / do-not-use* notes
-at its recipe, and linted like any other slide. Start with
-`motion/patterns/index.html`; read `motion/README.md` before adding one.
+Read [motion/README.md](motion/README.md) before adding a new pattern.
 
-## Layout
+---
 
-The stage is a fixed 16:9 box fitted with a `transform: scale()`, so slide
-coordinates are stable and layout never animates on resize. Step phases are
-scoped to `.deck-live`, which the runtime only adds when motion is wanted — so
-a captured frame, a PDF export, or `prefers-reduced-motion` all show the same
-complete slide.
+## Final export
 
-A Korean translation lives in `README.ko.md`.
+Do not hand-rebuild PDF or PPTX after the HTML is accepted.
+
+`tools/export_deck.py` lints the deck, captures the accepted 1920×1080 static frames, and feeds the same PNGs to both PDF and PPTX.
+
+```bash
+python tools/export_deck.py deck.html
+```
+
+Optional destination:
+
+```bash
+python tools/export_deck.py deck.html --out dist/deck
+```
+
+Output:
+
+```text
+dist/deck/
+├── frames/
+├── deck.pdf
+├── deck.pptx
+├── lint.json
+└── manifest.json
+```
+
+HTML remains the live presentation source. PDF and PPTX are static delivery formats.
+
+---
+
+## Repository structure
+
+```text
+SKILL.md                  core authoring rules
+
+tools/
+├─ slide_lint.py
+├─ copy_lint.py
+├─ media_qa.py
+├─ export_deck.py
+├─ lint_all.sh
+└─ verify.sh
+
+tests/
+├─ linter_selftest.py
+├─ motion_check.py
+├─ template_runtime_check.py
+├─ copy_lint_selftest.py
+└─ ...
+
+templates/
+├─ README.ko.md
+├─ sports-broadcast.html
+├─ sports-broadcast.md
+├─ lecture-editorial.html
+└─ lecture-editorial.md
+
+motion/
+├─ deck-motion.js
+├─ deck-shell.js
+├─ motion.css
+├─ README.md
+└─ patterns/
+
+references/
+├─ korean-copy.md
+├─ runtime-contract.md
+├─ geometry-qa.md
+├─ motion-timing.md
+└─ SOURCES.md
+```
 
 ## License and provenance
 
-The specification, linter, tests, examples and motion library are this repo's
-own work. The motion timing values are sourced from MIT-licensed references and
-public documentation; `references/SOURCES.md` gives the trail and
-`references/` keeps the attributed excerpts. Pretendard Variable is licensed
-under the SIL Open Font License (`assets/fonts/`).
+The specification, linter, tests, examples, templates and motion library are this repository's work.
+
+Timing and method references are documented in `references/SOURCES.md`.
+
+Pretendard Variable is distributed under the SIL Open Font License in `assets/fonts/`.

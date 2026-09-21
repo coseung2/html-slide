@@ -99,6 +99,7 @@ Apply these unless the user explicitly overrides them.
 - Do **not** use meaningless decoration: gradients, glow, shadows, borders, or rounded containers must have a reason.
 - One slide should communicate one core point.
 - Prefer showing over explaining. Default balance: example/visual **70%**, text **30%**.
+- Treat files under `templates/` as **optional visual starting points, not core rules**. Use a template only when it matches the user's requested format; otherwise compose the deck from the core scene rules. Keep domain-specific vocabulary and QA notes inside that template's guide instead of leaking them into the general workflow.
 
 **The accepted frame must be complete without motion.** Gate every step/phase CSS rule on a `.deck-live` class that only the deck runtime adds to `<html>`. Without it — JS disabled, file opened from disk, `prefers-reduced-motion`, PDF export, screenshot — the browser renders the finished frame from plain CSS alone. A transforming slide (before/after, number roll, swap) opens on the *earlier* state via `data-start="0"` so that one advance completes it; `data-start="1"` on such a slide leaves nowhere to advance to. Motion replays how the frame got there; it never carries the meaning. Full contract: `references/runtime-contract.md`.
 
@@ -128,14 +129,14 @@ Target-bound emphasis (§9) is only meaningful against a fixed coordinate system
 When the deck language is Korean, write the slide copy **in Korean first**. Do not design an English deck and translate labels afterward.
 
 - Keep titles, section names, metric labels and explanatory copy in natural Korean by default.
-- Retain English only when it is the established form the audience actually reads faster: league/product acronyms (`EPL`, `VAR`, `AI`, `HTML`), short team codes (`MCI`, `ARS`), official brand names, source titles, or an intentionally quoted phrase.
-- Transliterate familiar people/team names into Korean in audience-facing prose when that is the normal Korean editorial form. Keep the original spelling in sources or metadata when useful.
-- Do not leave template English such as `TOP SIX MARKET REPORT`, `TITLE RACE`, `THE PACK`, `NEXT UP`, `POINTS`, `GOALS`, or `FORM` merely because it looks "broadcast-like". Korean sports graphics get their tone from compression and hierarchy, not from unnecessary English.
+- Retain English only when it is the established form the audience actually reads faster: common technical acronyms (`AI`, `API`, `UI`, `HTML`), official brand/product names, standards, source titles, or an intentionally quoted phrase.
+- Use the audience's normal Korean form for familiar names and concepts when one exists. Keep original spelling in sources or metadata when useful.
+- Do not leave generic template scaffolding such as `KEY TAKEAWAYS`, `NEXT STEPS`, or `OVERVIEW` merely because English appears more polished. If Korean communicates the same thing faster, use `핵심 정리`, `다음 단계`, `개요`.
 - Avoid literal translation syntax. Rewrite for the Korean audience's reading order and register instead of preserving English noun stacks, abstract verbs, or source sentence structure.
-- Prefer concrete newsroom/editorial verbs and nouns: `단독 선두`, `승점 3점 차`, `득점 선두`, `상위권 판도`, `다음 라운드`, `핵심 정리`. Avoid vague constructions such as `~을 설명한다`, `~을 재검증한다`, or `~의 시그널` when a direct Korean label says the same thing.
+- Prefer concrete nouns and verbs such as `핵심 변화`, `비교 결과`, `문제 원인`, `검증 기준`, `다음 단계`. Avoid vague constructions such as `~을 설명한다`, `~을 보여준다`, or `~의 시그널` when a direct Korean label says the same thing.
 - Use `data-copy-en-ok` only for reviewed exceptions. It is not a blanket escape hatch for an English-heavy slide.
 
-For detailed before/after examples, sports phrasing, and the final editorial pass, read `references/korean-copy.md`. For Korean decks, run `python tools/copy_lint.py deck.html --strict` before delivery; it catches excessive/template English but does **not** certify that prose sounds natural.
+For detailed before/after examples and the final editorial pass, read `references/korean-copy.md`. For Korean decks, run `python tools/copy_lint.py deck.html --strict` before delivery; it catches excessive/template English but does **not** certify that prose sounds natural. Domain-specific copy belongs in the matching template guide under `templates/`.
 
 ### Titles
 

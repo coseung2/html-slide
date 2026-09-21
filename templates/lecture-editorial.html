@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>강의·개념 설명형 템플릿</title>
+<style>
+@font-face{font-family:'Pretendard Variable';src:url('../assets/fonts/PretendardVariable.woff2') format('woff2-variations');font-weight:45 920;font-style:normal;font-display:block}
+:root{--bg:#f3f1ec;--paper:#fbfaf7;--ink:#11110f;--muted:#68635b;--line:#cfc8bc;--accent:#b93930;--t1:80px;--t2:34px;--ui:24px}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#dcd8d0;color:var(--ink)}
+body{font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif;word-break:keep-all;font-synthesis:none}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:top left;background:var(--bg)}
+.slide{position:absolute;inset:0;padding:104px 112px 118px;visibility:hidden;opacity:0;background:var(--bg)}
+.slide.is-active{visibility:visible;opacity:1}
+h1,h2,p{margin:0}.title{font-size:var(--t1);font-weight:850;line-height:1.16;text-wrap:balance}.body{font-size:var(--t2);font-weight:600;line-height:1.6;color:var(--muted)}
+.eyebrow,.small{font-size:var(--ui);line-height:1.45}.eyebrow{font-weight:800;color:var(--accent)}.small{color:var(--muted)}.accent{color:var(--accent)}
+.copy{display:flex;flex-direction:column;gap:20px}.scene{height:100%}.side-scene{display:grid;grid-template-columns:560px minmax(0,1fr);gap:64px;align-items:center}
+.window{border:1px solid var(--line);background:var(--paper);min-height:590px}.window-top{height:54px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 24px;font-size:var(--ui);color:var(--muted)}
+.demo-body{padding:38px}.demo-head{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--ink);padding-bottom:24px}.demo-head strong{font-size:var(--t2)}.demo-list{display:grid}.demo-row{display:grid;grid-template-columns:1fr 160px;gap:24px;padding:26px 0;border-bottom:1px solid var(--line)}.demo-row strong{font-size:var(--t2)}.demo-row span{font-size:var(--ui);color:var(--muted);text-align:right}
+.headed{display:grid;grid-template-rows:auto 1fr;gap:50px}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}.step{border-top:3px solid var(--ink);padding:28px 8px 0}.step .no{font-size:var(--ui);color:var(--accent)}.step strong{display:block;margin-top:20px;font-size:var(--t2);line-height:1.4}.step p{margin-top:14px;font-size:var(--ui);line-height:1.55;color:var(--muted)}
+.thesis{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}.causes{display:grid;margin-top:32px}.cause{padding:24px 0;border-top:1px solid var(--line)}.cause:last-child{border-bottom:1px solid var(--line)}.cause strong{font-size:var(--t2)}.cause p{font-size:var(--ui);color:var(--muted);margin-top:8px}.result{border-left:3px solid var(--line);padding-left:56px}.result .big{font-size:96px;line-height:1.08;font-weight:900}
+.compare{display:grid;grid-template-columns:1fr 72px 1fr;gap:28px;align-items:center}.compare-arrow{font-size:var(--t2);text-align:center;color:var(--accent)}.sample{border-top:3px solid var(--ink);padding-top:28px}.sample h2{font-size:var(--t2);line-height:1.4}.sample-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px}.sample-item{min-height:170px;padding:24px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.sample-item strong{font-size:var(--t2)}.sample-item p{font-size:var(--ui);line-height:1.5;color:var(--muted);margin-top:10px}.sample.after{background:var(--paper);padding:30px;border:1px solid var(--line)}
+.closing{display:grid;place-items:center;text-align:center}.closing .copy{align-items:center;max-width:1180px}.closing .rule{width:160px;height:4px;background:var(--accent);margin:12px 0}
+.chrome{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:6px 10px;background:#fbfaf7e8;border:1px solid var(--line);z-index:20}.chrome button{font:inherit;font-size:22px;color:var(--ink);background:transparent;border:0;padding:8px 12px;cursor:pointer}.counter{font-size:22px;color:var(--muted);min-width:90px;text-align:center}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{html,body{overflow:visible;background:var(--bg)}#stage{position:static;transform:none!important;height:auto}.slide{position:relative;display:block!important;visibility:visible!important;opacity:1!important;width:1920px;height:1080px;break-after:page}.chrome{display:none}}
+</style>
+</head>
+<body>
+<main id="stage" data-stage>
+<section class="slide is-active" data-slide="01" data-title="개념 소개">
+  <div class="scene side-scene">
+    <div class="copy"><div class="eyebrow">강의형 템플릿 · 샘플</div><div class="copy" data-copy><h1 class="title">개념은 짧게,<br><span class="accent">예시는 크게</span></h1><p class="body">설명문보다 화면·도식·사례를 중심에 두고<br>한 장에 하나의 판단만 남기는 구성</p></div></div>
+    <div class="window" data-visual><div class="window-top">예시 화면</div><div class="demo-body"><div class="demo-head"><strong>작업 공간</strong><span class="small">현재 상태</span></div><div class="demo-list"><div class="demo-row"><strong>핵심 항목 A</strong><span>중요</span></div><div class="demo-row"><strong>핵심 항목 B</strong><span>검토 필요</span></div><div class="demo-row"><strong>핵심 항목 C</strong><span>완료</span></div></div></div></div>
+  </div>
+</section>
+<section class="slide" data-slide="02" data-title="반복되는 패턴">
+  <div class="scene headed"><div class="copy"><div class="eyebrow">패턴 설명</div><div class="copy" data-copy><h1 class="title">반복되는 선택을<br>먼저 이름 붙인다</h1><p class="body">나열이 아니라 서로 다른 역할을 구분하는 장면</p></div></div><div class="steps" data-visual><div class="step"><span class="no">01</span><strong>구조</strong><p>무엇을 먼저 읽는지 정한다.</p></div><div class="step"><span class="no">02</span><strong>위계</strong><p>중요도 차이를 타이포로 만든다.</p></div><div class="step"><span class="no">03</span><strong>간격</strong><p>관련된 것끼리 가깝게 둔다.</p></div><div class="step"><span class="no">04</span><strong>상태</strong><p>정상 외의 경우까지 보여 준다.</p></div></div></div>
+</section>
+<section class="slide" data-slide="03" data-title="원인과 결과">
+  <div class="scene thesis"><div><div class="copy"><div class="eyebrow">원인</div><div class="copy" data-copy><h1 class="title">문제는 장식보다<br>판단의 부재다</h1></div></div><div class="causes" data-visual><div class="cause"><strong>우선순위 미정</strong><p>모든 요소가 같은 크기로 경쟁한다.</p></div><div class="cause"><strong>제약 미정</strong><p>익숙한 패턴이 자동으로 채워진다.</p></div><div class="cause"><strong>상태 미정</strong><p>정상 화면만 남고 예외가 사라진다.</p></div></div></div><div class="result" data-visual><div class="eyebrow">결과</div><div class="big">결정 없음<br><span class="accent">→ 평균값</span></div><p class="body">원인과 결과를 같은 화면에서 직접 연결한다.</p></div></div>
+</section>
+<section class="slide" data-slide="04" data-title="비교">
+  <div class="scene headed"><div class="copy"><div class="eyebrow">비교</div><div class="copy" data-copy><h1 class="title">전과 후를 같은 기준으로 비교</h1><p class="body">두 화면의 차이가 한 번에 보이게 만든다.</p></div></div><div class="compare" data-visual><div class="sample"><div class="eyebrow">이전</div><h2>요소마다 같은 강조</h2><div class="sample-grid"><div class="sample-item"><strong>항목 A</strong><p>장식이 정보보다 앞선다.</p></div><div class="sample-item"><strong>항목 B</strong><p>관계가 분명하지 않다.</p></div></div></div><div class="compare-arrow">→</div><div class="sample after"><div class="eyebrow">개선 후</div><h2>위계와 간격으로 구조화</h2><div class="sample-grid"><div class="sample-item"><strong>항목 A</strong><p>핵심 행동이 먼저 보인다.</p></div><div class="sample-item"><strong>항목 B</strong><p>관련 정보가 가까이 묶인다.</p></div></div></div></div></div>
+</section>
+<section class="slide" data-slide="05" data-title="마무리">
+  <div class="scene closing"><div class="copy"><div class="rule"></div><div class="copy" data-copy><h1 class="title">구현보다 먼저<br><span class="accent">판단을 설계한다</span></h1><p class="body">마지막 장은 새로운 정보를 추가하지 않고<br>강의의 중심 문장을 다시 고정한다.</p></div></div></div>
+</section>
+</main>
+<nav class="chrome" aria-label="발표 조작"><button type="button" id="prev">이전</button><span class="counter" id="counter">01 / 05</span><button type="button" id="next">다음</button></nav>
+<script>
+(function(){
+ const slides=Array.from(document.querySelectorAll('[data-slide]'));const stage=document.querySelector('[data-stage]');let index=0;
+ function fit(){const k=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform='translate('+(innerWidth-1920*k)/2+'px,'+(innerHeight-1080*k)/2+'px) scale('+k+')';}
+ function go(n){index=Math.max(0,Math.min(slides.length-1,Number(n)||0));slides.forEach((s,i)=>s.classList.toggle('is-active',i===index));document.getElementById('counter').textContent=String(index+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');return index;}
+ window.__deckGoto=go;document.getElementById('prev').onclick=()=>go(index-1);document.getElementById('next').onclick=()=>go(index+1);
+ addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(index+1)}else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();go(index-1)}});
+ addEventListener('resize',fit);fit();document.fonts&&document.fonts.ready.then(fit);
+})();
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the sports supplement and the real shared Deck runtime."""
+"""Regression tests for media-heavy template helpers and the shared Deck runtime."""
 from pathlib import Path
 import json
 import shutil
@@ -8,7 +8,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
-from sports_qa import MEASURE, mount
+from media_qa import MEASURE, mount
 
 STYLE = '''
 *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#152034;background:#fbfaf7}
@@ -40,7 +40,7 @@ BODY = '''
 '''
 
 def fixture():
-    css = '\n'.join((ROOT / 'motion' / n).read_text(encoding='utf-8') for n in ['sports.css','deck-shell.css'])
+    css = (ROOT / 'templates' / 'sports-broadcast.css').read_text(encoding='utf-8') + '\n' + (ROOT / 'motion' / 'deck-shell.css').read_text(encoding='utf-8')
     js = '\n'.join('<script>'+ (ROOT / 'motion' / n).read_text(encoding='utf-8') + '</script>' for n in ['deck-motion.js','deck-shell.js'])
     return '<!doctype html><html><head><meta charset="utf-8"><style>'+STYLE+css+'</style></head><body>'+BODY+js+'</body></html>'
 

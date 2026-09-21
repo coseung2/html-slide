@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.." || exit 2
 PY=${PYTHON:-$HOME/.venvs/pw/bin/python}
 [ -x "$PY" ] || PY=python3
 fail=0
-for f in examples/*.html motion/patterns/*.html; do
+for f in examples/*.html motion/patterns/*.html templates/*.html; do
   out=$("$PY" tools/slide_lint.py "$f" 2>&1)
   rc=$?
   printf '%-42s rc=%s %s\n' "$(basename "$f")" "$rc" \

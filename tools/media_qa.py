@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Offline geometry QA for self-contained sports decks.
+"""Offline geometry QA for self-contained media-heavy HTML decks.
 Checks the authored 1920x1080 stage, text clipping, image/text collisions,
 media frames, broken images and presenter chrome. This supplements slide_lint;
-it does not validate match facts, image rights, subject identity or focal crops.
+it does not validate source facts, media rights, subject identity or focal crops.
 """
 from __future__ import annotations
 import argparse, json, shutil
@@ -112,7 +112,7 @@ def audit(path: Path, out: Path, viewports: list[tuple[int,int]], screenshots=Tr
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('file',type=Path);parser.add_argument('--out',type=Path,default=Path('out/sports-qa'))
+    parser.add_argument('file',type=Path);parser.add_argument('--out',type=Path,default=Path('out/media-qa'))
     args=parser.parse_args()
     r=audit(args.file,args.out,[(1920,1080),(1280,720),(1024,768),(390,844),(844,390)])
     print(json.dumps({'slides':r['slideCount'],'samples':len(r['samples']),'errors':r['errorCount'],'findings':r['errors'][:30]},ensure_ascii=False,indent=2))

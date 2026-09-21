@@ -4,7 +4,7 @@
 #   1. every shipped deck passes the linter
 #   2. the linter still detects what it claims (fixture self-test)
 #   3. the motion behaviour checks pass in a live browser
-#   4. sports media geometry and shared presenter regressions pass
+#   4. shared presenter and template regressions pass
 #   5. Korean-copy linter self-tests pass
 #
 # Usage: bash tools/verify.sh    (exit 0 = all green)
@@ -28,8 +28,8 @@ echo "== 3/5 motion behaviour =="
 "$PY" tests/motion_check.py || fail=1
 
 echo
-echo "== 4/5 sports and presenter regressions =="
-"$PY" tests/sports_check.py || fail=1
+echo "== 4/5 presenter and template regressions =="
+"$PY" tests/template_runtime_check.py || fail=1
 
 echo
 echo "== 5/5 Korean copy lint self-test =="

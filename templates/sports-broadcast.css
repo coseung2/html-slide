@@ -1,13 +1,11 @@
-/* Sports supplement: add after the deck's base CSS. Opt-in, not a global image reset. */
+/* Optional motion helpers for the sports-broadcast template. */
 [data-media-zone]{position:relative;isolation:isolate;overflow:hidden;min-width:0;min-height:0}
 [data-media-zone]>img{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
-/* Use cover only for a deliberately art-directed photograph, never for crests/cutouts. */
 [data-media-zone][data-fit="cover"]>img{object-fit:cover;object-position:var(--focal-point,50% 50%)}
 .sport-bar-track{position:relative;height:16px;background:var(--line,#28354b);overflow:hidden}
 .sport-bar-fill{display:block;width:var(--value,100%);height:100%;background:var(--team,var(--accent,#00ff87));transform-origin:left center;transform:scaleX(1)}
 .sport-focus{position:relative;isolation:isolate}
-.sport-focus> .sport-cue{position:absolute;inset:0;pointer-events:none;border:3px solid var(--accent,#00ff87);opacity:1;z-index:2}
-/* Each selected scene has one group beat. Labels and numerical values never disappear. */
+.sport-focus>.sport-cue{position:absolute;inset:0;pointer-events:none;border:3px solid var(--accent,#00ff87);opacity:1;z-index:2}
 .deck-live [data-sports="compare"] .sport-bar-fill{transition:transform 420ms cubic-bezier(.22,1,.36,1)}
 .deck-live [data-sports="compare"].deck-step-0 .sport-bar-fill{transform:scaleX(.001)}
 .deck-live [data-sports="focus"] .sport-cue{transition:opacity 240ms cubic-bezier(.22,1,.36,1)}

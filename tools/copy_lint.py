@@ -15,19 +15,13 @@ from pathlib import Path
 SKIP_TAGS = {"script", "style", "template", "noscript", "svg"}
 KOREAN_FALLBACK_HANGUL = 12
 TEMPLATE_ENGLISH = (
-    "TOP SIX MARKET REPORT",
-    "TOP SIX REPORT",
-    "TITLE RACE",
-    "THE PACK",
-    "NEXT UP",
-    "MATCHWEEK",
-    "TOP 3 POINTS",
-    "GOAL DIFF",
-    "POINTS",
-    "GOALS",
-    "FORM",
-    "RESULTS",
-    "SIGNAL",
+    "KEY TAKEAWAYS",
+    "NEXT STEPS",
+    "PROJECT OVERVIEW",
+    "STATUS OVERVIEW",
+    "EXECUTIVE SUMMARY",
+    "ACTION ITEMS",
+    "KEY INSIGHTS",
 )
 
 
