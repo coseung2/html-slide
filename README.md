@@ -1,5 +1,7 @@
 # html-slide
 
+**English** · [한국어 README](README.ko.md)
+
 An agent skill for building presentation decks as HTML — with the discipline
 enforced by a linter, not by good intentions.
 
