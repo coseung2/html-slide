@@ -103,6 +103,22 @@ PYTHON=/path/to/venv/bin/python bash tools/verify.sh
 별도 확인해야 합니다. 생성한 스크린샷도 직접 검토합니다. `verify.sh`에는
 스포츠/발표자 컨트롤 회귀 검사 35개도 연결되어 있습니다.
 
+## 한국어 카피 우선
+
+한국어 덱은 `references/korean-copy.md`의 규칙을 먼저 적용합니다. 영어 제목을 만든
+뒤 단어만 치환하는 방식이 아니라, **처음부터 한국어 제목·소제목·지표명으로 장면을
+설계**합니다. `EPL`, `VAR`, 팀 약어, 공식 브랜드명처럼 실제로 읽는 속도를 높이는
+표기만 영어로 남깁니다.
+
+```bash
+python tools/copy_lint.py deck.html --strict
+```
+
+`lang="ko"` 덱에서 영문 비중이 높은 노출 문구와 `TOP SIX`, `NEXT UP`, `POINTS`
+같은 템플릿성 영어를 검사합니다. 의도적으로 유지한 표기는 `data-copy-en-ok`로
+명시합니다. 번역체·어색한 호흡은 기계적으로 판정하지 않고 참고 문서의 전/후
+예시를 기준으로 사람이 마지막 편집 검토를 합니다.
+
 ## 모션 라이브러리
 
 `motion/patterns/index.html`이 갤러리입니다. 레시피 15종을 **어떻게 보이는가가

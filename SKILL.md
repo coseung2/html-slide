@@ -70,6 +70,7 @@ The linter needs anchors in the DOM. These attributes are the contract — they 
 | `data-step` | on `data-hl` | Which animation phase it belongs to (§10) |
 | `data-bleed` | full-bleed art | Explicitly allowed to exceed the safe inset |
 | `data-motion-ok` | any element | Guard for one deliberate exception; requires a comment |
+| `data-copy-en-ok` | intentional English copy | Exempt one reviewed English label/name from Korean copy lint (§3) |
 
 Everything else is free. The linter is deliberately permissive about structure and strict about geometry.
 
@@ -121,6 +122,20 @@ Target-bound emphasis (§9) is only meaningful against a fixed coordinate system
 - **Never** size a highlight against the viewport. Size it against its target.
 
 ## 3. Copy style
+
+### Korean-first decks
+
+When the deck language is Korean, write the slide copy **in Korean first**. Do not design an English deck and translate labels afterward.
+
+- Keep titles, section names, metric labels and explanatory copy in natural Korean by default.
+- Retain English only when it is the established form the audience actually reads faster: league/product acronyms (`EPL`, `VAR`, `AI`, `HTML`), short team codes (`MCI`, `ARS`), official brand names, source titles, or an intentionally quoted phrase.
+- Transliterate familiar people/team names into Korean in audience-facing prose when that is the normal Korean editorial form. Keep the original spelling in sources or metadata when useful.
+- Do not leave template English such as `TOP SIX MARKET REPORT`, `TITLE RACE`, `THE PACK`, `NEXT UP`, `POINTS`, `GOALS`, or `FORM` merely because it looks "broadcast-like". Korean sports graphics get their tone from compression and hierarchy, not from unnecessary English.
+- Avoid literal translation syntax. Rewrite for the Korean audience's reading order and register instead of preserving English noun stacks, abstract verbs, or source sentence structure.
+- Prefer concrete newsroom/editorial verbs and nouns: `단독 선두`, `승점 3점 차`, `득점 선두`, `상위권 판도`, `다음 라운드`, `핵심 정리`. Avoid vague constructions such as `~을 설명한다`, `~을 재검증한다`, or `~의 시그널` when a direct Korean label says the same thing.
+- Use `data-copy-en-ok` only for reviewed exceptions. It is not a blanket escape hatch for an English-heavy slide.
+
+For detailed before/after examples, sports phrasing, and the final editorial pass, read `references/korean-copy.md`. For Korean decks, run `python tools/copy_lint.py deck.html --strict` before delivery; it catches excessive/template English but does **not** certify that prose sounds natural.
 
 ### Titles
 

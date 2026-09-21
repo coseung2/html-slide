@@ -110,6 +110,26 @@ the provided ten scorelines may be labeled as a derived total, but not as an
 independently verified league statistic. Official-looking URLs do not replace
 reading and verifying the underlying report. Avoid "LIVE PHOTO" on a fallback.
 
+## Korean sports copy: sound like a Korean broadcast, not a translated template
+
+For a Korean-language sports deck, use the Korean-first rules in
+`references/korean-copy.md`. Keep only abbreviations that genuinely improve scan
+speed (`EPL`, `MCI`, `ARS`, `xG`, `VAR`). Translate generic scaffolding such as
+`TOP SIX`, `MATCHWEEK`, `TITLE RACE`, `THE PACK`, `POINTS`, `GOALS`, `FORM`,
+`NEXT UP` and `SIGNAL` into concise Korean.
+
+Prefer newsroom/broadcast phrasing that states the event directly:
+
+- `TOP SIX MARKET REPORT` → `EPL 5라운드 상위권 판도`
+- `TITLE RACE · 3 POINT GAP` → `맨시티, 3점 차 단독 선두`
+- `THE PACK · 9 PTS` → `승점 9 동률권`
+- `NEXT UP` → `다음 경기` or `6라운드 주요 경기`
+- `5R SIGNAL` → `5라운드 핵심 정리`
+
+Do not translate word-for-word after the visual hierarchy is fixed. Draft the
+Korean headline first, then size the scene around that actual copy; Korean line
+length and semantic breaks are part of the composition.
+
 ## Additional regression gate
 
 Run the normal linter and accepted-frame export workflow. For a **self-contained**

@@ -109,6 +109,22 @@ layout drift. It does not verify match facts, image identity, rights or subject
 cropping; inspect the rendered screenshots. `verify.sh` also runs the 35 sports
 and presenter regression checks.
 
+## Korean-first copy
+
+For Korean decks, read `references/korean-copy.md` before final layout polish.
+The rule is not "translate every English word"; it is to write titles, section
+labels and explanatory copy in natural Korean first, retaining only abbreviations,
+brands and quoted/original spellings that genuinely help the audience.
+
+```bash
+python tools/copy_lint.py deck.html --strict
+```
+
+The copy linter checks `lang="ko"` decks for English-heavy visible strings and
+common English template labels. Mark a deliberately retained item with
+`data-copy-en-ok`. The linter cannot judge naturalness or translationese reliably;
+that remains an editorial pass using the examples in the reference guide.
+
 ## The motion library
 
 `motion/patterns/index.html` is the gallery. Fifteen recipes, grouped by what

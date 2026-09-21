@@ -5,6 +5,7 @@
 #   2. the linter still detects what it claims (fixture self-test)
 #   3. the motion behaviour checks pass in a live browser
 #   4. sports media geometry and shared presenter regressions pass
+#   5. Korean-copy linter self-tests pass
 #
 # Usage: bash tools/verify.sh    (exit 0 = all green)
 set -u
@@ -15,20 +16,24 @@ export PYTHON="$PY"
 
 fail=0
 
-echo "== 1/4 deck lint =="
+echo "== 1/5 deck lint =="
 bash tools/lint_all.sh || fail=1
 
 echo
-echo "== 2/4 linter self-test =="
+echo "== 2/5 linter self-test =="
 "$PY" tests/linter_selftest.py || fail=1
 
 echo
-echo "== 3/4 motion behaviour =="
+echo "== 3/5 motion behaviour =="
 "$PY" tests/motion_check.py || fail=1
 
 echo
-echo "== 4/4 sports and presenter regressions =="
+echo "== 4/5 sports and presenter regressions =="
 "$PY" tests/sports_check.py || fail=1
+
+echo
+echo "== 5/5 Korean copy lint self-test =="
+"$PY" tests/copy_lint_selftest.py || fail=1
 
 echo
 if [ "$fail" -eq 0 ]; then
