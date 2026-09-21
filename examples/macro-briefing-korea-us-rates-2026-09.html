@@ -4,338 +4,334 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="2026년 9월 한미 통화정책과 물가·고용·시장 경로를 방송형 데이터 그래픽으로 정리한 매크로 브리핑">
-<title>2026.09 매크로 브리핑 — 한미 금리, 다시 위로</title>
+<meta name="description" content="공식 원자료와 scale 기반 SVG 차트로 구성한 2026년 9월 한미 매크로 브리핑">
+<title>2026.09 매크로 브리핑 — 데이터 시각화판</title>
 <style>
-@font-face{font-family:'Pretendard Variable';src:local('Pretendard Variable'),url('assets/fonts/PretendardVariable.woff2') format('woff2-variations');font-weight:45 920;font-style:normal;font-display:swap}
-:root{
-  --bg:#06111b;--panel:#0a1a27;--panel2:#0d2231;--ink:#f3f7fa;--muted:#9eb0bf;--line:#203647;
-  --bok:#6ee7c3;--fed:#ffb45e;--red:#ff766f;--blue:#82b5ff;--quiet:#587083;
-  --t1:78px;--t2:34px;--ui:24px;--stage-w:1920;--stage-h:1080;
-  --d-ui:220ms;--d-step:360ms;--ease-out:cubic-bezier(.16,1,.3,1);--ease-io:cubic-bezier(.65,0,.35,1)
-}
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#02070b;color:var(--ink)}
-body{font-family:'Pretendard Variable',Pretendard,'Noto Sans KR','Malgun Gothic',sans-serif;word-break:keep-all;font-synthesis:none}
-button,a{font:inherit}button{color:inherit}button:focus-visible,a:focus-visible{outline:3px solid var(--fed);outline-offset:3px}
-h1,h2,h3,p{margin:0}.num{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1}.bok{color:var(--bok)}.fed{color:var(--fed)}.red{color:var(--red)}.blue{color:var(--blue)}
+@font-face{font-family:'Pretendard Variable';src:url('../assets/fonts/PretendardVariable.woff2') format('woff2-variations');font-weight:45 920;font-style:normal;font-display:swap}
+:root{--bg:#06111b;--panel:#091a27;--panel2:#0d2231;--ink:#f5f8fb;--muted:#9badbb;--dim:#607789;--line:#203746;--mint:#6ee7c3;--amber:#ffb45e;--blue:#82b5ff;--red:#ff766f;--white:#ffffff;--stage-w:1920;--stage-h:1080}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#02070b;color:var(--ink)}body{font-family:'Pretendard Variable',Pretendard,'Noto Sans KR','Malgun Gothic',sans-serif;word-break:keep-all;font-synthesis:none}button,a{font:inherit}h1,h2,h3,p{margin:0}button:focus-visible,a:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
 #stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:top left;background:var(--bg)}
-#stage:before{content:'';position:absolute;left:96px;right:96px;top:54px;height:1px;background:var(--line);pointer-events:none}
-.slide{position:absolute;inset:0;padding:82px 96px 132px;visibility:hidden;opacity:0;background:var(--bg)}
-.slide.is-active{visibility:visible;opacity:1}
-.scene{height:100%;min-width:0;min-height:0}.copy{display:flex;flex-direction:column;gap:18px}.copy h1{font-size:var(--t1);line-height:1.08;font-weight:870;text-wrap:balance}.copy p{font-size:var(--t2);line-height:1.48;font-weight:560;color:var(--muted);text-wrap:pretty}.eyebrow,.label,.meta,.src{font-size:var(--ui);line-height:1.4}.eyebrow{font-weight:820;color:var(--bok)}.meta,.label{color:var(--muted)}
-.deck-id{position:absolute;right:96px;top:74px;display:flex;gap:16px;align-items:center;font-size:22px;color:var(--muted);font-weight:700}.deck-id b{color:var(--ink);font-weight:800}.deck-id i{width:7px;height:7px;background:var(--fed);display:block}
-.rule{height:1px;background:var(--line)}
-
-/* 01 HERO */
-.hero{display:grid;grid-template-columns:640px minmax(0,1fr);gap:68px;align-items:center}.hero-copy{align-self:center;max-width:610px}.hero-copy .copy p{max-width:570px}.market-board{height:650px;border-top:2px solid var(--ink);border-bottom:1px solid var(--line);display:grid;grid-template-rows:1fr 1fr;background:var(--panel)}
-.rate-card{position:relative;display:grid;grid-template-columns:220px minmax(0,1fr) 230px;align-items:center;padding:42px 46px;border-bottom:1px solid var(--line)}.rate-card:last-child{border-bottom:0}.country{font-size:28px;font-weight:850}.country small{display:block;margin-top:10px;font-size:22px;color:var(--muted);font-weight:650}.rate-roll{position:relative;display:grid;place-items:start;font-size:82px;line-height:1.14;font-weight:920;letter-spacing:-2px}.rate-roll>span{grid-area:1/1;transition:transform var(--d-step) var(--ease-out),opacity var(--d-step) var(--ease-out)}.rate-roll .old{opacity:0;transform:translateY(-22px);color:var(--quiet)}.rate-roll .new{opacity:1;transform:none}.rate-card .change{text-align:right}.rate-card .change strong{display:block;font-size:32px}.rate-card .change span{display:block;margin-top:10px;font-size:22px;color:var(--muted)}
-.hero-signal{margin-top:34px;display:grid;grid-template-columns:1fr 1fr;gap:18px}.signal-line{border-top:2px solid var(--line);padding-top:16px;font-size:23px;color:var(--muted)}.signal-line strong{font-size:28px;color:var(--ink);display:block;margin-top:4px}
-.deck-live .s1.deck-step-0 .rate-roll .old{opacity:1;transform:none}.deck-live .s1.deck-step-0 .rate-roll .new{opacity:0;transform:translateY(22px)}
-
-/* 02 POLICY MAP */
-.headed{display:grid;grid-template-rows:auto 1fr;gap:44px}.headed>.copy{max-width:1260px}.policy-map{display:grid;grid-template-rows:1fr 1fr;border-top:2px solid var(--ink);border-bottom:1px solid var(--line);background:var(--panel)}.policy-lane{display:grid;grid-template-columns:170px minmax(0,1fr);align-items:center;padding:28px 40px}.policy-lane+ .policy-lane{border-top:1px solid var(--line)}.lane-name{font-size:30px;font-weight:900}.lane-name small{display:block;margin-top:8px;font-size:21px;color:var(--muted);font-weight:650}.lane-track{position:relative;height:210px}.lane-axis{position:absolute;left:36px;right:36px;top:105px;height:2px;background:var(--line)}.node{position:absolute;top:32px;width:260px;text-align:center;transform:translateX(-50%)}.node .value{font-size:34px;font-weight:900}.node .date{font-size:21px;color:var(--muted);margin-top:62px}.node .note{font-size:21px;margin-top:6px;font-weight:740}.node:after{content:'';position:absolute;left:50%;top:64px;width:16px;height:16px;transform:translateX(-50%);background:var(--bok)}.fed-lane .node:after{background:var(--fed)}.node.hold:after{background:var(--quiet)}.node.major .value{color:var(--bok)}.fed-lane .node.major .value{color:var(--fed)}.node.major:after{width:22px;height:22px;top:61px}.n1{left:13%}.n2{left:50%}.n3{left:86%}.fed-lane .n1{left:31%}.fed-lane .n2{left:75%}
-.policy-summary{position:absolute;right:96px;bottom:146px;width:520px;border-left:4px solid var(--fed);padding-left:22px;font-size:27px;line-height:1.42;font-weight:800;background:var(--bg)}
-
-/* 03 DATA */
-.data-scene{display:grid;grid-template-columns:1fr 1fr;gap:46px;align-items:stretch}.data-panel{min-width:0;border-top:2px solid var(--ink);background:var(--panel);padding:34px 38px 30px;transition:opacity var(--d-step) var(--ease-out),transform var(--d-step) var(--ease-out)}.data-panel h2{font-size:38px;line-height:1.2}.data-panel .sub{margin-top:8px;font-size:23px;color:var(--muted)}.panel-top{display:flex;justify-content:space-between;gap:28px;align-items:start}.big-metric{text-align:right}.big-metric strong{display:block;font-size:62px;line-height:1.1;font-weight:920}.big-metric span{display:block;margin-top:10px;font-size:21px;color:var(--muted)}
-.cpi-chart{height:330px;margin-top:28px;position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:12px;padding:18px 8px 0}.cpi-chart:before{content:'';position:absolute;left:0;right:0;top:218px;height:2px;background:var(--quiet)}.mbar{position:relative;height:280px}.mbar i{position:absolute;left:50%;width:34px;transform:translateX(-50%);background:var(--fed);transform-origin:bottom center}.mbar.pos i{bottom:62px;height:calc(var(--v)*120px)}.mbar.neg i{top:220px;height:calc(var(--a)*120px);background:var(--bok)}.mbar b{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-size:21px}.mbar em{position:absolute;left:0;right:0;text-align:center;font-style:normal;font-size:20px;color:var(--muted)}.mbar.pos em{bottom:calc(70px + var(--v)*120px)}.mbar.neg em{top:calc(226px + var(--a)*120px)}
-.labor-chart{height:330px;margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:28px}.payroll-bars{display:flex;align-items:end;gap:24px;border-bottom:2px solid var(--quiet);padding:0 12px 36px;height:280px}.pbar{flex:1;position:relative;height:220px}.pbar i{position:absolute;bottom:0;left:18%;right:18%;height:calc(var(--v)*1px);background:var(--blue);transform-origin:bottom}.pbar b{position:absolute;left:0;right:0;bottom:calc(var(--v)*1px + 10px);font-size:25px;text-align:center}.pbar span{position:absolute;left:0;right:0;bottom:-34px;text-align:center;font-size:21px;color:var(--muted)}.labor-facts{display:grid;align-content:center;gap:22px}.labor-fact{border-top:1px solid var(--line);padding-top:16px}.labor-fact strong{font-size:47px;display:block}.labor-fact span{display:block;margin-top:5px;font-size:22px;color:var(--muted)}
-.deck-live .s3.deck-step-0 .labor-panel{opacity:.22;transform:translateY(10px)}.deck-live .s3.deck-step-1 .cpi-panel{opacity:.32}.deck-live .s3.deck-step-1 .labor-panel{opacity:1;transform:none}
-
-/* 04 SEP */
-.sep-scene{display:grid;grid-template-columns:520px minmax(0,1fr);gap:72px;align-items:center}.sep-copy{align-self:center}.sep-copy .copy h1{font-size:74px}.sep-board{border-top:2px solid var(--ink)}.sep-head,.sep-row{display:grid;grid-template-columns:280px 190px 100px 190px 150px;align-items:center}.sep-head{min-height:58px;color:var(--muted);font-size:21px;font-weight:750}.sep-row{position:relative;min-height:140px;border-top:1px solid var(--line);transition:opacity var(--d-step) var(--ease-out)}.sep-row:last-child{border-bottom:1px solid var(--line)}.sep-row .metric-name{font-size:28px;font-weight:840}.sep-row .oldv,.sep-row .newv{font-size:39px;font-weight:900}.sep-row .oldv{color:var(--quiet)}.sep-row .newv{color:var(--ink);transition:opacity var(--d-step) var(--ease-out),transform var(--d-step) var(--ease-out)}.sep-row .arrow{text-align:center;font-size:34px;color:var(--muted)}.sep-row .delta{text-align:right;font-size:24px;font-weight:820}.sep-row.up .delta{color:var(--fed)}.sep-row.down .delta{color:var(--bok)}
-.deck-live .s4.deck-step-0 .sep-row .newv{opacity:.16;transform:translateX(-16px)}.deck-live .s4.deck-step-0 .sep-row .delta{opacity:.2}
-
-/* 05 BOK */
-.bok-scene{display:grid;grid-template-columns:660px minmax(0,1fr);gap:64px;align-items:center}.rate-ladder{height:610px;border-top:2px solid var(--ink);border-bottom:1px solid var(--line);background:var(--panel);padding:38px 44px;display:grid;grid-template-rows:auto 1fr}.ladder-title{display:flex;justify-content:space-between;align-items:baseline}.ladder-title strong{font-size:30px}.ladder-title span{font-size:21px;color:var(--muted)}.ladder{position:relative;margin:32px 20px}.ladder:before{content:'';position:absolute;left:78px;top:18px;bottom:18px;width:3px;background:var(--line)}.step{position:absolute;left:0;right:0;display:grid;grid-template-columns:160px 1fr 150px;align-items:center}.step:before{content:'';position:absolute;left:70px;width:19px;height:19px;background:var(--bok)}.step.sA{top:22px}.step.sB{top:165px}.step.sC{top:308px}.step .value{font-size:44px;font-weight:920}.step .date{font-size:22px;color:var(--muted)}.step .move{text-align:right;font-size:23px;font-weight:800;color:var(--bok)}
-.bok-copy{align-self:center}.bok-copy .copy h1{font-size:70px}.forces{margin-top:34px;border-top:2px solid var(--ink)}.force{display:grid;grid-template-columns:150px 1fr;gap:18px;padding:20px 0;border-bottom:1px solid var(--line);align-items:start}.force span{font-size:24px;font-weight:850;color:var(--bok)}.force strong{font-size:28px;line-height:1.42}.vote-note{margin-top:26px;border-left:4px solid var(--fed);padding-left:20px;font-size:23px;line-height:1.45;color:var(--muted)}.vote-note b{color:var(--ink)}
-
-/* 06 GAP */
-.gap-scene{display:grid;grid-template-columns:minmax(0,1fr) 540px;gap:70px;align-items:center}.gap-visual{height:640px;position:relative;border-top:2px solid var(--ink);border-bottom:1px solid var(--line);background:var(--panel)}.rate-rail{position:absolute;left:70px;right:70px;top:282px;height:3px;background:var(--line)}.tick{position:absolute;top:-10px;width:2px;height:23px;background:var(--quiet)}.tick span{position:absolute;top:35px;left:-28px;width:58px;text-align:center;font-size:20px;color:var(--muted)}.kor-dot{position:absolute;top:-15px;width:33px;height:33px;transform:translateX(-50%);background:var(--bok)}.fed-band{position:absolute;top:-14px;height:30px;background:var(--fed)}.rail-label{position:absolute;top:-128px;transform:translateX(-50%);text-align:center;white-space:nowrap}.rail-label strong{font-size:43px;display:block}.rail-label span{font-size:22px;color:var(--muted);display:block;margin-top:8px}.gap-line{position:absolute;top:115px;height:4px;background:var(--fed);transform-origin:left center;transition:transform var(--d-step) var(--ease-io)}.gap-line:before,.gap-line:after{content:'';position:absolute;top:-9px;width:3px;height:22px;background:var(--fed)}.gap-line:after{right:0}.gap-value{position:absolute;top:144px;transform:translateX(-50%);text-align:center;font-size:60px;font-weight:920;color:var(--fed);transition:opacity var(--d-step) var(--ease-out)}.gap-caption{position:absolute;left:70px;bottom:42px;font-size:22px;color:var(--muted)}.gap-copy{align-self:center}.gap-copy .huge{font-size:94px;font-weight:920;line-height:1.08;margin:28px 0 22px;color:var(--fed)}.gap-copy .copy h1{font-size:64px}.caveat{margin-top:34px;border-left:4px solid var(--red);padding-left:20px;font-size:24px;line-height:1.5;color:var(--muted)}.caveat b{color:var(--ink)}
-.deck-live .s6.deck-step-0 .gap-line{transform:scaleX(0)}.deck-live .s6.deck-step-0 .gap-value{opacity:.18}
-
-/* 07 PATH */
-.path-scene{display:grid;grid-template-columns:1fr 1fr;gap:54px;align-items:stretch}.path-column{border-top:2px solid var(--ink);padding:34px 38px;background:var(--panel);display:grid;grid-template-rows:auto 1fr}.path-column h2{font-size:42px}.path-column p{font-size:24px;color:var(--muted);margin-top:9px;line-height:1.45}.path-body{display:grid;align-content:center}.path-compare{display:grid;grid-template-columns:1fr 74px 1fr;align-items:center;margin:36px 0}.path-value{text-align:center;border-bottom:1px solid var(--line);padding:26px 0}.path-value span{display:block;font-size:21px;color:var(--muted)}.path-value strong{display:block;margin-top:10px;font-size:64px}.path-arrow{text-align:center;font-size:38px;color:var(--fed)}.path-statement{border-left:4px solid var(--bok);padding-left:24px;font-size:30px;line-height:1.45;font-weight:800}.path-statement + .path-statement{margin-top:28px}.path-statement.fedline{border-left-color:var(--fed)}.guardrail{margin-top:34px;padding-top:22px;border-top:1px solid var(--line);font-size:22px;line-height:1.48;color:var(--muted)}.guardrail b{color:var(--ink)}
-
-/* 08 WATCH */
-.watch-scene{display:grid;grid-template-columns:560px minmax(0,1fr);gap:70px;align-items:center}.watch-copy{align-self:center}.watch-copy .copy h1{font-size:72px}.watch-board{border-top:2px solid var(--ink);border-bottom:1px solid var(--line);background:var(--panel)}.event-row{display:grid;grid-template-columns:150px 18px 1fr 130px;gap:28px;align-items:center;min-height:118px;padding:0 34px;border-top:1px solid var(--line);transition:opacity var(--d-step) var(--ease-out),transform var(--d-step) var(--ease-out)}.event-row:first-child{border-top:0}.event-row .date{font-size:29px;font-weight:900}.event-row .dot{width:14px;height:14px;background:var(--blue)}.event-row .what{font-size:29px;font-weight:840}.event-row .kind{font-size:21px;text-align:right;color:var(--blue);font-weight:800}.event-row.policy .dot{background:var(--fed)}.event-row.policy .kind{color:var(--fed)}.event-row.bok-policy .dot{background:var(--bok)}.event-row.bok-policy .kind{color:var(--bok)}.watch-note{margin-top:34px;font-size:26px;line-height:1.5;color:var(--muted)}.watch-note b{color:var(--ink)}
-.deck-live .s8.deck-step-0 .event-row[data-phase="2"],.deck-live .s8.deck-step-0 .event-row[data-phase="3"]{opacity:.18;transform:translateY(7px)}.deck-live .s8.deck-step-1 .event-row[data-phase="3"]{opacity:.18;transform:translateY(7px)}
-
-/* Presenter shell */
-.deck-shell{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:1000;display:flex;align-items:center;gap:4px;background:#07131fee;border:1px solid #294053;padding:5px 7px}.deck-shell button{border:0;background:transparent;padding:8px 11px;min-height:39px;cursor:pointer;font-size:21px;color:#d8e2e9}.deck-shell button:hover{background:#102535}.deck-shell button:disabled{opacity:.28;cursor:default}.deck-shell__counter{min-width:82px;text-align:center;font-size:21px;color:var(--muted);font-variant-numeric:tabular-nums}.deck-shell__phase{min-width:62px;text-align:center;font-size:18px;color:var(--bok);font-variant-numeric:tabular-nums}.deck-progress{position:fixed;left:0;right:0;bottom:0;height:3px;background:#183042;z-index:1001}.deck-progress>i{display:block;height:100%;background:var(--fed);transform-origin:left center;transform:scaleX(0);transition:transform var(--d-ui) var(--ease-out)}.deck-sr{position:fixed;width:1px;height:1px;clip:rect(0 0 0 0);overflow:hidden}
-.deck-dialog{width:min(1200px,calc(100% - 60px));max-height:82vh;overflow:auto;border:1px solid #294053;background:#07131f;color:var(--ink);padding:34px}.deck-dialog::backdrop{background:#000b}.deck-dialog h2{font-size:34px;margin-bottom:24px}.overview-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}.overview-list button{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:17px 18px;text-align:left;font-size:22px;cursor:pointer}.overview-list button[aria-current="true"]{border-color:var(--fed);color:var(--fed)}.source-list{display:grid;gap:14px}.source-list a{color:#a9cbff;font-size:20px;line-height:1.4;overflow-wrap:anywhere}.dialog-close{margin-top:24px;border:0;background:var(--ink);color:var(--bg);font-size:21px;padding:10px 18px;cursor:pointer}
-html.deck-capture .deck-shell,html.deck-capture .deck-progress{display:none!important}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
-@media print{@page{size:20in 11.25in;margin:0}html,body{overflow:visible;width:1920px;height:auto;background:var(--bg)}#stage{position:static;width:1920px;height:auto;transform:none!important}.slide{position:relative;display:block!important;visibility:visible!important;opacity:1!important;width:1920px;height:1080px;break-after:page;page-break-after:always}.deck-shell,.deck-progress,.deck-dialog{display:none!important}}
+#stage:before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(#ffffff05 1px,transparent 1px),linear-gradient(90deg,#ffffff04 1px,transparent 1px);background-size:64px 64px;opacity:.25}
+.slide{position:absolute;inset:0;padding:82px 104px 118px;visibility:hidden;opacity:0;overflow:hidden}.slide.is-active{visibility:visible;opacity:1}.scene{height:100%;position:relative;z-index:1}.copy{display:flex;flex-direction:column;gap:18px}.eyebrow{font-size:23px;line-height:1.4;font-weight:800;color:var(--mint);letter-spacing:.01em}.title{font-size:76px;line-height:1.08;font-weight:880;letter-spacing:-.035em;text-wrap:balance}.body{font-size:31px;line-height:1.52;color:var(--muted);font-weight:600}.source-label{position:absolute;left:104px;bottom:70px;font-size:17px;color:#718596}.source-label strong{color:#9fb0bc}.num{font-variant-numeric:tabular-nums}.mint{color:var(--mint)}.amber{color:var(--amber)}.blue{color:var(--blue)}.red{color:var(--red)}
+.hero-grid{display:grid;grid-template-columns:630px minmax(0,1fr);gap:66px;align-items:center}.hero-copy{padding-top:14px}.hero-copy .title{font-size:82px}.hero-thesis{margin-top:34px;padding-top:24px;border-top:1px solid var(--line);font-size:28px;line-height:1.45;font-weight:760}.hero-chart{height:620px;display:grid;grid-template-rows:1fr auto;gap:18px}.rate-strip{display:grid;grid-template-columns:1fr 1.15fr;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.rate-cell{padding:18px 4px 20px}.rate-cell+ .rate-cell{border-left:1px solid var(--line);padding-left:28px}.rate-cell span{display:block;font-size:18px;color:var(--muted);font-weight:700}.rate-cell strong{display:block;font-size:34px;margin-top:7px;line-height:1.1}.chart-stage{width:100%;height:100%;min-height:0}.chart-stage svg{font-family:'Pretendard Variable',Pretendard,'Noto Sans KR','Malgun Gothic',sans-serif}
+.split-chart{display:grid;grid-template-columns:minmax(0,1fr) 500px;gap:70px;align-items:center}.chart-block{height:650px;min-width:0}.side-copy{align-self:center}.side-copy .title{font-size:64px}.fact-stack{margin-top:38px;border-top:2px solid var(--line)}.fact{display:grid;grid-template-columns:128px 1fr;gap:22px;padding:20px 0;border-bottom:1px solid var(--line);align-items:baseline}.fact span{font-size:20px;color:var(--muted);font-weight:700}.fact strong{font-size:30px;line-height:1.32}.fact small{font-size:17px;color:var(--dim);display:block;margin-top:5px;line-height:1.35}
+.scatter-scene{display:grid;grid-template-columns:1100px minmax(0,1fr);gap:62px;align-items:center}.scatter-copy .title{font-size:62px}.scatter-note{margin-top:34px;padding:22px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:23px;line-height:1.45;color:var(--muted)}.scatter-note b{color:var(--ink)}
+.payroll-scene{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:72px;align-items:center}.payroll-copy .title{font-size:64px}.big-stat{margin-top:42px;font-size:94px;font-weight:900;line-height:1}.big-stat span{font-size:28px;color:var(--muted);font-weight:750;margin-left:8px}.substats{margin-top:36px;display:grid;gap:0;border-top:1px solid var(--line)}.substat{display:flex;justify-content:space-between;align-items:baseline;padding:18px 0;border-bottom:1px solid var(--line)}.substat span{font-size:20px;color:var(--muted)}.substat strong{font-size:30px}.asterisk{font-size:17px;color:var(--dim);margin-top:16px;line-height:1.45}
+.dot-scene{display:grid;grid-template-columns:minmax(0,1fr) 470px;gap:64px;align-items:center}.dot-copy .title{font-size:62px}.dot-copy .body{font-size:28px}.distribution{margin-top:34px;border-top:1px solid var(--line)}.dist-row{display:grid;grid-template-columns:100px 1fr 88px;gap:14px;align-items:center;padding:18px 0;border-bottom:1px solid var(--line)}.dist-row span{font-size:20px;color:var(--muted)}.dist-row strong{font-size:28px}.dist-row b{text-align:right;font-size:22px;color:var(--mint)}
+.korea-scene{display:grid;grid-template-columns:520px minmax(0,1fr);gap:66px;align-items:center}.korea-copy .title{font-size:64px}.contrast{margin-top:36px;padding:26px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.contrast .pair{display:flex;align-items:baseline;gap:18px}.contrast .pair+ .pair{margin-top:14px}.contrast .pair span{font-size:19px;color:var(--muted);width:140px}.contrast .pair strong{font-size:38px}.korea-chart{height:630px}
+.rate-scene{display:grid;grid-template-columns:minmax(0,1fr) 500px;gap:68px;align-items:center}.rate-copy .title{font-size:64px}.rate-copy .body{font-size:28px}.gap-readout{margin-top:34px;border-top:1px solid var(--line);padding-top:24px}.gap-readout span{display:block;font-size:19px;color:var(--muted)}.gap-readout strong{display:block;font-size:48px;margin-top:8px}.gap-readout small{display:block;font-size:18px;color:var(--dim);margin-top:8px}.rate-chart{height:630px}
+.watch-scene{display:grid;grid-template-rows:auto 1fr;gap:48px}.watch-head{display:grid;grid-template-columns:1fr 520px;gap:60px;align-items:end}.watch-head .title{font-size:66px}.watch-head .body{font-size:27px}.event-lane{position:relative;display:grid;grid-template-columns:repeat(6,1fr);gap:20px;align-items:stretch}.event-lane:before{content:"";position:absolute;left:5%;right:5%;top:62px;height:2px;background:var(--line)}.event{position:relative;padding:0 12px 20px;display:grid;grid-template-rows:124px auto;min-width:0}.event-top{position:relative}.event-dot{position:absolute;left:0;top:52px;width:18px;height:18px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 7px var(--bg)}.event.policy .event-dot{background:var(--amber)}.event-date{position:absolute;left:0;top:0;font-size:24px;font-weight:850}.event-kind{position:absolute;left:0;top:84px;font-size:16px;font-weight:800;color:var(--muted)}.event.policy .event-kind{color:var(--amber)}.event strong{font-size:27px;line-height:1.34}.event p{margin-top:10px;font-size:18px;line-height:1.4;color:var(--muted)}.watch-rule{position:absolute;left:104px;right:104px;bottom:124px;border-top:1px solid var(--line);padding-top:18px;font-size:20px;color:var(--muted)}.watch-rule b{color:var(--mint)}
+.deck-controls{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:flex;align-items:center;gap:7px;padding:5px 7px;border:1px solid #253a49;background:#07131fe8;z-index:1000;backdrop-filter:blur(8px)}.deck-controls button{border:0;background:transparent;color:var(--ink);padding:8px 11px;min-height:38px;cursor:pointer;font-size:20px}.deck-controls button:hover{background:#102536}.deck-controls button[aria-pressed="true"]{color:var(--mint)}.counter{min-width:84px;text-align:center;font-size:20px;color:var(--muted);font-variant-numeric:tabular-nums}.progress-track{position:fixed;left:0;right:0;bottom:0;height:3px;background:#142734;z-index:1001}.progress{height:100%;background:var(--mint);transform-origin:left center;transform:scaleX(0)}
+#overview,#sources{width:min(1120px,calc(100% - 48px));max-height:82%;overflow:auto;border:1px solid var(--line);background:#081825;color:var(--ink);padding:30px}#overview::backdrop,#sources::backdrop{background:#02070bcc}#overview h2,#sources h2{font-size:30px;margin-bottom:24px}.overview-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}.overview-list button{border:1px solid var(--line);background:#0a1c29;color:var(--ink);padding:16px;text-align:left;font-size:20px;cursor:pointer}.source-list{display:grid;gap:14px}.source-list a{color:#b8d6ff;font-size:19px;overflow-wrap:anywhere}.modal-close{margin-top:24px;border:0;background:var(--mint);color:#03120e;padding:10px 18px;font-size:20px;font-weight:800;cursor:pointer}
+.deck-live .slide.is-active [data-motion="sweep"]{animation:sweep .58s cubic-bezier(.16,1,.3,1) both}.deck-live .slide.is-active [data-motion="fade"]{animation:fade .38s ease-out both}@keyframes sweep{from{clip-path:inset(0 100% 0 0);opacity:.65}to{clip-path:inset(0);opacity:1}}@keyframes fade{from{opacity:.25;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.deck-live{}}
+@media print{@page{size:20in 11.25in;margin:0}html,body{overflow:visible;width:1920px;height:auto;background:var(--bg)}#stage{position:static;width:1920px;height:auto;transform:none!important}.slide{position:relative;display:block!important;visibility:visible!important;opacity:1!important;width:1920px;height:1080px;break-after:page;page-break-after:always}.deck-controls,.progress-track,#overview,#sources{display:none!important}}
 </style>
 </head>
 <body>
+
 <main id="stage" data-stage>
-  <section class="slide s1 is-active" data-slide="01" data-title="9월, 금리의 방향이 다시 위로" data-step="1" data-start="0">
-    <div class="deck-id"><i></i><b>매크로 브리핑</b><span>2026.09.21</span></div>
-    <div class="scene hero">
-      <div class="hero-copy">
-        <div class="eyebrow">한미 통화정책 · 9월 스냅샷</div>
-        <div class="copy" data-copy>
-          <h1>9월,<br>금리의 방향이<br><span class="fed">다시 위로</span></h1>
-          <p>한국은 7·8월 두 차례 연속 인상.<br>미국은 9월 25bp 인상으로 전환.</p>
-        </div>
-        <div class="hero-signal" data-visual>
-          <div class="signal-line">한국은행<strong class="bok">2회 연속 +25bp</strong></div>
-          <div class="signal-line">Federal Reserve<strong class="fed">9월 +25bp</strong></div>
-        </div>
-      </div>
-      <div class="market-board" data-visual>
-        <div class="rate-card">
-          <div class="country">한국<small>기준금리</small></div>
-          <div class="rate-roll num"><span class="old">2.50%</span><span class="new bok">3.00%</span></div>
-          <div class="change"><strong class="bok num">+50bp</strong><span>7월 · 8월 누적</span></div>
-        </div>
-        <div class="rate-card">
-          <div class="country">미국<small>목표범위</small></div>
-          <div class="rate-roll num"><span class="old">3.50–3.75%</span><span class="new fed">3.75–4.00%</span></div>
-          <div class="change"><strong class="fed num">+25bp</strong><span>9월 16일</span></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="slide s2" data-slide="02" data-title="금리 지도: 한국 2번, 미국 1번">
-    <div class="deck-id"><i></i><b>정책금리 지도</b><span>2025.05 → 2026.09</span></div>
-    <div class="scene headed">
-      <div class="copy" data-copy>
-        <div class="eyebrow">정책금리 타임라인</div>
-        <h1>금리 지도: 한국 2번, 미국 1번</h1>
-        <p>한국은행은 7·8월 연속 인상, Fed는 7월 동결 뒤 9월 인상.</p>
-      </div>
-      <div class="policy-map" data-visual>
-        <div class="policy-lane">
-          <div class="lane-name bok">한국은행<small>기준금리</small></div>
-          <div class="lane-track"><div class="lane-axis"></div>
-            <div class="node n1"><div class="value num">2.50%</div><div class="date">2025.05.29</div><div class="note">인하 후 유지</div></div>
-            <div class="node n2 major"><div class="value num">2.75%</div><div class="date">2026.07.16</div><div class="note bok num">+25bp</div></div>
-            <div class="node n3 major"><div class="value num">3.00%</div><div class="date">2026.08.27</div><div class="note bok num">+25bp</div></div>
-          </div>
-        </div>
-        <div class="policy-lane fed-lane">
-          <div class="lane-name fed">Fed<small>목표범위</small></div>
-          <div class="lane-track"><div class="lane-axis"></div>
-            <div class="node n1 hold"><div class="value num">3.50–3.75%</div><div class="date">2026.07.29</div><div class="note">동결</div></div>
-            <div class="node n2 major"><div class="value num">3.75–4.00%</div><div class="date">2026.09.16</div><div class="note fed num">+25bp</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="slide s3" data-slide="03" data-title="미국: 물가 높고, 고용은 버틴다" data-step="2" data-start="0">
-    <div class="deck-id"><i></i><b>미국 데이터</b><span>2026.08</span></div>
-    <div class="scene headed">
-      <div class="copy" data-copy>
-        <div class="eyebrow">미국 실물 데이터</div>
-        <h1>물가는 높고, 고용은 버틴다</h1>
-        <p>9월 FOMC 직전의 물가·고용 스냅샷을 함께 확인한다.</p>
-      </div>
-      <div class="data-scene" data-visual>
-        <div class="data-panel cpi-panel">
-          <div class="panel-top"><div><h2>소비자물가 · 전월비</h2><div class="sub">계절조정 · 2026년 2–8월</div></div><div class="big-metric"><strong class="fed num">3.4%</strong><span>8월 전년비</span></div></div>
-          <div class="cpi-chart" aria-label="미국 CPI 월별 전월비 변화">
-            <div class="mbar pos" style="--v:.3"><i></i><em>+0.3</em><b>2월</b></div>
-            <div class="mbar pos" style="--v:.9"><i></i><em>+0.9</em><b>3월</b></div>
-            <div class="mbar pos" style="--v:.6"><i></i><em>+0.6</em><b>4월</b></div>
-            <div class="mbar pos" style="--v:.5"><i></i><em>+0.5</em><b>5월</b></div>
-            <div class="mbar neg" style="--a:.4"><i></i><em>−0.4</em><b>6월</b></div>
-            <div class="mbar pos" style="--v:.1"><i></i><em>+0.1</em><b>7월</b></div>
-            <div class="mbar pos" style="--v:.4"><i></i><em>+0.4</em><b>8월</b></div>
-          </div>
-          <div class="rule"></div><div class="meta" style="margin-top:16px">근원 CPI <strong class="num" style="color:var(--ink)">+2.4% 전년비</strong> · 휘발유 <strong class="num" style="color:var(--ink)">+3.9% 전월비</strong></div>
-        </div>
-        <div class="data-panel labor-panel">
-          <div class="panel-top"><div><h2>고용 · 비농업취업자</h2><div class="sub">전월 대비 증감 · 천 명</div></div><div class="big-metric"><strong class="blue num">+162K</strong><span>8월</span></div></div>
-          <div class="labor-chart">
-            <div class="payroll-bars" aria-label="미국 비농업취업자 월별 증가"><div class="pbar" style="--v:31"><i></i><b class="num">31</b><span>6월</span></div><div class="pbar" style="--v:21"><i></i><b class="num">21</b><span>7월</span></div><div class="pbar" style="--v:162"><i></i><b class="num">162</b><span>8월</span></div></div>
-            <div class="labor-facts"><div class="labor-fact"><strong class="num">4.1%</strong><span>실업률 · 전월과 동일</span></div><div class="labor-fact"><strong class="num">+3.1%</strong><span>시간당 임금 · 전년비</span></div></div>
-          </div>
-          <div class="rule"></div><div class="meta" style="margin-top:16px">6·7월 증가는 수정치 기준 · 8월 실업률은 <strong style="color:var(--ink)">4.1%</strong></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="slide s4" data-slide="04" data-title="Fed SEP: 성장↑ · 실업↓ · 물가↑ · 금리↑" data-step="1" data-start="0">
-    <div class="deck-id"><i></i><b>Fed 경제전망</b><span>2026.06 → 09</span></div>
-    <div class="scene sep-scene">
-      <div class="sep-copy">
-        <div class="eyebrow">전망 중앙값의 이동</div>
-        <div class="copy" data-copy><h1>성장↑ · 실업↓<br>물가↑ · 금리↑</h1><p>Fed의 9월 경제전망은 6월보다 성장과 물가, 연말 정책금리 경로를 높였다.</p></div>
-      </div>
-      <div class="sep-board" data-visual>
-        <div class="sep-head"><span>2026년 전망</span><span>6월</span><span></span><span>9월</span><span style="text-align:right">변화</span></div>
-        <div class="sep-row up"><div class="metric-name">실질 GDP</div><div class="oldv num">2.2%</div><div class="arrow">→</div><div class="newv num">2.3%</div><div class="delta num">+0.1%p</div></div>
-        <div class="sep-row down"><div class="metric-name">실업률</div><div class="oldv num">4.3%</div><div class="arrow">→</div><div class="newv num">4.1%</div><div class="delta num">−0.2%p</div></div>
-        <div class="sep-row up"><div class="metric-name">PCE 물가</div><div class="oldv num">3.6%</div><div class="arrow">→</div><div class="newv num">3.7%</div><div class="delta num">+0.1%p</div></div>
-        <div class="sep-row up"><div class="metric-name">연말 연방기금금리</div><div class="oldv num">3.8%</div><div class="arrow">→</div><div class="newv fed num">4.1%</div><div class="delta num">+0.3%p</div></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="slide s5" data-slide="05" data-title="한국: 성장·물가·금융안정이 같은 방향">
-    <div class="deck-id"><i></i><b>한국은행</b><span>2026.07 · 08</span></div>
-    <div class="scene bok-scene">
-      <div class="rate-ladder" data-visual>
-        <div class="ladder-title"><strong>기준금리 · 연속 인상</strong><span>2025.05 → 2026.08</span></div>
-        <div class="ladder">
-          <div class="step sA"><div class="value num">2.50%</div><div class="date">2025.05.29</div><div class="move">기준점</div></div>
-          <div class="step sB"><div class="value bok num">2.75%</div><div class="date">2026.07.16</div><div class="move num">+25bp</div></div>
-          <div class="step sC"><div class="value bok num">3.00%</div><div class="date">2026.08.27</div><div class="move num">+25bp</div></div>
-        </div>
-      </div>
-      <div class="bok-copy">
-        <div class="eyebrow">한국은행의 세 축</div>
-        <div class="copy" data-copy><h1>성장·물가·금융안정이<br>같은 방향</h1><p>9월 통화신용정책보고서는 추가 긴축 여부를 세 변수의 흐름과 함께 보겠다고 설명한다.</p></div>
-        <div class="forces" data-visual>
-          <div class="force"><span>물가</span><strong>상당기간 목표 수준을 웃돌 전망</strong></div>
-          <div class="force"><span>성장</span><strong>수출 호조 + 내수 회복으로 예상보다 강한 흐름</strong></div>
-          <div class="force"><span>금융안정</span><strong>수도권 주택가격·가계대출 증가세 확대</strong></div>
-        </div>
-        <div class="vote-note"><b>8월 회의의 결론은 인상</b>이었지만, 공개 의사록에는 2.75% 동결 의견도 1명 있었다.</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="slide s6" data-slide="06" data-title="한미 정책금리 차: 0.875%p" data-step="1" data-start="0">
-    <div class="deck-id"><i></i><b>금리차</b><span>2026.09.21</span></div>
-    <div class="scene gap-scene">
-      <div class="gap-visual" data-visual>
-        <div class="rate-rail">
-          <div class="tick" style="left:0%"><span>2.5</span></div><div class="tick" style="left:25%"><span>3.0</span></div><div class="tick" style="left:50%"><span>3.5</span></div><div class="tick" style="left:75%"><span>4.0</span></div><div class="tick" style="left:100%"><span>4.5</span></div>
-          <div class="kor-dot" style="left:25%"></div><div class="rail-label" style="left:25%"><strong class="bok num">3.00%</strong><span>한국은행</span></div>
-          <div class="fed-band" style="left:62.5%;width:12.5%"></div><div class="rail-label" style="left:68.75%"><strong class="fed num">3.75–4.00%</strong><span>Fed 목표범위</span></div>
-          <div class="gap-line" style="left:25%;width:43.75%"></div><div class="gap-value num" style="left:46.875%">0.875%p</div>
-        </div>
-        <div class="gap-caption">계산 기준: 미국 목표범위 중간값 3.875% − 한국 3.00%</div>
-      </div>
-      <div class="gap-copy">
-        <div class="eyebrow">정책금리 레일</div>
-        <div class="huge num">0.875%p</div>
-        <div class="copy" data-copy><h1>한미 정책금리 차</h1><p>미국 목표범위의 중간값을 기준으로 계산.</p></div>
-        <div class="caveat"><b>해석 주의</b> · 금리차만으로 환율이나 자금 흐름의 방향을 단정할 수는 없다.</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="slide s7" data-slide="07" data-title="정책 문구가 말하는 다음 경로">
-    <div class="deck-id"><i></i><b>정책 경로</b><span>공식 문구 기준</span></div>
-    <div class="scene headed">
-      <div class="copy" data-copy>
-        <div class="eyebrow">전망이 아니라, 공식 문구 읽기</div>
-        <h1>정책 문구가 말하는 다음 경로</h1>
-        <p>Fed는 점도표 중앙값, 한국은행은 추가 인상의 시점·속도를 데이터에 열어 두고 있다.</p>
-      </div>
-      <div class="path-scene" data-visual>
-        <div class="path-column">
-          <div><h2 class="fed">Fed</h2><p>9월 SEP · 2026년 말 중앙값</p></div>
-          <div class="path-body">
-            <div class="path-compare"><div class="path-value"><span>현재 목표범위 중간값</span><strong class="num">3.875%</strong></div><div class="path-arrow">→</div><div class="path-value"><span>연말 전망 중앙값</span><strong class="fed num">4.1%</strong></div></div>
-            <div class="path-statement fedline">9월 SEP는 6월보다 연말 금리 중앙값을 0.3%p 높였다.</div>
-            <div class="guardrail"><b>점도표는 약속이 아니다.</b> 각 참여자의 조건부 전망을 모은 것이며, 이후 데이터에 따라 달라질 수 있다.</div>
-          </div>
-        </div>
-        <div class="path-column">
-          <div><h2 class="bok">한국은행</h2><p>9월 통화신용정책보고서</p></div>
-          <div class="path-body">
-            <div class="path-statement">물가 경로를 보면서 추가 인상의 <b>시점과 속도</b>를 결정.</div>
-            <div class="path-statement">성장 흐름과 수도권 주택·가계대출 등 <b>금융안정</b>도 함께 점검.</div>
-            <div class="guardrail"><b>방향은 조건부다.</b> 공식 문구는 향후 회의에서 데이터에 따라 판단하겠다는 프레임을 유지한다.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="slide s8" data-slide="08" data-title="다음 확인 순서" data-step="2" data-start="0">
-    <div class="deck-id"><i></i><b>다음 일정</b><span>09.29 → 10.28</span></div>
-    <div class="scene watch-scene">
-      <div class="watch-copy">
-        <div class="eyebrow">다음 데이터 · 다음 회의</div>
-        <div class="copy" data-copy><h1>다음 확인 순서</h1><p>예측보다 새 숫자와 정책 문구가 어떻게 바뀌는지 순서대로 확인.</p></div>
-        <div class="watch-note"><b>미국:</b> 노동 → 물가 → FOMC<br><b>한국:</b> 10월 22일 금통위</div>
-      </div>
-      <div class="watch-board" data-visual>
-        <div class="event-row" data-phase="1"><div class="date num">09.29</div><i class="dot"></i><div class="what">미국 JOLTS · 8월</div><div class="kind">지표</div></div>
-        <div class="event-row" data-phase="1"><div class="date num">10.02</div><i class="dot"></i><div class="what">미국 고용보고서 · 9월</div><div class="kind">지표</div></div>
-        <div class="event-row" data-phase="2"><div class="date num">10.14</div><i class="dot"></i><div class="what">미국 CPI · 9월</div><div class="kind">지표</div></div>
-        <div class="event-row policy bok-policy" data-phase="3"><div class="date num">10.22</div><i class="dot"></i><div class="what">한국은행 금융통화위원회</div><div class="kind">회의</div></div>
-        <div class="event-row policy" data-phase="3"><div class="date num">10.27–28</div><i class="dot"></i><div class="what">FOMC</div><div class="kind">회의</div></div>
-      </div>
-    </div>
-  </section>
+<section class="slide is-active" data-slide="01" data-title="9월 매크로: 물가의 결이 갈렸다">
+  <div class="scene hero-grid">
+    <div class="hero-copy"><div class="eyebrow">2026.09 · 한미 매크로 브리핑</div><div class="copy" data-copy><h1 class="title">물가의 결이<br><span class="amber">갈렸다</span></h1><p class="body">미국은 헤드라인이 3.4%에 머문 동안 코어가 2.4%로 둔화.<br>한국은 반대로 근원물가가 헤드라인보다 높다.</p></div><div class="hero-thesis">그런데 정책금리는 양쪽 모두 <span class="mint">다시 위로</span> 움직였다.</div></div>
+    <div class="hero-chart" data-visual><div id="chart-hero" class="chart-stage" data-motion="sweep"></div><div class="rate-strip"><div class="rate-cell"><span>한국은행 기준금리</span><strong class="mint num">3.00%</strong></div><div class="rate-cell"><span>Fed 목표범위 · 9월 16일</span><strong class="amber num">3.75–4.00%</strong></div></div></div>
+  </div><div class="source-label"><strong>현재치</strong> · BLS 2026.09.11 · Fed 2026.09.16 · BOK 2026.08.27 · 국가데이터처 2026.09.02</div>
+</section>
+<section class="slide" data-slide="02" data-title="미국 CPI: 헤드라인과 코어의 분리">
+  <div class="scene split-chart"><div class="chart-block" data-visual><div id="chart-us-cpi" class="chart-stage" data-motion="sweep"></div></div><div class="side-copy"><div class="eyebrow">미국 물가 · 전년동월비</div><div class="copy" data-copy><h1 class="title">헤드라인은 <span class="amber">3.4%</span>,<br>코어는 <span class="mint">2.4%</span></h1><p class="body">3월 이후 에너지 충격으로 전체 CPI가 튀었지만, 식품·에너지를 뺀 코어는 5월 2.9%에서 8월 2.4%로 낮아졌다.</p></div><div class="fact-stack"><div class="fact"><span>8월 MoM</span><strong class="num">CPI +0.4% · Core +0.3%</strong></div><div class="fact"><span>에너지 YoY</span><strong class="amber num">+16.3%</strong></div><div class="fact"><span>가솔린 YoY</span><strong class="amber num">+27.4%</strong></div></div></div></div><div class="source-label"><strong>자료</strong> · U.S. Bureau of Labor Statistics, CPI releases</div>
+</section>
+<section class="slide" data-slide="03" data-title="실업률과 코어 CPI: 6개월 산포도">
+  <div class="scene scatter-scene"><div class="chart-block" data-visual><div id="chart-scatter" class="chart-stage" data-motion="fade"></div></div><div class="scatter-copy"><div class="eyebrow">미국 · 2026년 3–8월</div><div class="copy" data-copy><h1 class="title">최근 관측치는<br><span class="blue">왼쪽 아래</span>로 이동</h1><p class="body">실업률은 4.3%에서 4.1%로, 코어 CPI는 2.9% 고점에서 2.4%로 내려왔다.</p></div><div class="scatter-note"><b>읽는 법</b> · 각 점은 한 달의 관측치다. 이 산포도는 동시 움직임을 보여 줄 뿐, 물가와 실업 사이의 인과관계를 뜻하지 않는다.</div></div></div><div class="source-label"><strong>자료</strong> · BLS CPI · Current Population Survey, seasonally adjusted unemployment rate</div>
+</section>
+<section class="slide" data-slide="04" data-title="미국 고용: 8월 16.2만 명 반등">
+  <div class="scene payroll-scene"><div class="chart-block" data-visual><div id="chart-payroll" class="chart-stage" data-motion="fade"></div></div><div class="payroll-copy"><div class="eyebrow">고용 · 비농업 취업자</div><div class="copy" data-copy><h1 class="title">7월 <span class="blue">2.1만</span> →<br>8월 <span class="mint">16.2만</span></h1><p class="body">고용은 8월에 크게 반등했다. 다만 최근 두 달 수치는 여전히 잠정치라 다음 발표에서 수정될 수 있다.</p></div><div class="big-stat num mint">+162<span>천 명</span></div><div class="substats"><div class="substat"><span>실업률</span><strong class="num">4.1%</strong></div><div class="substat"><span>시간당 임금 YoY</span><strong class="num">3.1%</strong></div></div><div class="asterisk">* 8월 잠정치. 6월은 +31천 명, 7월은 +21천 명으로 9월 발표에서 상향 수정.</div></div></div><div class="source-label"><strong>자료</strong> · BLS Employment Situation, 2026.09.04</div>
+</section>
+<section class="slide" data-slide="05" data-title="Fed SEP: 점도표가 보여주는 금리 분포">
+  <div class="scene dot-scene"><div class="chart-block" data-visual><div id="chart-fed-dots" class="chart-stage" data-motion="fade"></div></div><div class="dot-copy"><div class="eyebrow">Fed SEP · 9월 점도표</div><div class="copy" data-copy><h1 class="title">2026년은<br><span class="mint num">4.125%</span>에 집중</h1><p class="body">각 점은 한 참가자의 ‘적절한 연말 금리’ 판단이다. 2026년에는 18명 중 12명이 4.125%를 제시했다.</p></div><div class="distribution"><div class="dist-row"><span>2026</span><strong class="num">4.125%</strong><b>12명</b></div><div class="dist-row"><span>2027</span><strong class="num">4.375 / 4.125%</strong><b>8 / 6명</b></div><div class="dist-row"><span>현재</span><strong class="num">3.75–4.00%</strong><b>+25bp</b></div></div></div></div><div class="source-label"><strong>자료</strong> · Federal Reserve, Summary of Economic Projections, 2026.09.16 · 일부 장기에는 제출 인원 수가 다름</div>
+</section>
+<section class="slide" data-slide="06" data-title="한국 8월 물가: 근원이 헤드라인보다 높다">
+  <div class="scene korea-scene"><div class="korea-copy"><div class="eyebrow">한국 · 2026년 8월</div><div class="copy" data-copy><h1 class="title">근원물가 <span class="mint num">3.4%</span><br>헤드라인 <span class="amber num">3.1%</span></h1><p class="body">한국은 미국과 반대다. 식료품·에너지를 제외한 근원지수가 전체 소비자물가보다 높다.</p></div><div class="contrast"><div class="pair"><span>생활물가</span><strong class="num">+3.2%</strong></div><div class="pair"><span>신선식품</span><strong class="red num">−6.7%</strong></div></div></div><div class="korea-chart" data-visual><div id="chart-korea-cpi" class="chart-stage" data-motion="fade"></div></div></div><div class="source-label"><strong>자료</strong> · 국가데이터처 「2026년 8월 소비자물가동향」, 2026.09.02</div>
+</section>
+<section class="slide" data-slide="07" data-title="한국 기준금리: 인하 경로에서 재인상으로">
+  <div class="scene rate-scene"><div class="rate-chart" data-visual><div id="chart-bok-rate" class="chart-stage" data-motion="sweep"></div></div><div class="rate-copy"><div class="eyebrow">한국은행 기준금리 · 계단형 시계열</div><div class="copy" data-copy><h1 class="title"><span class="num">2.50%</span>에서<br><span class="mint num">3.00%</span>로 재상승</h1><p class="body">2025년 5월까지 내려온 기준금리는 2026년 7월과 8월 두 차례 연속 25bp 인상됐다.</p></div><div class="gap-readout"><span>Fed 목표범위 중간값 3.875% 기준 한미 차이</span><strong class="amber num">0.875%p</strong><small>정책금리 차만으로 환율·자금 흐름의 방향을 단정하지 않는다.</small></div></div></div><div class="source-label"><strong>자료</strong> · 한국은행 기준금리 추이 · Federal Reserve 2026.09.16</div>
+</section>
+<section class="slide" data-slide="08" data-title="다음 확인 순서: 9월 말부터 10월 FOMC까지">
+  <div class="scene watch-scene"><div class="watch-head"><div><div class="eyebrow">다음 체크포인트</div><div class="copy" data-copy><h1 class="title">다음 숫자가<br>이 그림을 바꾼다</h1></div></div><p class="body">정책 전망보다 먼저, 물가·고용·심리·회의 일정에서 실제 데이터를 확인한다.</p></div><div class="event-lane" data-visual>
+    <div class="event"><div class="event-top"><span class="event-date num">9.23</span><i class="event-dot"></i><span class="event-kind">BOK DATA</span></div><div><strong>9월 소비자동향</strong><p>CSI · 국내 수요 심리</p></div></div>
+    <div class="event"><div class="event-top"><span class="event-date num">9.30</span><i class="event-dot"></i><span class="event-kind">BEA DATA</span></div><div><strong>8월 PCE 물가</strong><p>Fed가 보는 물가의 다음 확인점</p></div></div>
+    <div class="event"><div class="event-top"><span class="event-date num">10.02</span><i class="event-dot"></i><span class="event-kind">BLS DATA</span></div><div><strong>9월 고용</strong><p>고용 반등의 지속 여부</p></div></div>
+    <div class="event"><div class="event-top"><span class="event-date num">10.14</span><i class="event-dot"></i><span class="event-kind">BLS DATA</span></div><div><strong>9월 CPI</strong><p>헤드라인·코어 재분기 확인</p></div></div>
+    <div class="event policy"><div class="event-top"><span class="event-date num">10.22</span><i class="event-dot"></i><span class="event-kind">BOK POLICY</span></div><div><strong>한국은행 금통위</strong><p>추가 인상 시기·속도 판단</p></div></div>
+    <div class="event policy"><div class="event-top"><span class="event-date num">10.27–28</span><i class="event-dot"></i><span class="event-kind">FED POLICY</span></div><div><strong>FOMC</strong><p>9월 인상 이후 다음 결정</p></div></div>
+  </div><div class="watch-rule"><b>원칙</b> · 다음 판에서는 새 데이터가 나오면 기존 점·선의 좌표를 손으로 옮기지 않는다. 원자료만 교체하고 같은 scale 함수로 다시 계산한다.</div></div><div class="source-label"><strong>일정</strong> · BOK · BLS · BEA · Federal Reserve 공식 캘린더</div>
+</section>
 </main>
+<nav class="deck-controls" aria-label="발표 조작"><button type="button" id="prevBtn" aria-label="이전">‹</button><span class="counter" id="counter">01 / 08</span><button type="button" id="nextBtn" aria-label="다음">›</button><button type="button" id="liveBtn" aria-pressed="false" title="S">동적</button><button type="button" id="overviewBtn" title="O">목차</button><button type="button" id="sourcesBtn" title="C">출처</button><button type="button" id="fullBtn" title="F">전체화면</button></nav><div class="progress-track" aria-hidden="true"><div class="progress" id="progress"></div></div>
+<dialog id="overview"><h2>슬라이드 목차</h2><div class="overview-list" id="overviewList"></div><button type="button" class="modal-close" data-close="overview">닫기</button></dialog>
+<dialog id="sources"><h2>공식 자료 출처</h2><div class="source-list">
+<a href="https://www.bls.gov/cpi/news.htm" target="_blank" rel="noreferrer">U.S. BLS · CPI news releases</a>
+<a href="https://www.bls.gov/news.release/archives/cpi_02132026.htm" target="_blank" rel="noreferrer">U.S. BLS · CPI January 2026</a>
+<a href="https://www.bls.gov/news.release/archives/cpi_04102026.htm" target="_blank" rel="noreferrer">U.S. BLS · CPI March 2026</a>
+<a href="https://www.bls.gov/news.release/archives/cpi_06102026.htm" target="_blank" rel="noreferrer">U.S. BLS · CPI May 2026</a>
+<a href="https://www.bls.gov/news.release/archives/cpi_09112026.htm" target="_blank" rel="noreferrer">U.S. BLS · CPI August 2026</a>
+<a href="https://www.bls.gov/news.release/empsit.htm" target="_blank" rel="noreferrer">U.S. BLS · Employment Situation August 2026</a>
+<a href="https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm" target="_blank" rel="noreferrer">Federal Reserve · FOMC Statement 2026.09.16</a>
+<a href="https://www.federalreserve.gov/monetarypolicy/fomcprojtabl20260916.htm" target="_blank" rel="noreferrer">Federal Reserve · SEP 2026.09.16</a>
+<a href="https://mods.go.kr/board.es?act=view&amp;bid=213&amp;list_no=446746&amp;mid=a10301010000" target="_blank" rel="noreferrer">국가데이터처 · 2026년 8월 소비자물가동향</a>
+<a href="https://www.bok.or.kr/portal/singl/baseRate/list.do?menuNo=200643" target="_blank" rel="noreferrer">한국은행 · 기준금리 추이</a>
+<a href="https://www.bok.or.kr/portal/bbs/P0000559/view.do?menuNo=200788&amp;nttId=11062942" target="_blank" rel="noreferrer">한국은행 · 통화정책방향 2026.07.16</a>
+<a href="https://www.bok.or.kr/portal/bbs/P0000559/view.do?depth=201150&amp;menuNo=200690&amp;nttId=11064191" target="_blank" rel="noreferrer">한국은행 · 통화정책방향 2026.08.27</a>
+<a href="https://www.bea.gov/news/schedule" target="_blank" rel="noreferrer">U.S. BEA · Release Schedule</a>
+<a href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm" target="_blank" rel="noreferrer">Federal Reserve · FOMC Calendar</a>
+<a href="https://www.bok.or.kr/eng/main/contents.do?menuNo=400020" target="_blank" rel="noreferrer">Bank of Korea · 2026 meeting dates</a>
+</div><button type="button" class="modal-close" data-close="sources">닫기</button></dialog>
 
-<nav class="deck-shell" aria-label="발표 조작">
-  <button type="button" data-prev aria-label="이전">‹</button><span class="deck-shell__counter" data-counter>01 / 08</span><button type="button" data-next aria-label="다음">›</button>
-  <span class="deck-shell__phase" data-phase-counter>0 / 1</span><button type="button" data-static title="S">동적</button><button type="button" data-overview title="O">목차</button><button type="button" data-sources title="C">출처</button><button type="button" data-full title="F">전체</button>
-</nav>
-<div class="deck-progress" aria-hidden="true"><i data-progress></i></div><div class="deck-sr" role="status" aria-live="polite" data-status></div>
-<dialog class="deck-dialog" id="overview"><h2>슬라이드 목차</h2><div class="overview-list" data-overview-list></div><button class="dialog-close" data-close="overview">닫기</button></dialog>
-<dialog class="deck-dialog" id="sources"><h2>공식 출처</h2><div class="source-list">
-  <a href="https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm" target="_blank" rel="noreferrer">Federal Reserve · FOMC Statement · 2026-09-16</a>
-  <a href="https://www.federalreserve.gov/newsevents/pressreleases/monetary20260729a.htm" target="_blank" rel="noreferrer">Federal Reserve · FOMC Statement · 2026-07-29</a>
-  <a href="https://www.federalreserve.gov/monetarypolicy/fomcprojtabl20260916.htm" target="_blank" rel="noreferrer">Federal Reserve · Summary of Economic Projections · 2026-09</a>
-  <a href="https://www.bls.gov/news.release/cpi.nr0.htm" target="_blank" rel="noreferrer">U.S. Bureau of Labor Statistics · CPI · August 2026</a>
-  <a href="https://www.bls.gov/news.release/empsit.nr0.htm" target="_blank" rel="noreferrer">U.S. Bureau of Labor Statistics · Employment Situation · August 2026</a>
-  <a href="https://www.bls.gov/schedule/2026/09_sched.htm" target="_blank" rel="noreferrer">U.S. Bureau of Labor Statistics · September 2026 release calendar</a>
-  <a href="https://www.bls.gov/schedule/2026/10_sched.htm" target="_blank" rel="noreferrer">U.S. Bureau of Labor Statistics · October 2026 release calendar</a>
-  <a href="https://www.bok.or.kr/portal/singl/baseRate/list.do?menuNo=200643" target="_blank" rel="noreferrer">한국은행 · 기준금리 추이</a>
-  <a href="https://www.bok.or.kr/eng/bbs/E0000634/view.do?depth=400069&amp;menuNo=400069&amp;nttId=11062944" target="_blank" rel="noreferrer">한국은행 · 통화정책 결정 · 2026-07-16</a>
-  <a href="https://www.bok.or.kr/eng/bbs/E0000627/view.do?menuNo=400022&amp;nttId=11064194" target="_blank" rel="noreferrer">한국은행 · 통화정책 결정 · 2026-08-27</a>
-  <a href="https://www.bok.or.kr/portal/bbs/B0000156/view.do?menuNo=200754&amp;nttId=11064613" target="_blank" rel="noreferrer">한국은행 · 통화신용정책보고서 · 2026-09</a>
-  <a href="https://www.bok.or.kr/eng/bbs/E0001620/view.do?depth=400021&amp;menuNo=400021&amp;nttId=11064684" target="_blank" rel="noreferrer">한국은행 · 2026년 8월 금융통화위원회 의사록</a>
-  <a href="https://www.bok.or.kr/portal/main/contents.do?menuNo=200755" target="_blank" rel="noreferrer">한국은행 · 통화정책방향 결정회의 일정 및 자료</a>
-  <a href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm" target="_blank" rel="noreferrer">Federal Reserve · FOMC Calendar</a>
-</div><button class="dialog-close" data-close="sources">닫기</button></dialog>
-<script>
-(()=>{
-  const stage=document.querySelector('[data-stage]');
-  const slides=[...document.querySelectorAll('[data-slide]')];
-  const reduce=matchMedia('(prefers-reduced-motion: reduce)');
-  const q=new URLSearchParams(location.search);
-  if(q.get('capture')==='1') document.documentElement.classList.add('deck-capture');
-  let index=0,phase=0,staticMode=q.get('mode')==='static'||reduce.matches,lastHash='';
-  const counter=document.querySelector('[data-counter]'),phaseCounter=document.querySelector('[data-phase-counter]'),progress=document.querySelector('[data-progress]'),status=document.querySelector('[data-status]');
-  const prev=document.querySelector('[data-prev]'),next=document.querySelector('[data-next]'),staticBtn=document.querySelector('[data-static]');
-  const overview=document.getElementById('overview'),sources=document.getElementById('sources'),overviewList=document.querySelector('[data-overview-list]');
-  function maxPhase(i=index){return Number(slides[i].dataset.step||0)}
-  function startPhase(i=index){return Number(slides[i].dataset.start||0)}
-  function live(){return !staticMode&&!reduce.matches}
-  function fit(){const k=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform=`translate(${(innerWidth-1920*k)/2}px,${(innerHeight-1080*k)/2}px) scale(${k})`}
-  function titleOf(s){return s.dataset.title||s.querySelector('h1')?.textContent.trim()||'슬라이드'}
-  function render(){
-    document.documentElement.classList.toggle('deck-live',live());
-    slides.forEach((s,i)=>{const a=i===index;s.classList.toggle('is-active',a);s.setAttribute('aria-hidden',String(!a));s.inert=!a;for(let n=0;n<=8;n++)s.classList.remove(`deck-step-${n}`);if(a&&live())s.classList.add(`deck-step-${phase}`)});
-    counter.textContent=String(index+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
-    phaseCounter.textContent=live()?phase+' / '+maxPhase():'정적';staticBtn.textContent=live()?'동적':'정적';staticBtn.setAttribute('aria-pressed',String(!live()));
-    prev.disabled=index===0&&(!live()||phase<=startPhase(0));next.disabled=index===slides.length-1&&(!live()||phase>=maxPhase());
-    let done,total;if(live()){total=slides.reduce((a,s)=>a+Number(s.dataset.step||0)+1,0)-1;done=slides.slice(0,index).reduce((a,s)=>a+Number(s.dataset.step||0)+1,0)+phase}else{total=Math.max(1,slides.length-1);done=index}progress.style.transform=`scaleX(${Math.min(1,Math.max(0,done/Math.max(1,total)))})`;
-    status.textContent=`${index+1} / ${slides.length}. ${titleOf(slides[index])}`;
-    lastHash='#'+(index+1)+(live()&&phase?'.'+phase:'');try{history.replaceState(null,'',lastHash)}catch(_){}
-    overviewList.innerHTML=slides.map((s,i)=>`<button type="button" data-goto="${i}" ${i===index?'aria-current="true"':''}><span class="num">${String(i+1).padStart(2,'0')}</span> · ${titleOf(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</button>`).join('');
+<script>(function(root,factory){
+  const api=factory();
+  if(typeof module==='object'&&module.exports) module.exports=api;
+  root.SlideCharts=api;
+})(typeof globalThis!=='undefined'?globalThis:this,function(){
+  'use strict';
+
+  const NS='http://www.w3.org/2000/svg';
+  const PALETTE=['#6EE7C3','#FFB45E','#82B5FF','#FF766F','#C8A7FF','#F4D35E'];
+  const THEME={bg:'transparent',text:'#EAF1F6',muted:'#91A5B4',grid:'#274052',axis:'#597184',plot:'#0B1B28'};
+
+  function finite(v){return typeof v==='number'&&Number.isFinite(v)}
+  function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+  function extent(values){
+    const a=values.filter(finite);
+    if(!a.length) throw new Error('No finite numeric values');
+    let lo=a[0],hi=a[0];
+    for(const v of a){if(v<lo)lo=v;if(v>hi)hi=v}
+    return [lo,hi];
   }
-  function gotoSlide(n,p){index=Math.max(0,Math.min(slides.length-1,Number(n)||0));phase=live()?Math.max(0,Math.min(maxPhase(index),p==null?startPhase(index):Number(p)||0)):0;render();return index}
-  function forward(){if(live()&&phase<maxPhase()){phase++;render()}else if(index<slides.length-1)gotoSlide(index+1)}
-  function back(){if(live()&&phase>startPhase()){phase--;render()}else if(index>0){index--;phase=live()?maxPhase(index):0;render()}}
-  function setStatic(v){staticMode=Boolean(v);phase=live()?startPhase(index):0;render()}
-  function applyHash(){const m=location.hash.match(/^#(\d+)(?:\.(\d+))?$/);if(!m)return false;gotoSlide(Number(m[1])-1,Number(m[2]||0));return true}
-  async function full(){try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch(_){}}
-  prev.onclick=back;next.onclick=forward;staticBtn.onclick=()=>setStatic(!staticMode);document.querySelector('[data-overview]').onclick=()=>overview.showModal();document.querySelector('[data-sources]').onclick=()=>sources.showModal();document.querySelector('[data-full]').onclick=full;
-  document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).close());overviewList.onclick=e=>{const b=e.target.closest('[data-goto]');if(!b)return;gotoSlide(Number(b.dataset.goto));overview.close()};
-  stage.addEventListener('click',e=>{if(e.target.closest('a,button,input,textarea,select,[contenteditable="true"]')||getSelection()?.toString())return;const r=stage.getBoundingClientRect();e.clientX<r.left+r.width/2?back():forward()});
-  addEventListener('keydown',e=>{if(document.querySelector('dialog[open]'))return;if(e.altKey||e.ctrlKey||e.metaKey||e.target.closest?.('input,textarea,select,[contenteditable="true"]'))return;const k=e.key.toLowerCase();if(k==='o'){e.preventDefault();overview.showModal()}else if(k==='c'){e.preventDefault();sources.showModal()}else if(k==='f'){e.preventDefault();full()}else if(k==='s'&&!reduce.matches){e.preventDefault();setStatic(!staticMode)}else if(e.key==='Home'){e.preventDefault();gotoSlide(0)}else if(e.key==='End'){e.preventDefault();gotoSlide(slides.length-1)}else if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();forward()}else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){e.preventDefault();back()}});
-  addEventListener('hashchange',()=>{if(location.hash!==lastHash)applyHash()});addEventListener('resize',fit);reduce.addEventListener('change',()=>{if(reduce.matches)staticMode=true;render()});
-  window.__deckGoto=(n,p)=>gotoSlide(n,p);window.__deckState=()=>({slide:index,phase,slides:slides.length,mode:live()?'dynamic':'static'});window.__deckSetStatic=setStatic;
-  fit();if(!applyHash())gotoSlide(0);document.fonts?.ready.then(()=>{fit();render();document.documentElement.dataset.ready='true'})
-})();
+  function parseX(v,type){
+    if(type==='time'){
+      const t=v instanceof Date?v.getTime():Date.parse(v);
+      if(!Number.isFinite(t)) throw new Error('Invalid time value: '+v);
+      return t;
+    }
+    const n=Number(v);
+    if(!Number.isFinite(n)) throw new Error('Invalid numeric x value: '+v);
+    return n;
+  }
+  function linearScale(domain,range){
+    let [d0,d1]=domain,[r0,r1]=range;
+    if(d0===d1){d0-=1;d1+=1}
+    const m=(r1-r0)/(d1-d0);
+    const f=v=>r0+(v-d0)*m;
+    f.domain=[d0,d1];f.range=[r0,r1];
+    return f;
+  }
+  function niceStep(span,target){
+    if(!finite(span)||span<=0) return 1;
+    const raw=span/Math.max(1,target||5);
+    const pow=Math.pow(10,Math.floor(Math.log10(raw)));
+    const err=raw/pow;
+    const mult=err>=7.5?10:err>=3.5?5:err>=1.5?2:1;
+    return mult*pow;
+  }
+  function niceDomain(domain,target){
+    let [lo,hi]=domain;
+    if(lo===hi){const p=Math.abs(lo||1)*0.1||1;lo-=p;hi+=p}
+    const step=niceStep(hi-lo,target||5);
+    return [Math.floor(lo/step)*step,Math.ceil(hi/step)*step];
+  }
+  function ticks(domain,target){
+    const [lo,hi]=domain,step=niceStep(hi-lo,target||5),out=[];
+    const start=Math.ceil((lo-1e-12)/step)*step;
+    for(let v=start,i=0;v<=hi+step*1e-9&&i<100;v+=step,i++) out.push(Math.abs(v)<1e-12?0:+v.toFixed(12));
+    return out;
+  }
+  function timeTicks(domain,count){
+    const [lo,hi]=domain,n=Math.max(2,count||5),out=[];
+    for(let i=0;i<n;i++) out.push(lo+(hi-lo)*i/(n-1));
+    return out;
+  }
+  function margins(spec){return Object.assign({top:28,right:34,bottom:78,left:80},spec.margin||{})}
+  function unitFormat(v,unit,digits){
+    const d=digits==null?(Math.abs(v)<10?1:0):digits;
+    const s=Number(v).toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:d});
+    return unit==='%'?s+'%':unit==='%p'?s+'%p':unit==='bp'?s+'bp':unit?s+' '+unit:s;
+  }
+  function dateFormat(t,mode){
+    const d=new Date(t);
+    if(mode==='year') return String(d.getUTCFullYear());
+    if(mode==='month') return String(d.getUTCMonth()+1)+'월';
+    return String(d.getUTCFullYear()).slice(2)+'·'+String(d.getUTCMonth()+1).padStart(2,'0');
+  }
+  function getTheme(spec){return Object.assign({},THEME,spec.theme||{})}
+  function collectY(spec){
+    const ys=[];
+    for(const s of spec.series||[]){for(const row of spec.data||[]){const v=Number(row[s.field]);if(Number.isFinite(v))ys.push(v)}}
+    for(const r of spec.referenceLines||[]){if((r.axis||'y')==='y'&&finite(Number(r.value)))ys.push(Number(r.value))}
+    return ys;
+  }
+  function computeLineGeometry(spec){
+    const m=margins(spec),w=spec.width||1200,h=spec.height||520,pw=w-m.left-m.right,ph=h-m.top-m.bottom;
+    const xf=spec.x&&spec.x.field;if(!xf) throw new Error('line chart requires x.field');
+    const xt=(spec.x&&spec.x.type)||'time';
+    const xv=(spec.data||[]).map(r=>parseX(r[xf],xt));
+    let xd=spec.x&&spec.x.domain?spec.x.domain.map(v=>parseX(v,xt)):extent(xv);
+    const ys=collectY(spec); if(!ys.length) throw new Error('line chart has no y values');
+    let yd=spec.y&&spec.y.domain?spec.y.domain.map(Number):extent(ys);
+    if(spec.y&&spec.y.zero){yd=[Math.min(0,yd[0]),Math.max(0,yd[1])]}
+    if(!(spec.y&&spec.y.domain)) yd=niceDomain(yd,5);
+    const xs=linearScale(xd,[m.left,m.left+pw]),yscale=linearScale(yd,[m.top+ph,m.top]);
+    const series=(spec.series||[]).map((s,si)=>{
+      const pts=[];
+      for(const row of spec.data||[]){
+        const y=Number(row[s.field]); if(!Number.isFinite(y)) continue;
+        const x=parseX(row[xf],xt); pts.push({rawX:row[xf],rawY:y,x:xs(x),y:yscale(y),row});
+      }
+      pts.sort((a,b)=>parseX(a.rawX,xt)-parseX(b.rawX,xt));
+      return {field:s.field,label:s.label||s.field,color:s.color||PALETTE[si%PALETTE.length],points:pts};
+    });
+    return {width:w,height:h,margin:m,plot:{x:m.left,y:m.top,w:pw,h:ph},xDomain:xd,yDomain:yd,xScale:xs,yScale:yscale,xType:xt,series};
+  }
+  function computeScatterGeometry(spec){
+    const m=margins(spec),w=spec.width||1200,h=spec.height||520,pw=w-m.left-m.right,ph=h-m.top-m.bottom;
+    const xf=spec.x&&spec.x.field,yf=(spec.y&&spec.y.field)||((spec.series||[])[0]||{}).field;
+    if(!xf||!yf) throw new Error('scatter requires x.field and y.field/series[0].field');
+    const xv=[],yv=[],pts=[];
+    for(const row of spec.data||[]){const x=Number(row[xf]),y=Number(row[yf]);if(Number.isFinite(x)&&Number.isFinite(y)){xv.push(x);yv.push(y);pts.push({row,rawX:x,rawY:y})}}
+    let xd=spec.x&&spec.x.domain?spec.x.domain.map(Number):niceDomain(extent(xv),5);
+    let yd=spec.y&&spec.y.domain?spec.y.domain.map(Number):niceDomain(extent(yv),5);
+    const xs=linearScale(xd,[m.left,m.left+pw]),ys=linearScale(yd,[m.top+ph,m.top]);
+    pts.forEach(p=>{p.x=xs(p.rawX);p.y=ys(p.rawY)});
+    return {width:w,height:h,margin:m,plot:{x:m.left,y:m.top,w:pw,h:ph},xDomain:xd,yDomain:yd,xScale:xs,yScale:ys,points:pts};
+  }
+  function computeBarGeometry(spec){
+    const m=margins(spec),w=spec.width||1200,h=spec.height||520,pw=w-m.left-m.right,ph=h-m.top-m.bottom;
+    const cf=spec.x&&spec.x.field,yf=(spec.y&&spec.y.field)||((spec.series||[])[0]||{}).field;
+    if(!cf||!yf) throw new Error('bar requires x.field category and y.field/series[0].field');
+    const rows=(spec.data||[]).map(r=>({row:r,cat:String(r[cf]),value:Number(r[yf])})).filter(d=>Number.isFinite(d.value));
+    const vals=rows.map(d=>d.value);let yd=spec.y&&spec.y.domain?spec.y.domain.map(Number):extent(vals.concat([0]));
+    yd=[Math.min(0,yd[0]),Math.max(0,yd[1])]; if(!(spec.y&&spec.y.domain)) yd=niceDomain(yd,5);
+    const ys=linearScale(yd,[m.top+ph,m.top]),band=pw/Math.max(1,rows.length),bw=band*0.64;
+    rows.forEach((d,i)=>{d.x=m.left+i*band+(band-bw)/2;d.w=bw;d.y=Math.min(ys(0),ys(d.value));d.h=Math.abs(ys(d.value)-ys(0));d.cx=d.x+bw/2});
+    return {width:w,height:h,margin:m,plot:{x:m.left,y:m.top,w:pw,h:ph},yDomain:yd,yScale:ys,rows,band};
+  }
+  function computeDotGeometry(spec){
+    const m=margins(spec),w=spec.width||1200,h=spec.height||520,pw=w-m.left-m.right,ph=h-m.top-m.bottom;
+    const xf=spec.x&&spec.x.field,yf=spec.y&&spec.y.field;if(!xf||!yf) throw new Error('dot requires x.field and y.field');
+    const orientation=spec.orientation||'vertical';
+    if(orientation==='vertical'){
+      const pts=(spec.data||[]).map(r=>({row:r,cat:String(r[xf]),value:Number(r[yf])})).filter(d=>Number.isFinite(d.value));
+      const cats=[...new Set(pts.map(d=>d.cat))];
+      let yd=spec.y&&spec.y.domain?spec.y.domain.map(Number):niceDomain(extent(pts.map(d=>d.value)),5);
+      const ys=linearScale(yd,[m.top+ph,m.top]),band=pw/Math.max(1,cats.length),grouped=new Map();
+      cats.forEach((c,i)=>grouped.set(c,{index:i,byValue:new Map()}));
+      for(const p of pts){const g=grouped.get(p.cat);const key=p.value.toFixed(6);if(!g.byValue.has(key))g.byValue.set(key,[]);g.byValue.get(key).push(p)}
+      for(const [cat,g] of grouped){for(const arr of g.byValue.values()){arr.forEach((p,j)=>{const center=m.left+(g.index+.5)*band;const offset=(j-(arr.length-1)/2)*Math.min(11,band/Math.max(3,arr.length+1));p.x=center+offset;p.y=ys(p.value)})}}
+      return {orientation,width:w,height:h,margin:m,plot:{x:m.left,y:m.top,w:pw,h:ph},yDomain:yd,yScale:ys,categories:cats,points:pts,band};
+    }
+    const pts=(spec.data||[]).map(r=>({row:r,value:Number(r[xf]),cat:String(r[yf])})).filter(d=>Number.isFinite(d.value));
+    const cats=[...new Set(pts.map(d=>d.cat))];
+    let xd=spec.x&&spec.x.domain?spec.x.domain.map(Number):niceDomain(extent(pts.map(d=>d.value)),5);
+    const xs=linearScale(xd,[m.left,m.left+pw]),band=ph/Math.max(1,cats.length),grouped=new Map();
+    cats.forEach((c,i)=>grouped.set(c,{index:i,byValue:new Map()}));
+    for(const p of pts){const g=grouped.get(p.cat);const key=p.value.toFixed(6);if(!g.byValue.has(key))g.byValue.set(key,[]);g.byValue.get(key).push(p)}
+    for(const [cat,g] of grouped){for(const arr of g.byValue.values()){arr.forEach((p,j)=>{const center=m.top+(g.index+.5)*band;const offset=(j-(arr.length-1)/2)*Math.min(10,band/Math.max(3,arr.length+1));p.x=xs(p.value);p.y=center+offset})}}
+    return {orientation,width:w,height:h,margin:m,plot:{x:m.left,y:m.top,w:pw,h:ph},xDomain:xd,xScale:xs,categories:cats,points:pts,band};
+  }
+
+  function svgEl(name,attrs,text){
+    const n=document.createElementNS(NS,name);
+    for(const [k,v] of Object.entries(attrs||{})){if(v!==undefined&&v!==null)n.setAttribute(k,String(v))}
+    if(text!==undefined)n.textContent=String(text);return n;
+  }
+  function clear(node){while(node.firstChild)node.removeChild(node.firstChild)}
+  function baseSvg(container,spec,label){
+    const svg=svgEl('svg',{viewBox:`0 0 ${spec.width||1200} ${spec.height||520}`,width:'100%',height:'100%',role:'img','aria-label':label||spec.title||'chart'});
+    svg.style.display='block';svg.style.overflow='visible';clear(container);container.appendChild(svg);return svg;
+  }
+  function addTitle(svg,spec,theme){
+    if(spec.title) svg.appendChild(svgEl('text',{x:0,y:18,fill:theme.text,'font-size':22,'font-weight':750},spec.title));
+    if(spec.description) svg.appendChild(svgEl('text',{x:0,y:42,fill:theme.muted,'font-size':15},spec.description));
+  }
+  function addYGrid(svg,geom,spec,theme){
+    const vals=(spec.y&&spec.y.tickValues)||ticks(geom.yDomain,5),unit=(spec.y&&spec.y.unit)||'';
+    for(const v of vals){const y=geom.yScale(Number(v));svg.appendChild(svgEl('line',{x1:geom.plot.x,y1:y,x2:geom.plot.x+geom.plot.w,y2:y,stroke:theme.grid,'stroke-width':1}));svg.appendChild(svgEl('text',{x:geom.plot.x-14,y:y+5,fill:theme.muted,'font-size':15,'text-anchor':'end'},unitFormat(Number(v),unit,spec.y&&spec.y.digits)))}
+    if(spec.y&&spec.y.label) svg.appendChild(svgEl('text',{x:geom.plot.x,y:geom.plot.y-10,fill:theme.muted,'font-size':14},spec.y.label));
+  }
+  function addXNumeric(svg,geom,spec,theme){
+    const vals=(spec.x&&spec.x.tickValues)||ticks(geom.xDomain,5),unit=(spec.x&&spec.x.unit)||'';
+    for(const v of vals){const x=geom.xScale(Number(v));svg.appendChild(svgEl('line',{x1:x,y1:geom.plot.y+geom.plot.h,x2:x,y2:geom.plot.y+geom.plot.h+7,stroke:theme.axis}));svg.appendChild(svgEl('text',{x,y:geom.plot.y+geom.plot.h+28,fill:theme.muted,'font-size':15,'text-anchor':'middle'},unitFormat(Number(v),unit,spec.x&&spec.x.digits)))}
+    if(spec.x&&spec.x.label) svg.appendChild(svgEl('text',{x:geom.plot.x+geom.plot.w/2,y:geom.plot.y+geom.plot.h+54,fill:theme.muted,'font-size':14,'text-anchor':'middle'},spec.x.label));
+  }
+  function addXTime(svg,geom,spec,theme){
+    const vals=(spec.x&&spec.x.tickValues)?spec.x.tickValues.map(v=>parseX(v,'time')):timeTicks(geom.xDomain,Math.min(6,(spec.data||[]).length||6));
+    for(const v of vals){const x=geom.xScale(v);svg.appendChild(svgEl('line',{x1:x,y1:geom.plot.y+geom.plot.h,x2:x,y2:geom.plot.y+geom.plot.h+7,stroke:theme.axis}));svg.appendChild(svgEl('text',{x,y:geom.plot.y+geom.plot.h+28,fill:theme.muted,'font-size':15,'text-anchor':'middle'},dateFormat(v,spec.x&&spec.x.tickFormat)))}
+    if(spec.x&&spec.x.label) svg.appendChild(svgEl('text',{x:geom.plot.x+geom.plot.w/2,y:geom.plot.y+geom.plot.h+54,fill:theme.muted,'font-size':14,'text-anchor':'middle'},spec.x.label));
+  }
+  function addSource(svg,spec,theme){
+    if(spec.showSource===false||!spec.source)return;
+    const h=spec.height||520;const bits=[spec.source.name,spec.source.asOf?('as of '+spec.source.asOf):''].filter(Boolean).join(' · ');
+    svg.appendChild(svgEl('text',{x:0,y:h-4,fill:theme.muted,'font-size':12},bits));
+  }
+  function addRefLines(svg,geom,spec,theme){
+    for(const r of spec.referenceLines||[]){if((r.axis||'y')!=='y')continue;const y=geom.yScale(Number(r.value));svg.appendChild(svgEl('line',{x1:geom.plot.x,y1:y,x2:geom.plot.x+geom.plot.w,y2:y,stroke:r.color||theme.axis,'stroke-width':1.5,'stroke-dasharray':'7 7'}));if(r.label)svg.appendChild(svgEl('text',{x:geom.plot.x+geom.plot.w-4,y:y-8,fill:r.color||theme.muted,'font-size':13,'text-anchor':'end'},r.label))}
+  }
+  function legend(svg,geom,series,theme){
+    let x=geom.plot.x,y=geom.plot.y+4;
+    series.forEach((s,i)=>{const g=svgEl('g',{});g.appendChild(svgEl('line',{x1:x,y1:y,x2:x+26,y2:y,stroke:s.color,'stroke-width':4,'stroke-linecap':'round'}));g.appendChild(svgEl('text',{x:x+36,y:y+5,fill:theme.text,'font-size':14},s.label));svg.appendChild(g);x+=Math.max(120,(s.label||'').length*9+62)});
+  }
+  function renderLine(container,spec){
+    const geom=computeLineGeometry(spec),theme=getTheme(spec),svg=baseSvg(container,spec);addTitle(svg,spec,theme);addYGrid(svg,geom,spec,theme);addXTime(svg,geom,spec,theme);addRefLines(svg,geom,spec,theme);legend(svg,geom,geom.series,theme);
+    for(const s of geom.series){if(!s.points.length)continue;const d=(spec.interpolation==='step-after'&&s.points.length>1) ? s.points.map((p,i)=>{if(i===0)return 'M'+p.x.toFixed(2)+','+p.y.toFixed(2);const prev=s.points[i-1];return 'H'+p.x.toFixed(2)+' V'+p.y.toFixed(2)}).join(' ') : s.points.map((p,i)=>(i?'L':'M')+p.x.toFixed(2)+','+p.y.toFixed(2)).join(' ');svg.appendChild(svgEl('path',{d,fill:'none',stroke:s.color,'stroke-width':3.5,'stroke-linejoin':'round','stroke-linecap':'round'}));for(const p of s.points){const c=svgEl('circle',{cx:p.x,cy:p.y,r:4.2,fill:s.color,stroke:theme.plot,'stroke-width':2});c.appendChild(svgEl('title',{},`${s.label}: ${unitFormat(p.rawY,(spec.y&&spec.y.unit)||'')} · ${p.rawX}`));svg.appendChild(c)}if(spec.labelLast!==false){const p=s.points[s.points.length-1];svg.appendChild(svgEl('text',{x:p.x+10,y:p.y-8,fill:s.color,'font-size':15,'font-weight':700},unitFormat(p.rawY,(spec.y&&spec.y.unit)||'',spec.y&&spec.y.digits)))}}
+    addSource(svg,spec,theme);return {svg,geometry:geom};
+  }
+  function renderScatter(container,spec){
+    const geom=computeScatterGeometry(spec),theme=getTheme(spec),svg=baseSvg(container,spec);addTitle(svg,spec,theme);addYGrid(svg,geom,spec,theme);addXNumeric(svg,geom,spec,theme);
+    const color=((spec.series||[])[0]||{}).color||PALETTE[0],lf=spec.labelField;
+    for(const p of geom.points){const c=svgEl('circle',{cx:p.x,cy:p.y,r:6.5,fill:color,opacity:.9});c.appendChild(svgEl('title',{},`${p.rawX}, ${p.rawY}`));svg.appendChild(c);if(lf&&p.row[lf]!=null)svg.appendChild(svgEl('text',{x:p.x+9,y:p.y-9,fill:theme.text,'font-size':13},p.row[lf]))}
+    addSource(svg,spec,theme);return {svg,geometry:geom};
+  }
+  function renderBar(container,spec){
+    const geom=computeBarGeometry(spec),theme=getTheme(spec),svg=baseSvg(container,spec);addTitle(svg,spec,theme);addYGrid(svg,geom,spec,theme);
+    if(geom.yDomain[0] <= 0 && geom.yDomain[1] >= 0){const zy=geom.yScale(0);svg.appendChild(svgEl('line',{x1:geom.plot.x,y1:zy,x2:geom.plot.x+geom.plot.w,y2:zy,stroke:theme.axis,'stroke-width':1.8}))}
+    const color=((spec.series||[])[0]||{}).color||PALETTE[0],unit=(spec.y&&spec.y.unit)||'';
+    for(const d of geom.rows){svg.appendChild(svgEl('rect',{x:d.x,y:d.y,width:d.w,height:d.h,fill:d.value<0?(spec.negativeColor||'#FF766F'):color,rx:2}));svg.appendChild(svgEl('text',{x:d.cx,y:geom.plot.y+geom.plot.h+27,fill:theme.muted,'font-size':13,'text-anchor':'middle'},d.cat));svg.appendChild(svgEl('text',{x:d.cx,y:d.value>=0?d.y-8:d.y+d.h+18,fill:theme.text,'font-size':13,'font-weight':700,'text-anchor':'middle'},unitFormat(d.value,unit,spec.y&&spec.y.digits)))}
+    if(spec.x&&spec.x.label)svg.appendChild(svgEl('text',{x:geom.plot.x+geom.plot.w/2,y:geom.plot.y+geom.plot.h+52,fill:theme.muted,'font-size':14,'text-anchor':'middle'},spec.x.label));addSource(svg,spec,theme);return {svg,geometry:geom};
+  }
+  function renderDot(container,spec){
+    const geom=computeDotGeometry(spec),theme=getTheme(spec),svg=baseSvg(container,spec);addTitle(svg,spec,theme);
+    if(geom.orientation==='vertical'){
+      addYGrid(svg,geom,spec,theme);
+      geom.categories.forEach((cat,i)=>{const x=geom.plot.x+(i+.5)*geom.band;svg.appendChild(svgEl('line',{x1:x,y1:geom.plot.y,x2:x,y2:geom.plot.y+geom.plot.h,stroke:theme.grid,'stroke-width':1}));svg.appendChild(svgEl('text',{x,y:geom.plot.y+geom.plot.h+29,fill:theme.text,'font-size':14,'text-anchor':'middle'},cat))});
+    }else{
+      addXNumeric(svg,geom,spec,theme);
+      geom.categories.forEach((cat,i)=>{const y=geom.plot.y+(i+.5)*geom.band;svg.appendChild(svgEl('line',{x1:geom.plot.x,y1:y,x2:geom.plot.x+geom.plot.w,y2:y,stroke:theme.grid,'stroke-width':1}));svg.appendChild(svgEl('text',{x:geom.plot.x-14,y:y+5,fill:theme.text,'font-size':14,'text-anchor':'end'},cat))});
+    }
+    for(const p of geom.points){const c=svgEl('circle',{cx:p.x,cy:p.y,r:5.5,fill:spec.color||PALETTE[0],opacity:.9});c.appendChild(svgEl('title',{},`${p.cat}: ${unitFormat(p.value,(spec.y&&spec.y.unit)||'')}`));svg.appendChild(c)}addSource(svg,spec,theme);return {svg,geometry:geom};
+  }
+  function render(container,spec){if(!container)throw new Error('Container is required');if(!spec||!spec.type)throw new Error('Chart spec type is required');if(spec.type==='line')return renderLine(container,spec);if(spec.type==='scatter')return renderScatter(container,spec);if(spec.type==='bar')return renderBar(container,spec);if(spec.type==='dot')return renderDot(container,spec);throw new Error('Unsupported chart type: '+spec.type)}
+
+  return {render,computeLineGeometry,computeScatterGeometry,computeBarGeometry,computeDotGeometry,linearScale,niceDomain,ticks,extent};
+});
+</script>
+<script>
+const CHART_SPECS={"bok_rate":{"type":"line","semantic":"step-series","interpolation":"step-after","title":"","source":{"name":"한국은행 기준금리 추이","url":"https://www.bok.or.kr/portal/singl/baseRate/list.do?menuNo=200643","asOf":"2026-09-21"},"width":1120,"height":520,"margin":{"top":56,"right":84,"bottom":72,"left":72},"x":{"field":"date","type":"time","tickFormat":"year","tickValues":["2023-01-13","2024-01-01","2025-01-01","2026-01-01"]},"y":{"unit":"%","label":"기준금리","domain":[2.25,3.75],"digits":2,"tickValues":[2.5,2.75,3.0,3.25,3.5]},"series":[{"field":"rate","label":"한국은행 기준금리","color":"#6EE7C3"}],"labelLast":true,"showSource":false,"data":[{"date":"2023-01-13","rate":3.5},{"date":"2024-10-11","rate":3.25},{"date":"2024-11-28","rate":3.0},{"date":"2025-02-25","rate":2.75},{"date":"2025-05-29","rate":2.5},{"date":"2026-07-16","rate":2.75},{"date":"2026-08-27","rate":3.0},{"date":"2026-09-21","rate":3.0}]},"us_scatter":{"type":"scatter","title":"","source":{"name":"U.S. BLS CPI + CPS","url":"https://www.bls.gov/","asOf":"2026-09-11"},"width":1000,"height":560,"margin":{"top":30,"right":50,"bottom":82,"left":88},"x":{"field":"unemployment","unit":"%","label":"실업률","domain":[4.0,4.4],"digits":1,"tickValues":[4.0,4.1,4.2,4.3,4.4]},"y":{"field":"core","unit":"%","label":"Core CPI 전년동월비","domain":[2.3,3.0],"digits":1,"tickValues":[2.3,2.5,2.7,2.9]},"series":[{"field":"core","label":"월별 관측","color":"#82B5FF"}],"labelField":"month","showSource":false,"data":[{"month":"3월","unemployment":4.3,"core":2.6},{"month":"4월","unemployment":4.3,"core":2.8},{"month":"5월","unemployment":4.3,"core":2.9},{"month":"6월","unemployment":4.2,"core":2.6},{"month":"7월","unemployment":4.1,"core":2.5},{"month":"8월","unemployment":4.1,"core":2.4}]},"fed_dots":{"type":"dot","orientation":"vertical","title":"","source":{"name":"Federal Reserve SEP","url":"https://www.federalreserve.gov/monetarypolicy/fomcprojtabl20260916.htm","asOf":"2026-09-16"},"width":1080,"height":560,"margin":{"top":34,"right":42,"bottom":74,"left":78},"x":{"field":"year","type":"category"},"y":{"field":"rate","unit":"%","label":"연말 적정 연방기금금리 중간값","domain":[2.75,4.5],"digits":3,"tickValues":[2.875,3.125,3.375,3.625,3.875,4.125,4.375]},"color":"#6EE7C3","showSource":false,"data":[{"year":"2026","rate":4.375},{"year":"2026","rate":4.375},{"year":"2026","rate":4.375},{"year":"2026","rate":4.375},{"year":"2026","rate":4.125},{"year":"2026","rate":4.125},{"year":"2026","rate":4.125},{"year":"2026","rate":4.125},{"year":"2026","rate":4.125},{"year":"2026","rate":4.125},{"year":"2026","rate":4.125},{"year":"2026","rate":4.125},{"year":"2026","rate":4.125},{"year":"2026","rate":4.125},{"year":"2026","rate":4.125},{"year":"2026","rate":4.125},{"year":"2026","rate":3.875},{"year":"2026","rate":3.875},{"year":"2027","rate":4.375},{"year":"2027","rate":4.375},{"year":"2027","rate":4.375},{"year":"2027","rate":4.375},{"year":"2027","rate":4.375},{"year":"2027","rate":4.375},{"year":"2027","rate":4.375},{"year":"2027","rate":4.375},{"year":"2027","rate":4.125},{"year":"2027","rate":4.125},{"year":"2027","rate":4.125},{"year":"2027","rate":4.125},{"year":"2027","rate":4.125},{"year":"2027","rate":4.125},{"year":"2027","rate":3.625},{"year":"2027","rate":3.625},{"year":"2027","rate":3.625},{"year":"2027","rate":3.125},{"year":"2028","rate":4.125},{"year":"2028","rate":4.125},{"year":"2028","rate":4.125},{"year":"2028","rate":4.125},{"year":"2028","rate":3.875},{"year":"2028","rate":3.875},{"year":"2028","rate":3.875},{"year":"2028","rate":3.875},{"year":"2028","rate":3.875},{"year":"2028","rate":3.625},{"year":"2028","rate":3.625},{"year":"2028","rate":3.625},{"year":"2028","rate":3.375},{"year":"2028","rate":3.125},{"year":"2028","rate":3.125},{"year":"2028","rate":3.125},{"year":"2028","rate":3.125},{"year":"2029","rate":3.875},{"year":"2029","rate":3.875},{"year":"2029","rate":3.875},{"year":"2029","rate":3.625},{"year":"2029","rate":3.625},{"year":"2029","rate":3.625},{"year":"2029","rate":3.625},{"year":"2029","rate":3.625},{"year":"2029","rate":3.625},{"year":"2029","rate":3.625},{"year":"2029","rate":3.375},{"year":"2029","rate":3.375},{"year":"2029","rate":3.125},{"year":"2029","rate":3.125},{"year":"2029","rate":3.125},{"year":"2029","rate":3.125},{"year":"2029","rate":2.875}]},"payroll":{"type":"bar","title":"","source":{"name":"U.S. BLS Employment Situation","url":"https://www.bls.gov/news.release/empsit.b.htm","asOf":"2026-09-04"},"width":1080,"height":520,"margin":{"top":32,"right":36,"bottom":76,"left":76},"x":{"field":"month"},"y":{"field":"jobs","unit":"천 명","label":"비농업 고용 전월비","domain":[0,180],"digits":0,"tickValues":[0,50,100,150]},"series":[{"field":"jobs","label":"비농업 고용","color":"#82B5FF"}],"showSource":false,"data":[{"month":"5월","jobs":63},{"month":"6월","jobs":31},{"month":"7월","jobs":21},{"month":"8월*","jobs":162}]},"korea_cpi":{"type":"bar","title":"","source":{"name":"국가데이터처 2026년 8월 소비자물가동향","url":"https://mods.go.kr/board.es?act=view&bid=213&list_no=446746&mid=a10301010000","asOf":"2026-09-02"},"width":1140,"height":530,"margin":{"top":28,"right":32,"bottom":96,"left":80},"x":{"field":"indicator"},"y":{"field":"yoy","unit":"%","label":"전년동월비","domain":[-8,4],"digits":1,"tickValues":[-8,-6,-4,-2,0,2,4]},"series":[{"field":"yoy","label":"전년동월비","color":"#6EE7C3"}],"negativeColor":"#FF766F","showSource":false,"data":[{"indicator":"소비자물가","yoy":3.1},{"indicator":"근원(FE 제외)","yoy":3.4},{"indicator":"농산물·석유류 제외","yoy":3.1},{"indicator":"생활물가","yoy":3.2},{"indicator":"신선식품","yoy":-6.7}]},"us_cpi":{"type":"line","title":"","source":{"name":"U.S. BLS CPI releases","url":"https://www.bls.gov/cpi/news.htm","asOf":"2026-09-11"},"width":1120,"height":520,"margin":{"top":56,"right":82,"bottom":70,"left":72},"x":{"field":"date","type":"time","tickFormat":"month","tickValues":["2026-01-01","2026-03-01","2026-05-01","2026-07-01","2026-08-01"]},"y":{"unit":"%","label":"전년동월비","domain":[2.0,4.5],"digits":1,"tickValues":[2.0,2.5,3.0,3.5,4.0,4.5]},"series":[{"field":"headline","label":"CPI","color":"#FFB45E"},{"field":"core","label":"Core CPI","color":"#6EE7C3"}],"referenceLines":[{"axis":"y","value":2.0,"label":"2%","color":"#587083"}],"showSource":false,"data":[{"date":"2026-01-01","headline":2.4,"core":2.5},{"date":"2026-02-01","headline":2.4,"core":2.5},{"date":"2026-03-01","headline":3.3,"core":2.6},{"date":"2026-04-01","headline":3.8,"core":2.8},{"date":"2026-05-01","headline":4.2,"core":2.9},{"date":"2026-06-01","headline":3.5,"core":2.6},{"date":"2026-07-01","headline":3.4,"core":2.5},{"date":"2026-08-01","headline":3.4,"core":2.4}]}};
+function renderCharts(){
+  const hero=JSON.parse(JSON.stringify(CHART_SPECS.us_cpi));hero.width=1000;hero.height=520;hero.margin={top:56,right:76,bottom:64,left:70};
+  SlideCharts.render(document.getElementById('chart-hero'),hero);
+  SlideCharts.render(document.getElementById('chart-us-cpi'),CHART_SPECS.us_cpi);
+  SlideCharts.render(document.getElementById('chart-scatter'),CHART_SPECS.us_scatter);
+  SlideCharts.render(document.getElementById('chart-payroll'),CHART_SPECS.payroll);
+  SlideCharts.render(document.getElementById('chart-fed-dots'),CHART_SPECS.fed_dots);
+  SlideCharts.render(document.getElementById('chart-korea-cpi'),CHART_SPECS.korea_cpi);
+  SlideCharts.render(document.getElementById('chart-bok-rate'),CHART_SPECS.bok_rate);
+}
+(()=>{const stage=document.getElementById('stage'),slides=[...document.querySelectorAll('[data-slide]')],counter=document.getElementById('counter'),progress=document.getElementById('progress'),overview=document.getElementById('overview'),sources=document.getElementById('sources'),liveBtn=document.getElementById('liveBtn');let index=0,lastHash='',live=false;
+function fit(){const k=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform=`translate(${(innerWidth-1920*k)/2}px,${(innerHeight-1080*k)/2}px) scale(${k})`}
+function go(n){index=Math.max(0,Math.min(slides.length-1,Number(n)||0));slides.forEach((s,i)=>{const a=i===index;s.classList.toggle('is-active',a);s.setAttribute('aria-hidden',String(!a));s.inert=!a});counter.textContent=String(index+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');progress.style.transform=`scaleX(${index/Math.max(1,slides.length-1)})`;lastHash='#'+(index+1);try{history.replaceState(null,'',lastHash)}catch(_){ }return index}
+function setLive(v){live=Boolean(v)&&!matchMedia('(prefers-reduced-motion: reduce)').matches;document.documentElement.classList.toggle('deck-live',live);liveBtn.setAttribute('aria-pressed',String(live));liveBtn.textContent=live?'정적':'동적';if(live){const s=slides[index];s.querySelectorAll('[data-motion]').forEach(el=>{el.style.animation='none';void el.offsetWidth;el.style.animation=''})}}
+function parseHash(){const m=location.hash.match(/^#(\d+)$/);return m?Math.min(slides.length-1,Math.max(0,Number(m[1])-1)):0}function closeDialogs(){if(overview.open)overview.close();if(sources.open)sources.close()}function toggleFull(){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(()=>{})}
+document.getElementById('prevBtn').onclick=()=>go(index-1);document.getElementById('nextBtn').onclick=()=>go(index+1);liveBtn.onclick=()=>setLive(!live);document.getElementById('overviewBtn').onclick=()=>overview.showModal();document.getElementById('sourcesBtn').onclick=()=>sources.showModal();document.getElementById('fullBtn').onclick=toggleFull;document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).close());document.getElementById('overviewList').innerHTML=slides.map((s,i)=>`<button type="button" data-goto="${i}">${String(i+1).padStart(2,'0')} · ${s.dataset.title}</button>`).join('');document.getElementById('overviewList').onclick=e=>{const b=e.target.closest('[data-goto]');if(!b)return;go(Number(b.dataset.goto));overview.close()};
+addEventListener('keydown',e=>{if(overview.open||sources.open){if(e.key==='Escape')closeDialogs();return}if(e.altKey||e.ctrlKey||e.metaKey)return;if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();go(index+1)}else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();go(index-1)}else if(e.key==='Home'){e.preventDefault();go(0)}else if(e.key==='End'){e.preventDefault();go(slides.length-1)}else if(e.key.toLowerCase()==='o'){e.preventDefault();overview.showModal()}else if(e.key.toLowerCase()==='c'){e.preventDefault();sources.showModal()}else if(e.key.toLowerCase()==='f'){e.preventDefault();toggleFull()}else if(e.key.toLowerCase()==='s'){e.preventDefault();setLive(!live)}});addEventListener('hashchange',()=>{if(location.hash!==lastHash)go(parseHash())});addEventListener('resize',fit);window.__deckGoto=go;window.__deckState=()=>({slide:index,slides:slides.length,mode:live?'live':'static'});window.__chartSpecs=CHART_SPECS;
+renderCharts();fit();go(parseHash());document.fonts.ready.then(()=>{fit();document.documentElement.dataset.ready='true'});})();
 </script>
 </body>
 </html>
