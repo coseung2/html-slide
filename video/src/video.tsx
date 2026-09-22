@@ -11,6 +11,7 @@ export type Cue = {
   module: string;
   target: string;
   reason: string;
+  step: number;
   atFrame: number;
   durationFrames: number;
 };
