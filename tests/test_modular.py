@@ -26,7 +26,7 @@ class EngineTests(unittest.TestCase):
         with self.assertRaises(ContractError):plan_deck(spec,self.registry)
     def test_counts(self):
         self.assertEqual({f:len(self.registry.list(f))for f in ['layouts','content','visuals','motion','themes','typography','palettes','dataviz']},
-          {'layouts':12,'content':11,'visuals':4,'motion':7,'themes':7,'typography':7,'palettes':8,'dataviz':5})
+          {'layouts':13,'content':11,'visuals':4,'motion':7,'themes':7,'typography':7,'palettes':8,'dataviz':5})
     def test_search_intent(self):
         self.assertEqual(self.registry.search(intent='ranking',theme='sports-broadcast')[0]['id'],'ranking-board')
     def test_search_deterministic(self):self.assertEqual(self.registry.search(intent='comparison'),self.registry.search(intent='comparison'))
@@ -189,17 +189,49 @@ class EngineTests(unittest.TestCase):
         html,_=build_deck(self.spec,self.registry)
         self.assertIn('data-speech-kind="paraphrase"',html);self.assertIn('Classroom paraphrase',html)
 
+    def test_historical_character_quotation_requires_source(self):
+        png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WlQz58AAAAASUVORK5CYII='
+        self.spec['theme']='education'
+        self.spec['slides'][0].update(intent='dialogue',layout='character-focus',blocks=[{
+          'id':'person','module':'character-callout','data':{'src':png,'alt':'Character','name':'A','speech':'Documented words.','speechKind':'quotation','speechLabel':'Historical quotation'}
+        }])
+        self.reject(self.spec)
+        self.spec['slides'][0]['sources']=[{'label':'Source','url':'https://example.com/source'}]
+        html,_=build_deck(self.spec,self.registry);self.assertIn('data-speech-kind="quotation"',html)
+
+    def test_character_duel_accepts_two_viewpoints(self):
+        png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WlQz58AAAAASUVORK5CYII='
+        def person(bid,name,slot):
+            return {'id':bid,'module':'character-callout','slot':slot,'data':{'src':png,'alt':name,'name':name,'speech':'Classroom paraphrase.','speechKind':'paraphrase','speechLabel':'Classroom paraphrase'}}
+        self.spec['theme']='education'
+        self.spec['slides'][0].update(intent='comparison',layout='character-duel',blocks=[person('left-person','A','left'),person('right-person','B','right')])
+        html,plan=build_deck(self.spec,self.registry)
+        self.assertEqual(plan['slides'][0]['slots'],{'left':['left-person'],'right':['right-person']})
+        self.assertEqual(html.count('data-module="character-callout"'),2)
+
+    def test_map_event_cannot_reference_missing_route_step(self):
+        png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WlQz58AAAAASUVORK5CYII='
+        self.spec['theme']='education'
+        self.spec['slides'][0].update(intent='route',layout='map-focus',blocks=[{'id':'route','module':'map-route','data':{
+          'src':png,'alt':'Map','routes':[{'start':{'label':'A','x':10,'y':80},'end':{'label':'B','x':60,'y':35}}],
+          'events':[{'label':'Too late','x':60,'y':35,'kind':'battle','afterRoute':2}]
+        }}])
+        self.reject(self.spec)
+
     def test_route_travel_uses_route_count_for_phases(self):
         png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WlQz58AAAAASUVORK5CYII='
         routes=[{'label':'Advance','start':{'label':'A','x':10,'y':80},'end':{'label':'B','x':60,'y':35},'traveler':{'src':png,'alt':'Rider'}},
                 {'label':'Retreat','start':{'label':'B','x':60,'y':35},'end':{'label':'C','x':85,'y':20},'arcDirection':'down'}]
+        events=[{'label':'Battle','x':60,'y':35,'kind':'battle','tone':'negative','afterRoute':1}]
         self.spec['theme']='education'
-        self.spec['slides'][0].update(intent='route',layout='map-focus',blocks=[{'id':'route','module':'map-route','data':{'src':png,'alt':'Teaching map','routes':routes}}],
+        self.spec['slides'][0].update(intent='route',layout='map-focus',blocks=[{'id':'route','module':'map-route','data':{'src':png,'alt':'Teaching map','routes':routes,'events':events}}],
           motion=[{'module':'route-travel','target':'route','reason':'Show movement in geographic order'}])
         html,plan=build_deck(self.spec,self.registry)
         self.assertEqual(plan['slides'][0]['steps'],2)
         self.assertEqual(html.count('data-route-item'),2)
         self.assertIn('data-route-traveler',html)
+        self.assertIn('data-event-after-route="1"',html)
+        self.assertIn('map-route__event-marker',html)
 
     def test_sequence_phase_count(self):
         self.spec['slides'][0].update(intent='sequence',blocks=[{'id':'steps','module':'timeline','data':{'items':['a','b','c']}}],motion=[{'module':'sequence-step','target':'steps','reason':'Order matters'}])

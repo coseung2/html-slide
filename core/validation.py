@@ -63,6 +63,13 @@ def validate_deck(spec: dict, registry) -> None:
                 elif isinstance(v,list):
                     for x in v: walk(x)
             walk(block['data'])
+            if block['module']=='map-route':
+                route_count=len(block['data']['routes'])
+                for event in block['data'].get('events',[]):
+                    if event.get('afterRoute',0)>route_count:
+                        raise ContractError(f"{sid}.{bid}: event afterRoute exceeds route count")
+            if block['module']=='character-callout' and block['data'].get('speechKind')=='quotation' and not slide.get('sources'):
+                raise ContractError(f"{sid}.{bid}: historical quotation requires at least one slide source")
         for source in slide.get('sources',[]): safe_url(source['url'])
         if 'theme' in slide: registry.get('themes',slide['theme'])
         for effect in slide.get('motion',[]):
