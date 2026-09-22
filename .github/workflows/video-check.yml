@@ -15,7 +15,6 @@ on:
       - ".github/workflows/video-check.yml"
       - ".github/workflows/render-video.yml"
   push:
-    branches: ["main"]
     paths:
       - "core/**"
       - "modules/**"

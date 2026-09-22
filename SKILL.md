@@ -1,6 +1,6 @@
 ---
 name: html-slide
-description: Build, revise and verify self-contained HTML presentation decks by selecting compatible layout, content, visual, theme, typography, palette, data-visualization and semantic-motion modules from a registry. Use for Korean or English slides, sports reports, market briefings, lessons and presentation redesigns. Accept topics, source material, existing HTML or structured deck JSON; deliver final HTML and requested static PDF/PPTX exports. Preserve target-bound emphasis, fixed-stage geometry and accessible static final frames.
+description: Build, revise and verify self-contained HTML presentation decks and matching Remotion videos by selecting compatible layout, content, visual, theme, typography, palette, data-visualization and semantic-motion modules from a registry. Use for Korean or English slides, sports reports, market briefings, lessons and presentation redesigns. Accept topics, source material, existing HTML or structured deck JSON; deliver final HTML, requested static PDF/PPTX exports, and MP4 when requested. Preserve target-bound emphasis, fixed-stage geometry and accessible static final frames.
 ---
 
 # HTML Slide Director: modular composition
@@ -46,11 +46,12 @@ contain an LLM, embeddings service, factual research agent or image search servi
 8. Deliver the actual HTML attachment, requested exports and an accurate verification
    summary. Report any font, factual-source, media or coverage limitations.
 9. When the user requests a Remotion video, keep the same validated deck JSON as the
-   content source of truth. Compile it with `python tools/compose_video.py deck.json
-   --out dist/storyboard.json`, run `cd video && npm run typecheck`, then render
-   through the isolated `video/` runtime. Read `references/video-pipeline.md`;
-   do not invent a second content spec or add
-   blanket motion that is absent from the deck's semantic motion declarations.
+   content source of truth. After `video/` dependencies are installed, use
+   `python tools/render_video.py deck.json --out dist/video.mp4` as the canonical
+   entrypoint. It must compile and validate the storyboard, typecheck the runtime,
+   ensure the Remotion browser, render H.264, sample semantic key frames and verify
+   the encoded output. Read `references/video-pipeline.md`; do not invent a second
+   content spec or add blanket motion absent from semantic motion declarations.
 
 Commands after `catalog` share the prefix `python tools/compose_deck.py`.
 
@@ -118,6 +119,9 @@ mistake checkerboard pixels for real alpha transparency.
 Run `python -m unittest discover -s tests -p 'test_modular.py'` for compiler tests.
 Run `python tests/modular_runtime_check.py` for focused runtime/negative-QA checks.
 Run browser QA for every finished deck; compilation alone is not visual acceptance.
+For video output, inspect the sampled PNGs generated around scene/cue boundaries in
+addition to the automated encoded-output checks. A passing codec/duration report is
+not a substitute for visual review of emphasis, clipping or text fit.
 The current QA harness uses `set_content` and therefore does not certify first-load
 URL query/deep-link behavior. Inspect the report's coverage notes.
 
