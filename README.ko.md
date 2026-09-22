@@ -45,6 +45,7 @@ python tools/export_modular.py dist/work/deck.html --out dist/work/export
 # 같은 deck JSON을 Remotion 영상 파이프라인으로 변환
 python tools/compose_video.py dist/work/deck.json --out dist/work/storyboard.json
 cd video && npm install
+npm run typecheck
 npx remotion render src/index.ts DeckVideo ../dist/work/video.mp4 --props=../dist/work/storyboard.json
 ```
 
@@ -52,6 +53,8 @@ Python 3.10 이상이 필요합니다. HTML 생성에는 jsonschema, 브라우�
 PPTX 출력에는 Node.js와 PptxGenJS가 추가로 필요합니다. 기존 Chromium은 `CHROME_PATH`로 지정할 수 있습니다.
 Remotion 출력은 별도 `video/` 런타임을 사용하며, HTML과 동일한 deck JSON에서 deterministic storyboard를 생성합니다.
 영상 전용으로 내용을 다시 작성하지 않고, 검증된 semantic motion만 시간축 cue로 변환합니다.
+planner가 정한 slot 배치와 palette/dataviz 토큰도 storyboard에 보존하며, 이미지/로고는 검증된 raster data URI로 자체 포함합니다.
+현재 Remotion runtime은 metric, ranking, timeline/process, bar/line chart, score, image/logo 등 유지 중인 모듈을 네이티브 렌더링합니다.
 
 테마는 모서리와 경계 같은 **디자인 문법**을, 레이아웃은 화면 골격과 슬롯을, 정보 모듈은 데이터 표현을 맡습니다.
 폰트 체계, 메인 색상, 차트 색상은 각각 `styles/typography`, `styles/palettes`, `styles/dataviz`의
@@ -107,6 +110,8 @@ python -m unittest discover -s tests -p 'test_modular.py'
 python tests/modular_runtime_check.py
 python tools/compose_deck.py build examples/modular-showcase.json --out examples/modular-showcase.html
 python tools/verify_modular.py examples/modular-showcase.html --out dist/qa
+python -m unittest tests.test_video_pipeline
+cd video && npm run typecheck
 ```
 
 화면 경계, 텍스트 넘침, 블록 겹침, 이미지 로딩, 강조 대상 결합, 네 가지 화면 크기,
