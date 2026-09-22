@@ -1,6 +1,6 @@
 ---
 name: html-slide
-description: Build, revise and verify self-contained HTML presentation decks by selecting compatible layout, content, visual, theme, typography, palette, data-visualization and semantic-motion modules from a registry. Use for Korean or English slides, sports reports, market briefings, lessons and presentation redesigns. Accept topics, source material, existing HTML or structured deck JSON; deliver final HTML and requested static PDF/PPTX exports. Preserve target-bound emphasis, fixed-stage geometry and accessible static final frames.
+description: Build, revise and verify self-contained HTML presentation decks and matching Remotion videos by selecting compatible layout, content, visual, theme, typography, palette, data-visualization and semantic-motion modules from a registry. Use for Korean or English slides, sports reports, market briefings, lessons and presentation redesigns. Accept topics, source material, existing HTML or structured deck JSON; deliver final HTML, requested static PDF/PPTX exports, and MP4 when requested. Preserve target-bound emphasis, fixed-stage geometry and accessible static final frames.
 ---
 
 # HTML Slide Director: modular composition
@@ -45,6 +45,16 @@ contain an LLM, embeddings service, factual research agent or image search servi
    PPTX is a static full-frame rendition, not editable text/chart objects.
 8. Deliver the actual HTML attachment, requested exports and an accurate verification
    summary. Report any font, factual-source, media or coverage limitations.
+9. When the user requests a Remotion video, keep the same validated deck JSON as the
+   content source of truth. Choose the semantic motion first. If the user did not
+   request a specific expression, use `pattern: "auto"` or inspect candidates with
+   `python tools/motion_patterns.py search --intent ... --target ... --semantic ...`
+   instead of guessing from the effect catalog. After `video/` dependencies are
+   installed, use `python tools/render_video.py deck.json --out dist/video.mp4` as
+   the canonical entrypoint. It must compile and validate the storyboard, typecheck
+   the runtime, ensure the Remotion browser, render H.264, sample semantic key frames
+   and verify the encoded output. Read `references/video-pipeline.md`; do not invent
+   a second content spec or add blanket motion absent from semantic motion declarations.
 
 Commands after `catalog` share the prefix `python tools/compose_deck.py`.
 
@@ -84,10 +94,13 @@ normally appear once in a footnote/source area, not in body copy. Keep it in the
 body only when preliminary-vs-final data is itself the slide's subject.
 
 Require a meaningful `reason` for every motion, a valid target and a supported
-intent. Choose motion from the relationship being explained, not from an effect
-catalog. Read `references/motion-semantics.md` before authoring data-driven or
-multi-beat motion. Do not animate every element or apply blanket fade-up to every
-slide. Different slides may share timing, but their motion grammar should follow
+intent. Choose the semantic motion from the relationship being explained, not from
+an effect catalog. Remotion expression patterns are a second-stage choice governed
+by target compatibility, scene tone, density, intensity, recent repetition and
+pairwise conflicts; `pattern: "auto"` uses those deterministic rules. Read
+`references/motion-semantics.md` before authoring data-driven or multi-beat motion.
+Do not animate every element or apply blanket fade-up to every slide. Different
+slides may share timing, but their motion grammar should follow
 their meaning: quantities grow, gaps measure, states swap, paths travel, sequences
 resolve and timelines advance.
 
@@ -112,6 +125,9 @@ mistake checkerboard pixels for real alpha transparency.
 Run `python -m unittest discover -s tests -p 'test_modular.py'` for compiler tests.
 Run `python tests/modular_runtime_check.py` for focused runtime/negative-QA checks.
 Run browser QA for every finished deck; compilation alone is not visual acceptance.
+For video output, inspect the sampled PNGs generated around scene/cue boundaries in
+addition to the automated encoded-output checks. A passing codec/duration report is
+not a substitute for visual review of emphasis, clipping or text fit.
 The current QA harness uses `set_content` and therefore does not certify first-load
 URL query/deep-link behavior. Inspect the report's coverage notes.
 
@@ -123,7 +139,8 @@ must reject slide-entry autoplay on stepped decks and verify presenter phase sta
 Read [architecture](references/modular-architecture.md) for boundaries,
 [art direction](references/art-direction.md) for automatic typography/color routing,
 and [authoring](references/module-authoring.md) before adding a module or style pack.
-Read [migration](references/migrating-v1.md) when working on an existing deck.
+Read [migration](references/migrating-v1.md) when working on an existing deck and
+[video pipeline](references/video-pipeline.md) when producing Remotion output.
 Preserve older accepted decks and compatibility tools. Treat this repository as the
 AI's reusable production skill, not as a history of completed user jobs. Generate
 user-specific specs, HTML, QA captures and exports in temporary or ignored locations,

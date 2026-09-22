@@ -1,0 +1,108 @@
+name: Render Remotion video
+
+on:
+  workflow_dispatch:
+    inputs:
+      spec_path:
+        description: "Repository-relative deck JSON path"
+        required: true
+        default: "examples/modular-showcase.json"
+        type: string
+      output_name:
+        description: "Artifact base name (letters, numbers, _ and - only)"
+        required: true
+        default: "html-slide-video"
+        type: string
+      concurrency:
+        description: "Remotion render concurrency, for example 50% or 2"
+        required: true
+        default: "50%"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: remotion-render-${{ github.ref }}-${{ inputs.output_name }}
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      SPEC_PATH: ${{ inputs.spec_path }}
+      OUTPUT_NAME: ${{ inputs.output_name }}
+      RENDER_CONCURRENCY: ${{ inputs.concurrency }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate render request
+        id: request
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$OUTPUT_NAME" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$ ]]; then
+            echo "output_name must match ^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$" >&2
+            exit 2
+          fi
+          if [[ ! "$RENDER_CONCURRENCY" =~ ^([1-9][0-9]*|[1-9][0-9]?%|100%)$ ]]; then
+            echo "concurrency must be a positive integer or a percentage from 1% to 100%" >&2
+            exit 2
+          fi
+          SPEC_REAL="$(realpath -e -- "$SPEC_PATH")"
+          ROOT_REAL="$(realpath -- "$GITHUB_WORKSPACE")"
+          case "$SPEC_REAL" in
+            "$ROOT_REAL"/*) ;;
+            *)
+              echo "spec_path must stay inside the checked-out repository" >&2
+              exit 2
+              ;;
+          esac
+          if [[ "$SPEC_REAL" != *.json ]]; then
+            echo "spec_path must point to a .json file" >&2
+            exit 2
+          fi
+          echo "spec_real=$SPEC_REAL" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Python contracts
+        run: python -m pip install -r requirements-modular.txt
+
+      - name: Install Remotion runtime
+        run: npm install --prefix video --no-audit --no-fund
+
+      - name: Run video contract tests
+        run: python -m unittest tests.test_video_pipeline
+
+      - name: Render and verify MP4
+        run: |
+          python tools/render_video.py "${{ steps.request.outputs.spec_real }}" \
+            --out "$GITHUB_WORKSPACE/dist/render/$OUTPUT_NAME.mp4" \
+            --work-dir "$GITHUB_WORKSPACE/dist/render/work" \
+            --concurrency "$RENDER_CONCURRENCY" \
+            --keep-work
+
+      - name: Upload rendered video and QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.output_name }}-${{ github.run_id }}
+          path: |
+            dist/render/*.mp4
+            dist/render/*.qa.json
+            dist/render/work/storyboard.json
+            dist/render/work/frames/*.png
+          if-no-files-found: warn
+          retention-days: 7
