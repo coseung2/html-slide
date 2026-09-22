@@ -5,7 +5,8 @@
   "scripts": {
     "studio": "remotion studio src/index.ts",
     "render": "remotion render src/index.ts DeckVideo dist/video.mp4",
-    "still": "remotion still src/index.ts DeckVideo dist/poster.png --frame=0"
+    "still": "remotion still src/index.ts DeckVideo dist/poster.png --frame=0",
+    "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@remotion/cli": "4.0.526",
