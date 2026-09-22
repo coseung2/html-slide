@@ -13,6 +13,7 @@ from core import Registry
 from core.registry import ContractError
 from core.validation import validate_deck
 from tools.compose_video import compile_storyboard
+from tools.motion_patterns import load_motion_patterns, rank_motion_patterns
 from tools.video_pipeline import (
     VideoPipelineError,
     motion_pattern_ids,
@@ -64,30 +65,158 @@ class VideoPipelineTests(unittest.TestCase):
         self.assertGreater(scene["durationFrames"], scene["cues"][0]["atFrame"])
 
     def test_all_reel_motion_patterns_are_registered(self):
-        patterns = motion_pattern_ids()
+        patterns = load_motion_patterns()
         self.assertEqual(len(patterns), 19)
+        self.assertEqual(set(patterns), motion_pattern_ids())
         self.assertIn("kinetic-type", patterns)
         self.assertIn("particle-warp", patterns)
         self.assertIn("path-drawing", patterns)
-        for pattern in patterns:
-            candidate = {
-                **self.spec,
-                "slides": [{
-                    **self.spec["slides"][0],
-                    "motion": [{
-                        **self.spec["slides"][0]["motion"][0],
-                        "pattern": pattern,
-                    }],
-                }],
-            }
-            validate_deck(candidate, self.registry)
-            validate_storyboard(compile_storyboard(candidate, self.registry))
+        for pattern in patterns.values():
+            self.assertTrue(pattern["targets"])
+            self.assertTrue(pattern["semanticModules"])
+            self.assertTrue(pattern["intents"])
+            self.assertTrue(pattern["tones"])
+            self.assertIn(pattern["intensity"], {"low", "medium", "high"})
+            self.assertIn(pattern["complexity"], {"light", "medium", "heavy"})
+            valid_pairs = []
+            for semantic in pattern["semanticModules"]:
+                motion = self.registry.get("motion", semantic)
+                for target in pattern["targets"]:
+                    if target in motion.get("supports", []):
+                        valid_pairs.append((semantic, target))
+            self.assertTrue(valid_pairs, pattern["id"])
 
     def test_selected_pattern_is_preserved_in_storyboard(self):
         self.spec["slides"][0]["motion"][0]["pattern"] = "glitch"
         validate_deck(self.spec, self.registry)
         board = compile_storyboard(self.spec, self.registry)
-        self.assertEqual(board["scenes"][0]["cues"][0]["pattern"], "glitch")
+        cue = board["scenes"][0]["cues"][0]
+        self.assertEqual(cue["pattern"], "glitch")
+        self.assertEqual(cue["patternSource"], "explicit")
+
+    def test_auto_pattern_uses_ranked_metadata_and_records_reasons(self):
+        self.spec["style"] = {
+            "signals": {
+                "tone": ["technical"],
+                "density": "medium",
+            }
+        }
+        self.spec["slides"][0]["motion"][0].update(pattern="auto", intensity="high")
+        expected = rank_motion_patterns(
+            intent="thesis",
+            target="statement",
+            semantic_module="focus",
+            renderer="remotion",
+            tones=["technical"],
+            intensity="high",
+            density="medium",
+            topic="하나의 핵심 한 가지 메시지를 강조한다",
+        )[0]["id"]
+        board = compile_storyboard(self.spec, self.registry)
+        cue = board["scenes"][0]["cues"][0]
+        self.assertEqual(cue["pattern"], expected)
+        self.assertEqual(cue["patternSource"], "auto")
+        self.assertTrue(cue["patternReasons"])
+
+    def test_auto_pattern_penalizes_immediate_repetition(self):
+        self.spec["style"] = {"signals": {"tone": ["technical"], "density": "medium"}}
+        self.spec["slides"][0]["motion"][0].update(pattern="auto", intensity="high")
+        second = {
+            **self.spec["slides"][0],
+            "id": "two",
+            "title": "둘째 핵심",
+            "blocks": [{
+                "id": "message-two",
+                "module": "statement",
+                "data": {"text": "둘째 메시지"},
+            }],
+            "motion": [{
+                "module": "focus",
+                "target": "message-two",
+                "reason": "둘째 핵심을 주목시킨다",
+                "pattern": "auto",
+                "intensity": "high",
+            }],
+        }
+        self.spec["slides"] = [self.spec["slides"][0], second]
+        board = compile_storyboard(self.spec, self.registry)
+        first = board["scenes"][0]["cues"][0]["pattern"]
+        next_pattern = board["scenes"][1]["cues"][0]["pattern"]
+        self.assertNotEqual(first, next_pattern)
+
+    def test_explicit_pattern_rejects_incompatible_target(self):
+        png = (
+            "data:image/png;base64,"
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZgL8AAAAASUVORK5CYII="
+        )
+        self.spec["slides"][0].update(
+            intent="scene",
+            blocks=[{
+                "id": "photo",
+                "module": "image",
+                "data": {"src": png, "alt": "test", "fit": "cover"},
+            }],
+            motion=[{
+                "module": "focus",
+                "target": "photo",
+                "reason": "사진을 강조한다",
+                "pattern": "scramble-decode",
+            }],
+        )
+        with self.assertRaises(ContractError):
+            compile_storyboard(self.spec, self.registry)
+
+    def test_two_high_intensity_patterns_are_rejected_on_same_scene(self):
+        self.spec["slides"][0].update(
+            intent="overview",
+            layout="split-left",
+            blocks=[
+                {"id": "a", "module": "statement", "data": {"text": "A"}},
+                {"id": "b", "module": "statement", "data": {"text": "B"}},
+            ],
+            motion=[
+                {
+                    "module": "focus",
+                    "target": "a",
+                    "reason": "첫 메시지를 강조한다",
+                    "pattern": "kinetic-type",
+                },
+                {
+                    "module": "focus",
+                    "target": "b",
+                    "reason": "둘째 메시지를 강조한다",
+                    "pattern": "scramble-decode",
+                },
+            ],
+        )
+        with self.assertRaises(ContractError):
+            compile_storyboard(self.spec, self.registry)
+
+    def test_conflicting_patterns_are_rejected_on_same_scene(self):
+        self.spec["slides"][0].update(
+            intent="overview",
+            layout="split-left",
+            blocks=[
+                {"id": "a", "module": "statement", "data": {"text": "A"}},
+                {"id": "b", "module": "statement", "data": {"text": "B"}},
+            ],
+            motion=[
+                {
+                    "module": "focus",
+                    "target": "a",
+                    "reason": "첫 메시지를 강조한다",
+                    "pattern": "particle-warp",
+                },
+                {
+                    "module": "focus",
+                    "target": "b",
+                    "reason": "둘째 메시지를 강조한다",
+                    "pattern": "street-collage",
+                },
+            ],
+        )
+        with self.assertRaises(ContractError):
+            compile_storyboard(self.spec, self.registry)
 
     def test_unknown_pattern_is_rejected_by_deck_schema(self):
         self.spec["slides"][0]["motion"][0]["pattern"] = "made-up-effect"

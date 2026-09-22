@@ -80,6 +80,7 @@
                 "reason": {"type": "string", "minLength": 1, "maxLength": 200},
                 "pattern": {
                   "enum": [
+                    "auto",
                     "kinetic-type",
                     "flat-shape",
                     "info-motion",
@@ -100,7 +101,8 @@
                     "street-collage",
                     "path-drawing"
                   ]
-                }
+                },
+                "intensity": {"enum": ["low", "medium", "high"]}
               }
             }
           },

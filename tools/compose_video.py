@@ -15,6 +15,7 @@ from core import Registry, plan_deck
 from core.registry import ContractError
 from core.renderers import media_data
 from core.validation import load_spec
+from tools.motion_patterns import MotionPatternError, select_motion_pattern, validate_pattern_use
 
 DEFAULT_FPS = 30
 DEFAULT_BASE_SECONDS = 4.0
@@ -51,6 +52,14 @@ def _video_blocks(blocks: list[dict], asset_root: Path) -> list[dict]:
     return result
 
 
+def _default_motion_intensity(intent: str, density: str) -> str:
+    if density == "high":
+        return "low"
+    if intent in {"thesis", "result", "identity", "conclusion"}:
+        return "high"
+    return "medium"
+
+
 def compile_storyboard(
     spec: dict,
     registry: Registry,
@@ -73,6 +82,10 @@ def compile_storyboard(
     resolved_asset_root = Path(asset_root or registry.root).resolve()
     scenes = []
     cursor = 0
+    signals = spec.get("style", {}).get("signals", {})
+    deck_tones = signals.get("tone", [])
+    deck_density = signals.get("density", "medium")
+    recent_patterns: list[str] = []
 
     for index, (slide, planned) in enumerate(zip(spec["slides"], plan["slides"])):
         steps = int(planned.get("steps", 0))
@@ -83,7 +96,61 @@ def compile_storyboard(
         cue_gap = round(step_seconds * fps)
         cue_start = round(lead_seconds * fps)
         cues = []
+        scene_patterns: list[str] = []
+        density = slide.get("density", deck_density)
+        topic = " ".join(
+            value for value in (
+                spec.get("topic", ""),
+                slide["title"],
+                slide["communication_goal"],
+            ) if value
+        )
         for motion in planned.get("motion", []):
+            target_block = next(
+                block for block in slide["blocks"] if block["id"] == motion["target"]
+            )
+            requested_pattern = motion.get("pattern")
+            pattern = None
+            pattern_source = None
+            pattern_reasons: list[str] = []
+            pattern_warnings: list[str] = []
+            try:
+                if requested_pattern == "auto":
+                    choice = select_motion_pattern(
+                        intent=slide["intent"],
+                        target=target_block["module"],
+                        semantic_module=motion["module"],
+                        renderer="remotion",
+                        tones=deck_tones,
+                        intensity=motion.get("intensity")
+                        or _default_motion_intensity(slide["intent"], density),
+                        density=density,
+                        topic=topic,
+                        selected=scene_patterns,
+                        recent=recent_patterns,
+                    )
+                    pattern = choice["id"]
+                    pattern_source = "auto"
+                    pattern_reasons = choice["reasons"]
+                    pattern_warnings = choice["warnings"]
+                elif requested_pattern:
+                    validate_pattern_use(
+                        requested_pattern,
+                        target=target_block["module"],
+                        semantic_module=motion["module"],
+                        renderer="remotion",
+                        selected=scene_patterns,
+                    )
+                    pattern = requested_pattern
+                    pattern_source = "explicit"
+            except MotionPatternError as exc:
+                raise ContractError(
+                    f"{slide['id']}.{motion['target']}: {exc}"
+                ) from exc
+
+            if pattern:
+                scene_patterns.append(pattern)
+
             start_step = int(motion.get("startStep", 1))
             end_step = int(motion.get("endStep", start_step))
             for step in range(start_step, end_step + 1):
@@ -96,7 +163,10 @@ def compile_storyboard(
                         "module": motion["module"],
                         "target": motion["target"],
                         "reason": motion["reason"],
-                        **({"pattern": motion["pattern"]} if motion.get("pattern") else {}),
+                        **({"pattern": pattern} if pattern else {}),
+                        **({"patternSource": pattern_source} if pattern_source else {}),
+                        **({"patternReasons": pattern_reasons} if pattern_reasons else {}),
+                        **({"patternWarnings": pattern_warnings} if pattern_warnings else {}),
                         "step": step,
                         "atFrame": at_frame,
                         "durationFrames": max(
@@ -105,6 +175,9 @@ def compile_storyboard(
                         ),
                     }
                 )
+
+        recent_patterns.extend(scene_patterns)
+        recent_patterns = recent_patterns[-4:]
 
         scenes.append(
             {

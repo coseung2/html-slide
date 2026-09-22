@@ -8,30 +8,17 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from tools.motion_patterns import (
+    MotionPatternError,
+    motion_pattern_ids,
+    validate_pattern_use,
+)
+
 ROOT = Path(__file__).resolve().parents[1]
-MOTION_PATTERN_CATALOG = ROOT / "video" / "motion-patterns.json"
 
 
 class VideoPipelineError(ValueError):
     """Raised when a storyboard or video-render environment violates the contract."""
-
-
-def motion_pattern_ids() -> set[str]:
-    try:
-        catalog = json.loads(MOTION_PATTERN_CATALOG.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise VideoPipelineError(f"cannot read motion pattern catalog: {exc}") from exc
-    patterns = catalog.get("patterns")
-    if not isinstance(patterns, list):
-        raise VideoPipelineError("motion pattern catalog must contain a patterns array")
-    ids = {
-        item.get("id")
-        for item in patterns
-        if isinstance(item, dict) and isinstance(item.get("id"), str)
-    }
-    if len(ids) != len(patterns):
-        raise VideoPipelineError("motion pattern catalog contains invalid or duplicate ids")
-    return ids
 
 
 def read_storyboard(path: str | Path) -> dict[str, Any]:
@@ -88,7 +75,10 @@ def validate_storyboard(storyboard: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(scenes, list) or not scenes:
         raise VideoPipelineError("scenes must be a non-empty array")
 
-    patterns = motion_pattern_ids()
+    try:
+        patterns = motion_pattern_ids()
+    except MotionPatternError as exc:
+        raise VideoPipelineError(f"invalid motion pattern catalog: {exc}") from exc
     expected_start = 0
     total_cues = 0
     seen_scene_ids: set[str] = set()
@@ -116,6 +106,7 @@ def validate_storyboard(storyboard: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(blocks, list) or not blocks:
             raise VideoPipelineError(f"{scene_id}.blocks must be a non-empty array")
         block_ids: list[str] = []
+        block_modules: dict[str, str] = {}
         for block in blocks:
             if not isinstance(block, dict):
                 raise VideoPipelineError(f"{scene_id}: each block must be an object")
@@ -123,6 +114,10 @@ def validate_storyboard(storyboard: dict[str, Any]) -> dict[str, Any]:
             if not isinstance(block_id, str) or not block_id:
                 raise VideoPipelineError(f"{scene_id}: block id must be a non-empty string")
             block_ids.append(block_id)
+            module_id = block.get("module")
+            if not isinstance(module_id, str) or not module_id:
+                raise VideoPipelineError(f"{scene_id}.{block_id}: missing block module")
+            block_modules[block_id] = module_id
         if len(block_ids) != len(set(block_ids)):
             raise VideoPipelineError(f"{scene_id}: duplicate block id")
 
@@ -150,6 +145,8 @@ def validate_storyboard(storyboard: dict[str, Any]) -> dict[str, Any]:
         cues = scene.get("cues", [])
         if not isinstance(cues, list):
             raise VideoPipelineError(f"{scene_id}.cues must be an array")
+        selected_patterns: list[str] = []
+        seen_pattern_uses: set[tuple[str, str, str]] = set()
         for cue_index, cue in enumerate(cues):
             if not isinstance(cue, dict):
                 raise VideoPipelineError(f"{scene_id}.cues[{cue_index}] must be an object")
@@ -182,10 +179,27 @@ def validate_storyboard(storyboard: dict[str, Any]) -> dict[str, Any]:
             if not isinstance(cue.get("reason"), str) or not cue["reason"].strip():
                 raise VideoPipelineError(f"{scene_id}.cues[{cue_index}]: missing reason")
             pattern = cue.get("pattern")
-            if pattern is not None and pattern not in patterns:
-                raise VideoPipelineError(
-                    f"{scene_id}.cues[{cue_index}]: unknown motion pattern {pattern}"
-                )
+            if pattern is not None:
+                if pattern not in patterns:
+                    raise VideoPipelineError(
+                        f"{scene_id}.cues[{cue_index}]: unknown motion pattern {pattern}"
+                    )
+                use_key = (target, cue["module"], pattern)
+                if use_key not in seen_pattern_uses:
+                    try:
+                        validate_pattern_use(
+                            pattern,
+                            target=block_modules[target],
+                            semantic_module=cue["module"],
+                            renderer="remotion",
+                            selected=selected_patterns,
+                        )
+                    except MotionPatternError as exc:
+                        raise VideoPipelineError(
+                            f"{scene_id}.cues[{cue_index}]: {exc}"
+                        ) from exc
+                    selected_patterns.append(pattern)
+                    seen_pattern_uses.add(use_key)
             if step < 1:
                 raise VideoPipelineError(f"{scene_id}.cues[{cue_index}]: invalid step")
         total_cues += len(cues)

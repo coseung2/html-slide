@@ -46,12 +46,15 @@ contain an LLM, embeddings service, factual research agent or image search servi
 8. Deliver the actual HTML attachment, requested exports and an accurate verification
    summary. Report any font, factual-source, media or coverage limitations.
 9. When the user requests a Remotion video, keep the same validated deck JSON as the
-   content source of truth. After `video/` dependencies are installed, use
-   `python tools/render_video.py deck.json --out dist/video.mp4` as the canonical
-   entrypoint. It must compile and validate the storyboard, typecheck the runtime,
-   ensure the Remotion browser, render H.264, sample semantic key frames and verify
-   the encoded output. Read `references/video-pipeline.md`; do not invent a second
-   content spec or add blanket motion absent from semantic motion declarations.
+   content source of truth. Choose the semantic motion first. If the user did not
+   request a specific expression, use `pattern: "auto"` or inspect candidates with
+   `python tools/motion_patterns.py search --intent ... --target ... --semantic ...`
+   instead of guessing from the effect catalog. After `video/` dependencies are
+   installed, use `python tools/render_video.py deck.json --out dist/video.mp4` as
+   the canonical entrypoint. It must compile and validate the storyboard, typecheck
+   the runtime, ensure the Remotion browser, render H.264, sample semantic key frames
+   and verify the encoded output. Read `references/video-pipeline.md`; do not invent
+   a second content spec or add blanket motion absent from semantic motion declarations.
 
 Commands after `catalog` share the prefix `python tools/compose_deck.py`.
 
@@ -91,10 +94,13 @@ normally appear once in a footnote/source area, not in body copy. Keep it in the
 body only when preliminary-vs-final data is itself the slide's subject.
 
 Require a meaningful `reason` for every motion, a valid target and a supported
-intent. Choose motion from the relationship being explained, not from an effect
-catalog. Read `references/motion-semantics.md` before authoring data-driven or
-multi-beat motion. Do not animate every element or apply blanket fade-up to every
-slide. Different slides may share timing, but their motion grammar should follow
+intent. Choose the semantic motion from the relationship being explained, not from
+an effect catalog. Remotion expression patterns are a second-stage choice governed
+by target compatibility, scene tone, density, intensity, recent repetition and
+pairwise conflicts; `pattern: "auto"` uses those deterministic rules. Read
+`references/motion-semantics.md` before authoring data-driven or multi-beat motion.
+Do not animate every element or apply blanket fade-up to every slide. Different
+slides may share timing, but their motion grammar should follow
 their meaning: quantities grow, gaps measure, states swap, paths travel, sequences
 resolve and timelines advance.
 

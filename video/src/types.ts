@@ -3,6 +3,9 @@ export type Cue = {
   target: string;
   reason: string;
   pattern?: MotionPatternId;
+  patternSource?: 'auto' | 'explicit';
+  patternReasons?: string[];
+  patternWarnings?: string[];
   step: number;
   atFrame: number;
   durationFrames: number;

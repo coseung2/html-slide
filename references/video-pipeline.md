@@ -89,7 +89,12 @@ The pattern is an expression layer; it must not become the reason a target is
 animated. A deck can therefore remain valid HTML even when the Remotion renderer
 uses a richer visual expression.
 
-Example motion declaration:
+Each catalog entry declares compatible semantic modules and target block types plus
+scene intents, tones, nominal intensity, dense-scene safety, implementation
+complexity, tags and pairwise conflicts. Conflict declarations are symmetric and
+are validated before a storyboard can render.
+
+Example explicit motion declaration:
 
 ```json
 {
@@ -99,6 +104,38 @@ Example motion declaration:
   "pattern": "kinetic-type"
 }
 ```
+
+When the user did not request a specific visual effect, use `pattern: "auto"` rather
+than guessing an attractive effect. Optional `intensity` can be `low`, `medium` or
+`high`. The compiler deterministically ranks compatible patterns using slide intent,
+target block type, semantic motion module, deck tone signals, density, topic tags and
+recent-pattern repetition. Auto-selected cues record `patternSource`, selection
+reasons and warnings in the storyboard for QA and explanation.
+
+```json
+{
+  "module": "focus",
+  "target": "headline",
+  "reason": "결론 문장을 마지막 비트에서 강조한다",
+  "pattern": "auto",
+  "intensity": "high"
+}
+```
+
+Inspect ranking before authoring when the choice is not obvious:
+
+```sh
+python tools/motion_patterns.py search \
+  --intent result --target score --semantic score-reveal \
+  --tone sports --intensity high --density low
+```
+
+Use `--with-pattern` for another pattern already selected on the same scene and
+`--recent` for recently used patterns when inspecting alternatives manually. The
+selector rejects target/semantic incompatibility and declared conflicts, permits at
+most one high-intensity pattern and one heavy-complexity pattern per scene, penalizes
+immediate repetition and high-complexity effects in dense scenes, and prefers tone,
+intent and intensity matches.
 
 The Remotion wrapper always resolves to the accepted final content frame. Patterns
 that add temporary particles, occluders, grids, paper layers or RGB displacement
