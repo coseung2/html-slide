@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/render-video.yml"
       - "tools/verify_video.py"
+      - "video/**"
   workflow_dispatch:
     inputs:
       spec_path:

@@ -153,7 +153,7 @@ const SceneView: React.FC<{scene: Scene; design: DesignTokens}> = ({scene, desig
     <AbsoluteFill style={{
       background: palette(design, 'paper', '#08111f'),
       color: palette(design, 'ink', '#f7f9fc'),
-      fontFamily: '"Pretendard Variable", Pretendard, "Noto Sans KR", Arial, sans-serif',
+      fontFamily: '"HTMLSlide Pretendard", "Pretendard Variable", Pretendard, sans-serif',
       padding: 96,
       boxSizing: 'border-box',
       opacity: transition
