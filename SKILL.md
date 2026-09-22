@@ -45,6 +45,11 @@ contain an LLM, embeddings service, factual research agent or image search servi
    PPTX is a static full-frame rendition, not editable text/chart objects.
 8. Deliver the actual HTML attachment, requested exports and an accurate verification
    summary. Report any font, factual-source, media or coverage limitations.
+9. When the user requests a Remotion video, keep the same validated deck JSON as the
+   content source of truth. Compile it with `python tools/compose_video.py deck.json
+   --out dist/storyboard.json`, then render through the isolated `video/` runtime.
+   Read `references/video-pipeline.md`; do not invent a second content spec or add
+   blanket motion that is absent from the deck's semantic motion declarations.
 
 Commands after `catalog` share the prefix `python tools/compose_deck.py`.
 
@@ -123,7 +128,8 @@ must reject slide-entry autoplay on stepped decks and verify presenter phase sta
 Read [architecture](references/modular-architecture.md) for boundaries,
 [art direction](references/art-direction.md) for automatic typography/color routing,
 and [authoring](references/module-authoring.md) before adding a module or style pack.
-Read [migration](references/migrating-v1.md) when working on an existing deck.
+Read [migration](references/migrating-v1.md) when working on an existing deck and
+[video pipeline](references/video-pipeline.md) when producing Remotion output.
 Preserve older accepted decks and compatibility tools. Treat this repository as the
 AI's reusable production skill, not as a history of completed user jobs. Generate
 user-specific specs, HTML, QA captures and exports in temporary or ignored locations,
