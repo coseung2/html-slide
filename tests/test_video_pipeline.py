@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from core import Registry
 from core.registry import ContractError
 from tools.compose_video import compile_storyboard
+from tools.video_pipeline import VideoPipelineError, sample_frames, validate_storyboard
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -109,6 +110,21 @@ class VideoPipelineTests(unittest.TestCase):
         self.assertEqual([cue["step"] for cue in cues], [1, 2, 3])
         self.assertEqual([cue["atFrame"] for cue in cues], [18, 54, 90])
         self.assertEqual(len({cue["atFrame"] for cue in cues}), 3)
+
+    def test_storyboard_contract_and_sample_frames(self):
+        board = compile_storyboard(self.spec, self.registry)
+        summary = validate_storyboard(board)
+        self.assertEqual(summary["scenes"], 1)
+        frames = sample_frames(board)
+        self.assertEqual(frames[0], 0)
+        self.assertEqual(frames[-1], board["durationInFrames"] - 1)
+        self.assertIn(board["scenes"][0]["cues"][0]["atFrame"], frames)
+
+    def test_storyboard_rejects_cue_overflow(self):
+        board = compile_storyboard(self.spec, self.registry)
+        board["scenes"][0]["cues"][0]["durationFrames"] = board["scenes"][0]["durationFrames"]
+        with self.assertRaises(VideoPipelineError):
+            validate_storyboard(board)
 
     def test_invalid_fps_rejected(self):
         with self.assertRaises(ContractError):

@@ -87,19 +87,20 @@ def compile_storyboard(
             start_step = int(motion.get("startStep", 1))
             end_step = int(motion.get("endStep", start_step))
             for step in range(start_step, end_step + 1):
+                at_frame = min(
+                    duration_frames - 1,
+                    cue_start + (step - 1) * cue_gap,
+                )
                 cues.append(
                     {
                         "module": motion["module"],
                         "target": motion["target"],
                         "reason": motion["reason"],
                         "step": step,
-                        "atFrame": min(
-                            duration_frames - 1,
-                            cue_start + (step - 1) * cue_gap,
-                        ),
+                        "atFrame": at_frame,
                         "durationFrames": max(
                             1,
-                            min(round(0.8 * fps), duration_frames),
+                            min(round(0.8 * fps), duration_frames - at_frame),
                         ),
                     }
                 )
