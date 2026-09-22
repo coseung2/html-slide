@@ -124,6 +124,8 @@ Read [architecture](references/modular-architecture.md) for boundaries,
 [art direction](references/art-direction.md) for automatic typography/color routing,
 and [authoring](references/module-authoring.md) before adding a module or style pack.
 Read [migration](references/migrating-v1.md) when working on an existing deck.
-Preserve older accepted decks and compatibility tools. Do not commit build caches,
-QA screenshots, export binaries or delivery ZIPs; commit maintained source and
-finished example HTML only when repository changes are requested.
+Preserve older accepted decks and compatibility tools. Treat this repository as the
+AI's reusable production skill, not as a history of completed user jobs. Generate
+user-specific specs, HTML, QA captures and exports in temporary or ignored locations,
+deliver them in chat, and do not commit them. Commit only reusable framework changes
+and deliberately maintained synthetic regression/reference fixtures.

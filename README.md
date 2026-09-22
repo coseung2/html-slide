@@ -4,6 +4,30 @@ Compose by **communication goal**, not by filling a mandatory template.
 The AI writes a structured deck; the engine finds compatible modules, explains its
 choices, validates data and slots, and emits a self-contained HTML presentation.
 
+## What this repository is
+
+`html-slide` is an **AI-facing slide production skill, workflow and toolset**.
+It is not a repository for accumulating completed presentations.
+
+The intended loop is:
+
+1. AI reads `SKILL.md`, `AGENTS.md`, the catalog and relevant references.
+2. AI interprets the user's topic, sources and audience.
+3. AI chooses compatible layouts, content modules, art direction and semantic motion.
+4. AI generates and verifies the user's HTML and requested exports in a temporary or
+   ignored working location.
+5. AI explains the important choices and their reasons to the user.
+6. AI delivers the finished artifacts directly in the chat.
+
+Git should accumulate **reusable capability**: rules, modules, styles, validators,
+exporters, tests and documentation. It should not accumulate user-specific HTML,
+PDF/PPTX files, deck specs, plan reports, QA captures or downloaded media from
+individual jobs.
+
+If a real deck reveals a reusable problem, the reusable fix can be added here. The
+deck that exposed the problem still remains a user delivery artifact, not repository
+history.
+
 ## Quick start
 
 Python 3.10+ and `jsonschema` are required for composition. Browser QA additionally
@@ -16,11 +40,11 @@ npm install
 python tools/compose_deck.py catalog
 python tools/compose_deck.py search --intent ranking --theme sports-broadcast
 python tools/compose_deck.py search --type typography --theme education --domain education --audience elementary --tone clear
-python tools/compose_deck.py init --preset sports-match-report --out deck.json
-python tools/compose_deck.py plan deck.json --out plan.json
-python tools/compose_deck.py build deck.json --out deck.html
-python tools/verify_modular.py deck.html --out dist/qa
-python tools/export_modular.py deck.html --out dist/export
+python tools/compose_deck.py init --preset sports-match-report --out dist/work/deck.json
+python tools/compose_deck.py plan dist/work/deck.json --out dist/work/plan.json
+python tools/compose_deck.py build dist/work/deck.json --out dist/work/deck.html
+python tools/verify_modular.py dist/work/deck.html --out dist/work/qa
+python tools/export_modular.py dist/work/deck.html --out dist/work/export
 ```
 
 `--font /absolute/path/font.woff2` embeds an explicitly supplied authorized font.
@@ -64,13 +88,20 @@ See [module authoring](references/module-authoring.md),
 [art direction](references/art-direction.md),
 [migration](references/migrating-v1.md) and [Korean guide](README.ko.md).
 
-## Example and controls
+## Repository examples vs. user results
 
-Build `examples/modular-showcase.json` with the CLI, then open the resulting HTML:
-12 Korean slides demonstrate goal-driven
-composition across sports, finance, education, editorial and technology contexts.
-All illustrative scores, tables and series are synthetic, not current factual data.
-The source is `examples/modular-showcase.json`.
+`examples/` is reserved for deliberately maintained **synthetic reference and
+regression fixtures**. It is not a folder for saving completed user jobs.
+
+For example, `examples/modular-showcase.json` demonstrates the engine with synthetic
+data so core behavior can be tested consistently. Real user decks should be generated
+in a temporary/ignored path, verified, and delivered to the user rather than committed.
+
+The planner's style/layout scores and selection reasons are execution metadata. They
+may be shown or summarized to the user to explain the result, but should not be
+committed as per-job history.
+
+## Presenter controls
 
 Use arrows or the stage halves to move, **S** for static/live, **O** for overview,
 **F** for fullscreen, and Home/End for endpoints. Sources appear in overview.
