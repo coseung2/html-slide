@@ -1,0 +1,70 @@
+name: Video pipeline checks
+
+on:
+  pull_request:
+    paths:
+      - "core/**"
+      - "modules/**"
+      - "styles/**"
+      - "tools/compose_video.py"
+      - "tools/render_video.py"
+      - "tools/verify_video.py"
+      - "tools/video_pipeline.py"
+      - "video/**"
+      - "tests/test_video_pipeline.py"
+      - ".github/workflows/video-check.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "core/**"
+      - "modules/**"
+      - "styles/**"
+      - "tools/compose_video.py"
+      - "tools/render_video.py"
+      - "tools/verify_video.py"
+      - "tools/video_pipeline.py"
+      - "video/**"
+      - "tests/test_video_pipeline.py"
+      - ".github/workflows/video-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Python contracts
+        run: python -m pip install -r requirements-modular.txt
+
+      - name: Install Remotion runtime
+        run: npm install --prefix video --no-audit --no-fund
+
+      - name: Run modular compiler tests
+        run: python -m unittest discover -s tests -p 'test_modular.py'
+
+      - name: Run video pipeline tests
+        run: python -m unittest tests.test_video_pipeline
+
+      - name: Typecheck Remotion runtime
+        run: npm --prefix video run typecheck
+
+      - name: Compile showcase storyboard
+        run: python tools/compose_video.py examples/modular-showcase.json --out dist/video-ci/storyboard.json
+
+      - name: Verify showcase storyboard
+        run: python tools/verify_video.py dist/video-ci/storyboard.json
