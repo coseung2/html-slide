@@ -134,6 +134,8 @@ When the deck language is Korean, write the slide copy **in Korean first**. Do n
 - Do not leave generic template scaffolding such as `KEY TAKEAWAYS`, `NEXT STEPS`, or `OVERVIEW` merely because English appears more polished. If Korean communicates the same thing faster, use `핵심 정리`, `다음 단계`, `개요`.
 - Avoid literal translation syntax. Rewrite for the Korean audience's reading order and register instead of preserving English noun stacks, abstract verbs, or source sentence structure.
 - Prefer concrete nouns and verbs such as `핵심 변화`, `비교 결과`, `문제 원인`, `검증 기준`, `다음 단계`. Avoid vague constructions such as `~을 설명한다`, `~을 보여준다`, or `~의 시그널` when a direct Korean label says the same thing.
+- Before polishing any explanatory sentence, ask whether the audience needs that sentence at all. Delete redundant caveats, chart-reading instructions, defensive disclaimers, and prose that merely repeats a visible title, label, table, or chart. Keep a caveat only when omitting it would materially mislead the audience; if possible, move it to a compact footnote rather than the main narrative.
+- Release-status metadata such as `잠정치`, `예비치`, or later-revision warnings does **not** belong in ordinary body copy. Put it once in a footnote/source area. Keep it in the body only when revisions or preliminary-vs-final data are themselves the slide's subject; mark that reviewed exception with `data-copy-caveat-ok`.
 - In Korean-facing copy, do not use the middle dot `·`, en dash `–`, or em dash `—`. Use particles, commas, line breaks, parentheses, or a tilde for numeric ranges instead. Example: `3–8월` → `3~8월`, `CPI · 근원 CPI` → `CPI, 근원 CPI`.
 - Use `data-copy-en-ok` only for reviewed exceptions. It is not a blanket escape hatch for an English-heavy slide, and it does not exempt the punctuation rule above.
 
@@ -249,6 +251,8 @@ Mockups should feel like believable product UI, but remain presentation-safe.
 
 Motion is explanatory, not decorative.
 
+Choose motion from the **relationship the slide must explain**, not from a bag of effects. Read `references/motion-semantics.md` before authoring data-driven or multi-beat motion.
+
 **Use motion for:** compare / before-after, focus / inspection, transformation, cause-and-effect, state changes, revealing the mechanism behind a visual pattern.
 
 **Avoid:** every text line sliding in separately, unnecessary fade-up on every object, motion whose only purpose is "making the slide feel alive".
@@ -268,7 +272,13 @@ Entering elements use `ease-out` or a strong custom cubic-bezier. **`ease-in` on
 
 ### Scene-level motion
 
-Prefer **one or two meaningful beats per slide**. Examples:
+Before writing any keyframe, name the **single primary thing the audience must notice on that slide**. Bind the strongest motion to that data mark, number, comparison, or decision point. Generic entrances, title underlines, and whole-card fade-ups do not count as the primary emphasis.
+
+Prefer **one or two meaningful beats per slide**. The first beat establishes the visual; the second, stronger beat isolates the conclusion. When every object gets equal motion, the slide has no motion hierarchy.
+
+Do not create variety cosmetically. Different slides may share easing and timing, but their **motion grammar must follow their semantic relationship**: a gap is measured, a quantity grows, a state swaps, a trajectory travels, a sequence resolves step by step, and a timeline advances through time. Repeating `fade → dim the rest → pulse the key number` across unrelated slides is a design defect.
+
+Examples:
 
 - a finished UI replaces a generation skeleton
 - a repeated visual pattern is highlighted
@@ -377,13 +387,16 @@ let phase = {};                        // slide index -> current phase (0 = none
 
 Rules:
 
+- **The presenter runtime is shared infrastructure, not slide-specific code.** Use `motion/deck-motion.js` + `motion/deck-shell.js`; a self-contained HTML export may inline those modules unchanged, but do not author a second navigation/state machine for one deck. Theme the shell, not its behaviour.
+- **Slide entry must never advance an animation phase.** A live slide opens on its declared start phase and waits for presenter input. Selectors that trigger a meaningful animation solely from `.slide.is-active` are autoplay defects on a stepped deck.
+- **One presenter advance equals one declared phase.** Within that one phase, a short stagger or a directed micro-sequence is allowed; time may sequence objects *inside the phase*, but time may not advance the deck to another phase.
 - **Back must reverse one animation phase at a time before changing slides.** Forward steps, backward steps, then slide change — in that order, never mixed.
 - Each phase is declared in markup with `data-step="N"`, so phase state is readable and testable rather than inferred from CSS class names.
 - A phase must be **idempotent**: replaying it from any prior phase produces the same final state. Forward, back, forward must land in the same visual state as forward alone.
 - **On resize, re-measure the current phase's highlights immediately.** Resizing with an emphasis on screen is the most common way a bound highlight silently becomes unbound.
 - `prefers-reduced-motion` collapses the machine: one step per slide, every phase rendered in its end state.
 
-Keep presentation controls minimal: Arrow keys / Space / Enter advance; Back reverses one phase, then changes slides; optional slide number; optional progress bar. Do not add bottom explanatory captions.
+Keep presentation controls minimal and standard: right-half click / ArrowRight / Space / Enter advance one phase, left-half click / ArrowLeft reverses one phase, then slide navigation occurs at phase boundaries. The shell shows both slide position and phase position; whole-deck progress includes phase progress. Static mode skips phase interaction and renders the completed frame. Do not add bottom explanatory captions.
 
 ## 11. Revision discipline
 
@@ -532,8 +545,11 @@ Before delivering a slide or deck, verify all of the following. The column on th
 ### Motion
 - [ ] no animation on every element — *human*
 - [ ] motion has explanatory purpose — *human*
+- [ ] one primary motion target is obvious on each slide — *human, `references/motion-semantics.md`*
+- [ ] motion grammar matches the relationship being explained, not a repeated generic effect — *human*
 - [ ] no `top/left/width/height` animation — *linter: `layout-animation`*
 - [ ] no `scale(0)` — *linter: `scale-zero`*
+- [ ] no slide-entry autoplay on stepped decks — *linter: `slide-entry-autoplay`*
 - [ ] emphasis survives in a static frame — *linter: `emphasis-state`*
 - [ ] target emphasis bound to actual target DOM — *linter: `unbound-highlight`*
 - [ ] highlight stays aligned under resize — *linter: `binding-drift`*
@@ -544,6 +560,8 @@ Before delivering a slide or deck, verify all of the following. The column on th
 
 `tests/motion_check.py` drives every pattern in `motion/patterns/`: **complete** (nothing hides under reduced motion), **presenting** / **reversible** (opens on `data-start`, one phase per advance, Back undoes one), **settles** (last phase restores the full frame), **bound** (highlight covers ≥85% of its target at three viewports), **still** (the target does not move while its effect plays), **typed** (one span per glyph, reserved box, no animated layout property in the chain), **transition** (the active scene settles at rest after a round trip).
 
+`tests/template_runtime_check.py` also exercises the standard presenter contract: a phase must remain unchanged while the presenter does nothing, right/left stage clicks advance/reverse exactly one phase, the phase indicator reflects that state, and static mode skips phase interaction.
+
 `motion/patterns/index.html` lists all fifteen; open it in a browser to see each one move.
 
 The motion library is grouped by **what the motion explains**, never by how it looks: EMPHASIS (`pat-ring`, `pat-pulse`, `pat-recede`), REVEAL (`pat-group`, `pat-line-step`), TRANSFORM (`pat-state`, FLIP), QUANTITY (`pat-roll`, `pat-bar`), SEQUENCE (`pat-steps`), CONNECTIVE (`pat-path`), SWAP (`pat-swap`), TYPE (`pat-type`), TRANSITION (`pat-wipe`, `pat-focus-pull`). Pick the group from the sentence you are drawing, then the recipe from the group; each recipe carries its own *use-when / do-not-use* comment.
@@ -553,6 +571,8 @@ The motion library is grouped by **what the motion explains**, never by how it l
 These are failures that were made and fixed while building this repo. Each one passed a visual check.
 
 - **Never write a phase/step CSS rule that hides content without gating it on the live class.** An ungated `opacity: 0` base state deletes the content the moment motion is off — the exact failure this deck type exists to prevent.
+- **Never use slide activation as the animation clock on a stepped deck.** `.deck-live .slide.is-active .metric { animation: ... }` starts on its own and bypasses the presenter state machine. Bind the effect to `.deck-step-N` instead. A user-triggered phase may contain its own short stagger; the phase itself may not be time-triggered.
+- **Do not rebuild presenter chrome per deck.** Matching the bottom bar visually while replacing its state machine is still a broken shell. The invariant is click/keyboard → one phase → next phase → next slide, with Back reversing the same machine.
 - **Never define a runtime method as a constructor closure when the constructor calls it mid-construction.** A reorder then throws `this.measure is not a function`; the crash gets masked by a defensive closure and the page silently renders unmeasured. Put it on the prototype.
 - **Do not assert a step walk from a hand-counted loop.** Record the phase before the first advance and after the last one. Off-by-one walks (`[1,2,3,3]` vs `[1,2,3,3,3]`) pass eyeballing and fail the machine.
 - **Baselines are per-row, not per-class.** Group same-class texts by vertical overlap before comparing tops; the second row of a 2×2 grid is a different row, not a misaligned one. Same fix applies to any "repeated objects share X" check.

@@ -9,6 +9,9 @@ Class lesson from building a verified deck repo: step/phase CSS that hides conte
 - The deck runtime adds `deck-live` to `<html>` **only** when it runs with motion allowed (`prefers-reduced-motion` off).
 - Every phase/step selector in CSS is scoped under `.deck-live` (e.g. `.deck-live .deck-step-0 .pat-state--before`). Without the class, plain CSS renders the accepted (finished) frame — no JS, no animation required.
 - The linter measures under `emulate_media(reduced_motion="reduce")` plus a no-transition style tag, with any `deck-step-*` classes stripped: what it sees is what a capture/export sees.
+- The presenter state machine is shared infrastructure. Deck-specific HTML may theme the shell and declare phases, but must not replace navigation with its own `go()/next()/prev()` clock. A self-contained build may inline the standard runtime unchanged.
+- Activating a slide is not a phase trigger. A stepped slide enters at `data-start` and remains there indefinitely until presenter input.
+- One input advances one phase. A phase may internally stagger marks for a few hundred milliseconds, but no timer may advance the machine to the next phase or slide.
 
 ## State machine (`deck-motion.js` pattern)
 
@@ -19,13 +22,31 @@ Class lesson from building a verified deck repo: step/phase CSS that hides conte
 - Expose a `__deckGoto(n)` hook so the linter/tester can drive every slide, not just the visible one.
 - Reduced motion collapses the machine: `phases()` reads 0, no `deck-live`, complete frame on screen. That collapsed state **is** the pass, not a skip.
 
+## Autoplay defect
+
+On a deck that declares `data-step`, CSS such as:
+
+```css
+.deck-live .slide.is-active .metric { animation: pop 420ms both; }
+```
+
+is a defect when that animation carries a presentation beat. It starts from slide entry instead of phase state. Bind the beat to `.deck-step-N`:
+
+```css
+.deck-live .slide.deck-step-1 .metric { animation: pop 420ms both; }
+```
+
+An `animation-delay` may stagger objects within the same phase; it may not serve as a hidden phase sequencer.
+
 ## FLIP (`flip()` pattern)
 
 First → mutate → Last → Invert → Play via `element.animate`, transform-only. Translate before scale (scaling first moves the element's own origin). Clear any `will-change` when the animation finishes.
 
-## Behaviour checks (the six categories)
+## Behaviour checks
 
 `complete` (no phase state + everything visible under reduced motion) / `presenting` (opens on `data-start`, exact forward walk incl. the clamped end) / `reversible` (exact backward walk) / `settles` (frame complete at the last phase) / `bound` (`data-hl` covers ≥85% of target at 1920×1080, 1280×720, 1024×768 with ≤1.0 unit drift — compare coverage *ratio*, stage scale shrinks pixel gaps) / `still` (target box motionless while its effect plays).
+
+For a multi-slide stepped deck, also prove `idle` (phase is unchanged after waiting longer than the longest beat), `click-forward` / `click-back` (right/left stage halves change exactly one phase), and `static` (static mode advances slides while displaying every final phase).
 
 ## Implementation crash to avoid
 

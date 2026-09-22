@@ -46,6 +46,15 @@ def main() -> int:
     missing_lang = lint_text('<html><body><h1>현재 상태와 다음 단계에서 달라지는 핵심 정리</h1></body></html>')
     check("missing Korean lang is warned", any(f["code"] == "copy-lang" for f in missing_lang["findings"]))
 
+    body_caveat = lint_text('<html lang="ko"><body><p class="body">고용은 크게 늘었다. 다만 8월 수치는 잠정치다.</p><div class="asterisk">8월 잠정치.</div></body></html>')
+    check("release-status caveat is rejected in main body", any(f["code"] == "copy-body-release-caveat" for f in body_caveat["findings"]))
+
+    footnote_caveat = lint_text('<html lang="ko"><body><p class="body">고용은 크게 늘었다.</p><div class="asterisk">8월 잠정치.</div></body></html>')
+    check("release-status caveat is allowed in footnote", footnote_caveat["errors"] == 0)
+
+    caveat_exception = lint_text('<html lang="ko"><body><p class="body" data-copy-caveat-ok>잠정치와 확정치의 차이를 비교한다.</p></body></html>')
+    check("reviewed caveat exception passes", caveat_exception["errors"] == 0)
+
     english = lint_text('<html lang="en"><body><h1>Product Strategy Review Framework</h1></body></html>')
     check("English deck is not policed", english["errors"] == 0 and not english["koreanMode"])
 

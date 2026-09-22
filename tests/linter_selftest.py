@@ -123,6 +123,37 @@ def main() -> int:
                 failures.append("CSS comment regression: " + name)
     print("CSS comment regressions: 3 checked")
 
+    # A stepped deck must bind meaningful beats to phase state, not to the
+    # moment a slide receives .is-active.
+    autoplay_cases = [
+        ("stepped-autoplay",
+         '<style>.deck-live .slide.is-active .metric{animation:pop .4s both}'
+         '@keyframes pop{from{opacity:.2}to{opacity:1}}</style>'
+         '<section class="slide" data-slide data-step="1"><b class="metric">1</b></section>',
+         True),
+        ("stepped-phase",
+         '<style>.deck-live .slide.deck-step-1 .metric{animation:pop .4s both}'
+         '@keyframes pop{from{opacity:.2}to{opacity:1}}</style>'
+         '<section class="slide" data-slide data-step="1"><b class="metric">1</b></section>',
+         False),
+        ("legacy-autoplay",
+         '<style>.deck-live .slide.is-active .metric{animation:pop .4s both}'
+         '@keyframes pop{from{opacity:.2}to{opacity:1}}</style>'
+         '<section class="slide" data-slide><b class="metric">1</b></section>',
+         False),
+    ]
+    with tempfile.TemporaryDirectory(prefix="slide-lint-autoplay-") as tmp:
+        for name, source, expected in autoplay_cases:
+            path = Path(tmp) / (name + ".html")
+            path.write_text("<!doctype html>" + source, encoding="utf-8")
+            report = Report(path=str(path))
+            static_checks(path, report)
+            found_autoplay = any(f.code == "slide-entry-autoplay"
+                                 for f in report.findings)
+            if found_autoplay != expected:
+                failures.append("autoplay contract regression: " + name)
+    print("autoplay contract regressions: 3 checked")
+
     if failures:
         print("\nFAIL")
         for f in failures:

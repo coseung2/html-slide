@@ -30,6 +30,16 @@ The stage must letterbox; it must not reflow between these viewports.
 - `transition: all` is forbidden because it silently opts layout properties
   into animation
 
+## Presenter interaction
+
+- A stepped deck waits at its start phase until user input.
+- One right-half click / ArrowRight / Space / Enter advances exactly one phase.
+- One left-half click / ArrowLeft reverses exactly one phase.
+- After the terminal phase, the next advance changes slides.
+- Waiting longer than the longest animation must not change phase.
+- Static mode renders the completed state and navigates slide-to-slide.
+- Whole-deck progress includes phase progress; slide and phase counters remain distinct.
+
 ## Timing
 
 - Press feedback: 100-160ms
