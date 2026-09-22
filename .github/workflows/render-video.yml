@@ -1,12 +1,6 @@
 name: Render Remotion video
 
 on:
-  push:
-    branches: ["feature/remotion-pipeline"]
-    paths:
-      - ".github/workflows/render-video.yml"
-      - "tools/verify_video.py"
-      - "video/**"
   workflow_dispatch:
     inputs:
       spec_path:
@@ -29,7 +23,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: remotion-render-${{ github.ref }}-${{ inputs.output_name || 'pipeline-smoke' }}
+  group: remotion-render-${{ github.ref }}-${{ inputs.output_name }}
   cancel-in-progress: false
 
 jobs:
@@ -37,9 +31,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      SPEC_PATH: ${{ inputs.spec_path || 'examples/modular-showcase.json' }}
-      OUTPUT_NAME: ${{ inputs.output_name || 'pipeline-smoke' }}
-      RENDER_CONCURRENCY: ${{ inputs.concurrency || '50%' }}
+      SPEC_PATH: ${{ inputs.spec_path }}
+      OUTPUT_NAME: ${{ inputs.output_name }}
+      RENDER_CONCURRENCY: ${{ inputs.concurrency }}
 
     steps:
       - name: Checkout
@@ -104,7 +98,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.output_name || 'pipeline-smoke' }}-${{ github.run_id }}
+          name: ${{ inputs.output_name }}-${{ github.run_id }}
           path: |
             dist/render/*.mp4
             dist/render/*.qa.json

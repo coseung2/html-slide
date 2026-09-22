@@ -53,6 +53,7 @@ Remotion 출력은 별도 `video/` 런타임을 사용하며, HTML과 동일한 
 영상 전용으로 내용을 다시 작성하지 않고, 검증된 semantic motion만 시간축 cue로 변환합니다.
 planner가 정한 slot 배치와 palette/dataviz 토큰도 storyboard에 보존하며, 이미지/로고는 검증된 raster data URI로 자체 포함합니다.
 현재 Remotion runtime은 metric, ranking, timeline/process, bar/line chart, score, image/logo 등 유지 중인 모듈을 네이티브 렌더링합니다.
+영상 런타임은 저장소의 Pretendard WOFF2를 직접 번들링하므로 GitHub runner에 한글 폰트가 없어도 동일한 글꼴로 렌더링합니다.
 `render_video.py`는 storyboard 생성, 계약 검증, TypeScript typecheck, Remotion browser 확보, H.264 렌더,
 semantic cue 기준 핵심 프레임 PNG 생성, Remotion 내장 ffprobe 기반 codec/해상도/fps/duration 검증과 QA JSON 출력을 한 번에 수행합니다.
 

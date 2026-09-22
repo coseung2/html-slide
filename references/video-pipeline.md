@@ -74,7 +74,7 @@ modules rather than reducing everything to generic cards:
 `focus` is applied only to its declared block. Scene entry opacity is structural
 transition behavior, not semantic emphasis.
 
-The HTML renderer remains the reference for exact browser layout fidelity. When a new
+The video entrypoint loads the repository-maintained Pretendard WOFF2 through CSS so Korean text does not depend on fonts installed on the runner. Remotion waits for CSS fonts before rendering. The HTML renderer remains the reference for exact browser layout fidelity. When a new
 HTML content or motion module is added, add or explicitly reject its video renderer
 instead of silently falling back to unrelated motion.
 
@@ -100,7 +100,7 @@ The renderer performs these phases in order:
 2. validate contiguous scene timing, slot assignment and cue bounds;
 3. run the Remotion TypeScript typecheck;
 4. run `remotion browser ensure`;
-5. render H.264 / yuv420p MP4;
+5. render H.264 with planar 8-bit 4:2:0 output;
 6. render representative PNGs at scene/transition/cue boundaries;
 7. inspect the MP4 with Remotion's bundled `ffprobe`;
 8. verify codec, dimensions, fps, duration and sampled-frame dimensions;
@@ -139,7 +139,7 @@ Automated checks now cover:
 - self-contained media passed by the deck compiler;
 - TypeScript type correctness;
 - existence and dimensions of representative PNG frames;
-- encoded H.264 codec, yuv420p format, expected dimensions, fps and duration.
+- encoded H.264 codec, planar 8-bit 4:2:0 format (`yuv420p` or FFmpeg's full-range `yuvj420p` name), expected dimensions, fps and duration.
 
 The sampled PNGs still require visual inspection for safe area, clipping, overlap,
 text fit, image quality and whether the semantic emphasis is actually perceptible.
