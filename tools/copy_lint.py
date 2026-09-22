@@ -2,8 +2,8 @@
 """Lightweight visible-copy lint for Korean HTML slide decks.
 
 This intentionally catches only deterministic problems: template English,
-English-heavy visible strings, and banned punctuation in Korean deck source.
-Naturalness/translationese remains editorial.
+English-heavy visible strings, banned punctuation, and release-status caveats
+that leak into Korean body copy. Naturalness/translationese remains editorial.
 """
 from __future__ import annotations
 
@@ -35,9 +35,11 @@ class VisibleText(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.lang = ""
-        self.stack: list[tuple[str, bool, bool]] = []
+        self.stack: list[tuple[str, bool, bool, bool, bool]] = []
         self.skip_depth = 0
         self.allow_depth = 0
+        self.body_depth = 0
+        self.caveat_allow_depth = 0
         self.parts: list[dict] = []
 
     def handle_starttag(self, tag, attrs):
@@ -46,9 +48,13 @@ class VisibleText(HTMLParser):
             self.lang = attrs.get("lang", "")
         skip = tag in SKIP_TAGS
         allow = "data-copy-en-ok" in attrs
-        self.stack.append((tag, skip, allow))
+        body = "body" in set(attrs.get("class", "").split())
+        caveat_allow = "data-copy-caveat-ok" in attrs
+        self.stack.append((tag, skip, allow, body, caveat_allow))
         self.skip_depth += int(skip)
         self.allow_depth += int(allow)
+        self.body_depth += int(body)
+        self.caveat_allow_depth += int(caveat_allow)
 
     def handle_startendtag(self, tag, attrs):
         if tag == "html":
@@ -56,11 +62,14 @@ class VisibleText(HTMLParser):
 
     def handle_endtag(self, tag):
         for i in range(len(self.stack) - 1, -1, -1):
-            open_tag, skip, allow = self.stack[i]
+            open_tag, skip, allow, body, caveat_allow = self.stack[i]
             if open_tag == tag:
+                removed = self.stack[i:]
                 del self.stack[i:]
-                self.skip_depth -= int(skip)
-                self.allow_depth -= int(allow)
+                self.skip_depth -= sum(int(item[1]) for item in removed)
+                self.allow_depth -= sum(int(item[2]) for item in removed)
+                self.body_depth -= sum(int(item[3]) for item in removed)
+                self.caveat_allow_depth -= sum(int(item[4]) for item in removed)
                 break
 
     def handle_data(self, data):
@@ -72,6 +81,8 @@ class VisibleText(HTMLParser):
                 "line": self.getpos()[0],
                 "text": text,
                 "allowed": self.allow_depth > 0,
+                "body": self.body_depth > 0,
+                "caveatAllowed": self.caveat_allow_depth > 0,
             })
 
 
@@ -109,6 +120,14 @@ def lint_text(source: str) -> dict:
 
         for part in parser.parts:
             text = part["text"]
+            if part["body"] and not part["caveatAllowed"] and re.search(r"잠정치|예비치|추후\s*수정|향후\s*수정|수정될\s*수", text):
+                findings.append({
+                    "severity": "error",
+                    "code": "copy-body-release-caveat",
+                    "line": part["line"],
+                    "text": text,
+                    "detail": "release-status caveat belongs in a compact footnote/source, not main body copy; use data-copy-caveat-ok only when revisions are the slide's subject",
+                })
             if part["allowed"] or _is_urlish(text):
                 continue
             upper = re.sub(r"\s+", " ", text.upper())

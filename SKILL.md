@@ -69,8 +69,29 @@ use intentional technical names rather than decorative English scaffold. Prefer
 concrete labels; avoid tiny bottom explanations, pill chips, leader lines and
 unmotivated visual decoration. Let evidence determine the visual, not vice versa.
 
+Before polishing explanatory copy, delete prose that merely repeats a visible title,
+label, chart or table. Keep caveats only when omitting them would materially mislead.
+Release-status metadata such as `잠정치`, `예비치` or later-revision warnings should
+normally appear once in a footnote/source area, not in body copy. Keep it in the
+body only when preliminary-vs-final data is itself the slide's subject.
+
 Require a meaningful `reason` for every motion, a valid target and a supported
-intent. Do not animate every element or apply blanket fade-up to every slide.
+intent. Choose motion from the relationship being explained, not from an effect
+catalog. Read `references/motion-semantics.md` before authoring data-driven or
+multi-beat motion. Do not animate every element or apply blanket fade-up to every
+slide. Different slides may share timing, but their motion grammar should follow
+their meaning: quantities grow, gaps measure, states swap, paths travel, sequences
+resolve and timelines advance.
+
+The presenter state machine is part of the deck contract. A live slide must open on
+its declared start phase and wait for presenter input. Slide activation must never
+auto-advance a meaningful phase. One presenter advance equals exactly one declared
+phase; a short stagger may occur inside that phase. Back reverses exactly one phase
+before crossing a slide boundary. Right-half click, ArrowRight, Space and Enter move
+forward; left-half click and ArrowLeft move backward. Static mode skips phase
+interaction and renders the completed frame. Whole-deck progress must include phase
+progress. Do not rebuild a second presenter state machine inside an individual deck.
+
 Static mode, reduced motion and print must present the same complete information.
 
 Use only trusted local raster assets within the declared asset root. The compiler
@@ -85,6 +106,11 @@ Run `python tests/modular_runtime_check.py` for focused runtime/negative-QA chec
 Run browser QA for every finished deck; compilation alone is not visual acceptance.
 The current QA harness uses `set_content` and therefore does not certify first-load
 URL query/deep-link behavior. Inspect the report's coverage notes.
+
+For legacy decks, preserve the shared presenter runtime and linter contract in
+`motion/deck-motion.js`, `motion/deck-shell.js`, `tools/slide_lint.py`,
+`references/runtime-contract.md` and `references/navigation.md`. The legacy linter
+must reject slide-entry autoplay on stepped decks and verify presenter phase state.
 
 Read [architecture](references/modular-architecture.md) for boundaries and
 [authoring](references/module-authoring.md) before adding a module. Read

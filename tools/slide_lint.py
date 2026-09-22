@@ -212,6 +212,38 @@ def static_checks(path: Path, rep: Report) -> None:
                     "animate transform/opacity only (§8)",
                     selector=f"@keyframes {name}")
 
+    # --- stepped decks may not use slide entry as their animation clock -----
+    # A meaningful beat on .slide.is-active starts by time, not by presenter
+    # input. Legacy non-stepped decks are left alone; any deck that declares
+    # data-step has opted into the presenter state-machine contract (§10).
+    if re.search(r"\bdata-step\s*=", html, re.I):
+        for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+            sel = re.sub(r"/\*.*?\*/", "", m.group(1), flags=re.S).strip()
+            body = re.sub(r"/\*.*?\*/", "", m.group(2), flags=re.S)
+            if ".is-active" not in sel or not re.search(r"(\.slide|\[data-slide)", sel):
+                continue
+            if "deck-step-" in sel or "[data-step" in sel:
+                continue
+            decls = re.findall(
+                r"\banimation(?:-name)?\s*:\s*([^;{}]+)", body, re.I)
+            if not decls:
+                continue
+            # A defensive reset such as animation:none!important is not an
+            # autoplay trigger.
+            live_decls = [d for d in decls
+                          if not re.match(r"^\s*none(?:\s*!important)?\s*$", d, re.I)]
+            if not live_decls:
+                continue
+            ctx = css[max(0, m.start() - 180):m.end() + 180]
+            if _motion_ok_near(ctx):
+                continue
+            rep.add(
+                "slide-entry-autoplay", ERROR,
+                "stepped deck starts a meaningful animation from .slide.is-active",
+                "bind the beat to .deck-step-N; a phase may stagger objects after "
+                "one presenter input, but slide entry may not advance the story (§10)",
+                selector=sel[:80])
+
     # --- nothing appears from nothing ---
     for m in re.finditer(r"scale\(\s*0(?:\.0+)?\s*\)", css + html):
         if not _motion_ok_near(m.group(0)):
@@ -1059,6 +1091,106 @@ def drift_check(path: Path, reads: dict[tuple[int, int, int], dict],
             _reflow_check(base, data, base_key, key, seen, rep)
 
 
+def presenter_contract_checks(page, rep: Report) -> None:
+    """Exercise phase navigation in a live multi-slide stepped deck."""
+    meta = page.evaluate(r"""() => {
+      const slides = [...document.querySelectorAll('[data-slide]')];
+      const stepped = slides.map((s, i) => {
+        let max = parseInt(s.getAttribute('data-step'), 10) || 0;
+        s.querySelectorAll('[data-step]').forEach(el => {
+          if (el !== s) max = Math.max(max, parseInt(el.getAttribute('data-step'), 10) || 0);
+        });
+        const rawStart = parseInt(s.getAttribute('data-start'), 10);
+        const start = Number.isFinite(rawStart)
+          ? Math.min(Math.max(rawStart, 0), max) : 0;
+        return {i, max, start};
+      }).filter(x => x.max > 0);
+      return {
+        count: slides.length,
+        stepped,
+        hooks: typeof window.__deckGoto === 'function' &&
+               typeof window.__deckState === 'function',
+        phaseIndicator: !!document.querySelector('[data-deck-phase], .deck-shell__phase'),
+        shellOff: document.documentElement.dataset.deckShell === 'off' ||
+                  document.body.dataset.deckShell === 'off'
+      };
+    }""")
+    if meta["count"] < 2 or not meta["stepped"]:
+        return
+    if not meta["hooks"]:
+        rep.add(
+            "presenter-runtime", ERROR,
+            "multi-slide stepped deck exposes no standard deck state hooks",
+            "use motion/deck-motion.js + motion/deck-shell.js (or an unchanged "
+            "self-contained inline copy) instead of a deck-specific state machine (§10)",
+            layer="browser")
+        return
+    if not meta["shellOff"] and not meta["phaseIndicator"]:
+        rep.add(
+            "presenter-phase-indicator", ERROR,
+            "stepped deck has no visible phase indicator",
+            "the presenter shell shows slide position and phase position separately (§10)",
+            layer="browser")
+
+    target = next((x for x in meta["stepped"]
+                   if x["start"] < x["max"] and x["i"] < meta["count"] - 1),
+                  next((x for x in meta["stepped"] if x["start"] < x["max"]),
+                       meta["stepped"][0]))
+    idx, max_phase, start_phase = target["i"], target["max"], target["start"]
+    page.evaluate("([i, p]) => window.__deckGoto(i, p)", [idx, start_phase])
+    page.wait_for_timeout(80)
+    before = page.evaluate("() => window.__deckState()")
+    page.wait_for_timeout(1400)
+    after = page.evaluate("() => window.__deckState()")
+    if (after.get("slide"), after.get("phase")) != (before.get("slide"), before.get("phase")):
+        rep.add(
+            "presenter-autoplay", ERROR,
+            f"deck changed state while idle: {before.get('slide')}.{before.get('phase')} "
+            f"→ {after.get('slide')}.{after.get('phase')}",
+            "slide entry may animate within the current phase, but time alone "
+            "must never advance phase or slide (§10)", layer="browser")
+
+    stage = page.locator("[data-stage]").first
+    box = stage.bounding_box()
+    if not box:
+        return
+    y = box["y"] + box["height"] * 0.5
+    if start_phase < max_phase:
+        page.mouse.click(box["x"] + box["width"] * 0.75, y)
+        page.wait_for_timeout(80)
+        forward = page.evaluate("() => window.__deckState()")
+        expected = start_phase + 1
+        if forward.get("slide") != idx or forward.get("phase") != expected:
+            rep.add(
+                "presenter-step", ERROR,
+                f"right-half click did not advance exactly one phase "
+                f"(got slide={forward.get('slide')} phase={forward.get('phase')})",
+                "one presenter advance equals one declared phase (§10)", layer="browser")
+
+        page.mouse.click(box["x"] + box["width"] * 0.25, y)
+        page.wait_for_timeout(80)
+        backward = page.evaluate("() => window.__deckState()")
+        if backward.get("slide") != idx or backward.get("phase") != start_phase:
+            rep.add(
+                "presenter-back", ERROR,
+                f"left-half click did not reverse exactly one phase "
+                f"(got slide={backward.get('slide')} phase={backward.get('phase')})",
+                "Back reverses the phase machine before changing slides (§10)",
+                layer="browser")
+
+    if idx < meta["count"] - 1:
+        page.evaluate("([i, p]) => window.__deckGoto(i, p)", [idx, max_phase])
+        page.wait_for_timeout(40)
+        page.mouse.click(box["x"] + box["width"] * 0.75, y)
+        page.wait_for_timeout(80)
+        boundary = page.evaluate("() => window.__deckState()")
+        if boundary.get("slide") != idx + 1:
+            rep.add(
+                "presenter-boundary", ERROR,
+                "next slide did not wait for the terminal phase",
+                "phase walk completes before slide navigation (§10)", layer="browser")
+
+
 # --------------------------------------------------------------------------- #
 # runner
 # --------------------------------------------------------------------------- #
@@ -1096,6 +1228,21 @@ def lint(path: Path, use_browser: bool, shots: Path | None,
     with sync_playwright() as p:
         browser = p.chromium.launch()
         try:
+            # Interaction contract: run once at the authored viewport with
+            # motion enabled. Static geometry is measured separately below.
+            live_page = browser.new_page(
+                viewport={"width": viewports[0][0], "height": viewports[0][1]},
+                device_scale_factor=1,
+                reduced_motion="no-preference")
+            live_page.goto(path.resolve().as_uri(), wait_until="load")
+            try:
+                live_page.evaluate("() => document.fonts.ready")
+            except Exception:
+                pass
+            live_page.wait_for_timeout(100)
+            presenter_contract_checks(live_page, rep)
+            live_page.close()
+
             for vw, vh in viewports:
                 page = browser.new_page(viewport={"width": vw, "height": vh},
                                         device_scale_factor=1,

@@ -163,24 +163,18 @@
     from{ clip-path:inset(0 100% 100% 0); }
     to  { clip-path:inset(0); }
   }
-  /* phase 1 replays how the finished UI got there; the slide is complete
-     without it, so the static frame is always a valid frame */
-  .slide.phase-1 .card{opacity:0}
-  .slide.phase-1 .skeleton{opacity:1}
-  .slide.phase-1 .hl-ring{opacity:0}
-  .slide.phase-2 .hl-ring{animation:ring-draw 260ms cubic-bezier(.2,.8,.2,1) both}
-
-  /* --------------------------------------------------------------- pager -- */
-  .pager{
-    position:absolute; right:120px; bottom:110px;
-    font-size:26px; color:var(--muted);
-    font-variant-numeric:tabular-nums;
-  }
+  /* The shared presenter runtime owns phase state. Phase 1 is the earlier
+     skeleton state; phase 2 resolves to the accepted finished frame. */
+  .deck-live .slide.deck-step-1 .card{opacity:0}
+  .deck-live .slide.deck-step-1 .skeleton{opacity:1}
+  .deck-live .slide.deck-step-1 .hl-ring{opacity:0}
+  .deck-live .slide.deck-step-2 .hl-ring{animation:ring-draw 260ms cubic-bezier(.2,.8,.2,1) both}
 
   @media (prefers-reduced-motion: reduce){
     *{transition:none !important;animation:none !important}
   }
 </style>
+<link rel="stylesheet" href="../motion/deck-shell.css">
 </head>
 <body>
 <div id="stage" data-stage>
@@ -215,7 +209,6 @@
         </div>
       </div>
     </div>
-    <div class="pager">01 / 03</div>
   </section>
 
   <!-- ============================================================ 02 ===
@@ -229,13 +222,12 @@
         <p class="body">장면이 아니라 페이지를 채우기 때문</p>
       </div>
     </div>
-    <div class="pager">02 / 03</div>
   </section>
 
   <!-- ============================================================ 03 ===
        transformation beat: the slide is complete as a static frame, and the
        step replays how the finished UI got there -->
-  <section class="slide" data-slide="03-transform">
+  <section class="slide" data-slide="03-transform" data-start="1" data-step="2">
     <div class="scene scene--split">
       <div class="copy" data-copy>
         <h1 class="title">스켈레톤에서 완성 UI로</h1>
@@ -270,69 +262,11 @@
         </div>
       </div>
     </div>
-    <div class="pager">03 / 03</div>
   </section>
 
 </div>
 
-<script>
-(function () {
-  const slides = [...document.querySelectorAll('[data-slide]')];
-  const stage  = document.querySelector('[data-stage]');
-
-  // ---- stage fit: letterbox with min(), never separate x/y scales ---------
-  function fit() {
-    const k = Math.min(innerWidth / 1920, innerHeight / 1080);
-    stage.style.transform =
-      `translate(${(innerWidth - 1920 * k) / 2}px, ${(innerHeight - 1080 * k) / 2}px) scale(${k})`;
-  }
-  addEventListener('resize', fit);
-  fit();
-  if (document.fonts) document.fonts.ready.then(fit);
-
-  // ---- step state machine (§10) -------------------------------------------
-  // The last phase is not an extra state: it is the slide's static frame, so
-  // phase 0 already shows the finished result.
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const STEPS = reduce ? {} : { 2: 2 };   // slide index -> number of phases
-  let i = 0, phase = 0;
-
-  function render() {
-    slides.forEach((s, n) => {
-      s.classList.toggle('is-active', n === i);
-      const max = STEPS[n] || 0;
-      for (let p = 1; p <= max; p++) s.classList.toggle('phase-' + p, n === i && phase === p);
-    });
-  }
-
-  // Back reverses one phase before it changes slides; re-measure afterwards so
-  // a highlight is never left bound to a stale box.
-  function next() {
-    const max = STEPS[i] || 0;
-    if (phase < max) { phase++; render(); return; }
-    if (i < slides.length - 1) { i++; phase = 0; render(); }
-  }
-  function prev() {
-    if (phase > 0) { phase--; render(); return; }
-    if (i > 0) { i--; phase = STEPS[i] || 0; render(); }
-  }
-
-  addEventListener('keydown', e => {
-    if (['ArrowRight', 'ArrowDown', ' ', 'Enter', 'PageDown'].includes(e.key)) { e.preventDefault(); next(); }
-    if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); prev(); }
-  });
-
-  // Hook for tools/slide_lint.py: measure every slide, not just the visible one.
-  window.__deckGoto = n => {
-    if (n < 0 || n >= slides.length) return;
-    i = n; phase = 0; render();
-    return { slide: i, phase: phase, steps: STEPS[i] || 0 };
-  };
-  window.__deckNext = next;
-  window.__deckPrev = prev;
-
-  render();
-})();
-</script>
+<script src="../motion/deck-motion.js"></script>
+<script src="../motion/deck-shell.js"></script>
 </body>
 </html>
