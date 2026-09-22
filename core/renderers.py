@@ -131,10 +131,23 @@ def render_block(registry, block, asset_root: Path, dom_id: str) -> str:
                 f'<text class="map-route__place" x="{extext:.3f}" y="{eytext:.3f}" text-anchor="{ea}">{esc(row["end"]["label"])}</text>'
                 f'{route_label}{traveler}</g>')
             accessible.append(f'<li>{esc(row.get("label","Route"))}: {esc(row["start"]["label"])} to {esc(row["end"]["label"])}</li>')
+        event_parts=[]
+        for i,event in enumerate(data.get('events',[])):
+            ex=finite(event['x'],f'{dom_id}.event[{i}].x')*10
+            ey=finite(event['y'],f'{dom_id}.event[{i}].y')*6
+            tone=event.get('tone','warning'); kind=event['kind']; after=int(event.get('afterRoute',0))
+            marker=(f'<circle class="map-route__event-marker" cx="{ex:.3f}" cy="{ey:.3f}" r="14"/>'
+                    if kind not in ('battle','siege') else
+                    (f'<polygon class="map-route__event-marker" points="{ex:.3f},{ey-16:.3f} {ex+16:.3f},{ey:.3f} {ex:.3f},{ey+16:.3f} {ex-16:.3f},{ey:.3f}"/>'
+                     if kind=='battle' else f'<rect class="map-route__event-marker" x="{ex-14:.3f}" y="{ey-14:.3f}" width="28" height="28" rx="3"/>'))
+            ring=f'<circle class="map-route__event-ring" cx="{ex:.3f}" cy="{ey:.3f}" r="25"/>' if kind in ('battle','siege','turning-point') else ''
+            label_y=max(34,ey-30)
+            event_parts.append(f'<g class="map-route__event map-route__event--{tone}" data-map-event data-event-after-route="{after}">{ring}{marker}<text class="map-route__event-label" x="{ex+24:.3f}" y="{label_y:.3f}">{esc(event["label"])}</text></g>')
+            accessible.append(f'<li>{esc(event["label"])} ({esc(kind)})</li>')
         body=(f'<div class="map-route"><svg class="map-route__svg" viewBox="0 0 1000 600" role="img" aria-label="{esc(data["alt"])}">'
               f'<image class="map-route__map" href="{uri}" x="0" y="0" width="1000" height="600" preserveAspectRatio="xMidYMid {fit}"/>'
               f'<rect class="map-route__scrim" x="0" y="0" width="1000" height="600"/>'
-              f'{"".join(route_parts)}</svg><ol class="sr-only">{"".join(accessible)}</ol></div>')
+              f'{"".join(route_parts)}{"".join(event_parts)}</svg><ol class="sr-only">{"".join(accessible)}</ol></div>')
     elif kind=='image':
         uri=media_data(data['src'],asset_root)
         fit='contain' if module['id']=='logo' else data.get('fit','cover')

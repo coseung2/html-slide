@@ -87,6 +87,11 @@
             if(active&&routeDone&&isLive()&&animate&&routeWas==='pending'){placeRoute(item,false);animateRoute(item);}
             else placeRoute(item,routeDone);
           });
+          block.querySelectorAll('[data-map-event]').forEach(item=>{
+            const after=Math.max(0,Number(item.dataset.eventAfterRoute||0));
+            const eventDone=!isLive() || after===0 || phase>=first+after-1;
+            item.dataset.eventState=eventDone?'done':'pending';
+          });
         }
         (block.dataset.motion==='number-count' ? block.querySelectorAll('[data-number]') : []).forEach(el=>{
           const n=Number(el.dataset.number); el.textContent=format(done?n:0);

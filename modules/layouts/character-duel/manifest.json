@@ -1,0 +1,42 @@
+{
+  "id": "character-duel",
+  "version": 1,
+  "type": "layouts",
+  "description": "Two-character teaching comparison for contrasting historical viewpoints",
+  "intents": [
+    "comparison",
+    "dialogue",
+    "decision",
+    "debate",
+    "explanation"
+  ],
+  "density": [
+    "low",
+    "medium"
+  ],
+  "tags": [
+    "education",
+    "history",
+    "character",
+    "comparison",
+    "viewpoint",
+    "elementary"
+  ],
+  "aspectRatio": "16:9",
+  "slots": {
+    "left": {
+      "accepts": [
+        "character-callout"
+      ],
+      "min": 1,
+      "max": 1
+    },
+    "right": {
+      "accepts": [
+        "character-callout"
+      ],
+      "min": 1,
+      "max": 1
+    }
+  }
+}

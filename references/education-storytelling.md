@@ -4,7 +4,7 @@ Use this guidance for elementary lessons where students need to understand peopl
 
 ## Choose the visual by the thinking task
 
-- Actor, viewpoint, or decision: use character-callout. Keep one actor or one clearly contrasted pair per slide.
+- Actor, viewpoint, or decision: use character-callout. Use character-focus for one actor and character-duel for a clearly contrasted pair.
 - Spatial movement, invasion, retreat, migration, travel, or expansion: use map-route on map-focus.
 - Surviving artifact, building, document, or photograph: use the ordinary image visual as evidence.
 - Ordered explanation without meaningful geography: use process or timeline instead of forcing a map.
@@ -23,7 +23,7 @@ A useful live beat is actor first, then speech-reveal. Static, print, reduced-mo
 
 Use an actual or historically appropriate reviewed raster map whenever the spatial relationship matters. Coordinates in map-route are percentages of the displayed map, so authors must place them by inspecting the actual asset rather than guessing from memory.
 
-Each route has a labelled start and end, an optional curved arc, a semantic tone, and an optional traveler illustration. route-travel advances one route per presenter step. The curve is deliberately arced rather than a flat straight arrow; an illustrated traveler can follow the path and receive a small mid-route lift to create documentary-style motion without turning the slide into a game animation.
+Each route has a labelled start and end, an optional curved arc, a semantic tone, and an optional traveler illustration. Optional map events can mark battles, sieges, landings, naval encounters, turning points, or notes; afterRoute binds an event to the route step that makes it meaningful. route-travel advances one route per presenter step. The curve is deliberately arced rather than a flat straight arrow; an illustrated traveler can follow the path and receive a small mid-route lift to create documentary-style motion without turning the slide into a game animation.
 
 Keep labels to the minimum needed for the explanation. For elementary audiences, prefer 3-6 important place names on a map. Split a campaign across slides when routes overlap so heavily that students cannot follow the order.
 

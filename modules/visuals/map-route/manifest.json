@@ -161,6 +161,60 @@
             }
           }
         }
+      },
+      "events": {
+        "type": "array",
+        "maxItems": 6,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "label",
+            "x",
+            "y",
+            "kind"
+          ],
+          "properties": {
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            },
+            "x": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "y": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "kind": {
+              "enum": [
+                "battle",
+                "siege",
+                "landing",
+                "naval",
+                "turning-point",
+                "note"
+              ]
+            },
+            "tone": {
+              "enum": [
+                "accent",
+                "negative",
+                "positive",
+                "warning"
+              ]
+            },
+            "afterRoute": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            }
+          }
+        }
       }
     }
   },

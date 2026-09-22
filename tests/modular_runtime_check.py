@@ -23,7 +23,7 @@ class RuntimeChecks(unittest.TestCase):
         raw,_=build_deck(spec);self.page.set_content(raw,wait_until='load');self.page.evaluate('document.fonts.ready')
     def route_deck(self):
         png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WlQz58AAAAASUVORK5CYII='
-        spec={'schemaVersion':1,'title':'Route fixture','language':'en','theme':'education','slides':[{'id':'route','title':'Route','communication_goal':'Verify route travel','intent':'route','layout':'map-focus','blocks':[{'id':'map','module':'map-route','data':{'src':png,'alt':'Map','routes':[{'label':'Move','start':{'label':'A','x':10,'y':80},'end':{'label':'B','x':80,'y':20},'traveler':{'src':png,'alt':'Rider'}}]}}],'motion':[{'module':'route-travel','target':'map','reason':'Verify route travel'}]}]}
+        spec={'schemaVersion':1,'title':'Route fixture','language':'en','theme':'education','slides':[{'id':'route','title':'Route','communication_goal':'Verify route travel','intent':'route','layout':'map-focus','blocks':[{'id':'map','module':'map-route','data':{'src':png,'alt':'Map','routes':[{'label':'Move','start':{'label':'A','x':10,'y':80},'end':{'label':'B','x':80,'y':20},'traveler':{'src':png,'alt':'Rider'}}],'events':[{'label':'Battle','x':80,'y':20,'kind':'battle','afterRoute':1}]}}],'motion':[{'module':'route-travel','target':'map','reason':'Verify route travel'}]}]}
         raw,_=build_deck(spec);self.page.set_content(raw,wait_until='load');self.page.evaluate('document.fonts.ready')
     def value(self):return self.page.locator('[data-number]').text_content()
     def test_number_roll_reversal_and_static(self):
@@ -40,13 +40,17 @@ class RuntimeChecks(unittest.TestCase):
         self.route_deck()
         route=self.page.locator('[data-route-item]')
         traveler=self.page.locator('[data-route-traveler]')
+        event=self.page.locator('[data-map-event]')
         self.assertEqual(route.get_attribute('data-route-state'),'pending')
+        self.assertEqual(event.get_attribute('data-event-state'),'pending')
         self.assertIn('translate(100',traveler.get_attribute('transform'))
         self.page.evaluate('__deckNext()');self.page.wait_for_timeout(980)
         self.assertEqual(route.get_attribute('data-route-state'),'done')
+        self.assertEqual(event.get_attribute('data-event-state'),'done')
         self.assertIn('translate(800',traveler.get_attribute('transform'))
         self.page.evaluate('__deckPrev()')
         self.assertEqual(route.get_attribute('data-route-state'),'pending')
+        self.assertEqual(event.get_attribute('data-event-state'),'pending')
         self.assertIn('translate(100',traveler.get_attribute('transform'))
         self.page.evaluate('__deckShell.setStatic(true)')
         self.assertIn('translate(800',traveler.get_attribute('transform'))

@@ -156,6 +156,12 @@ class EngineTests(unittest.TestCase):
     def test_showcase_compile(self):
         html,plan=build_deck(load_spec(ROOT/'examples/modular-showcase.json'),self.registry)
         self.assertEqual(len(plan['slides']),12);self.assertIn('data:image/png;base64,',html)
+    def test_elementary_history_showcase_compile(self):
+        html,plan=build_deck(load_spec(ROOT/'examples/elementary-history-showcase.json'),self.registry)
+        self.assertEqual(len(plan['slides']),3)
+        self.assertEqual(plan['slides'][2]['steps'],2)
+        self.assertIn('layout-character-duel',html)
+        self.assertIn('data-map-event',html)
     def test_each_theme_compiles(self):
         for theme in self.registry.list('themes'):
             with self.subTest(theme=theme['id']):

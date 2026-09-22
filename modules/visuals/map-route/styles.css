@@ -9,3 +9,5 @@
 .map-route__place,.map-route__route-label,.map-route__traveler-label{font-family:var(--font-body);font-weight:750;fill:var(--ink);paint-order:stroke;stroke:var(--paper);stroke-width:9px;stroke-linejoin:round}
 .map-route__place{font-size:28px}.map-route__route-label{font-size:26px;fill:currentColor}.map-route__traveler-label{font-size:24px;fill:var(--ink)}
 .map-route__traveler{filter:drop-shadow(0 7px 7px rgba(0,0,0,.24));transform-box:fill-box;transform-origin:center}
+.map-route__event{color:var(--warning)}.map-route__event--accent{color:var(--accent)}.map-route__event--negative{color:var(--negative)}.map-route__event--positive{color:var(--positive)}.map-route__event--warning{color:var(--warning)}
+.map-route__event-marker{fill:currentColor;stroke:var(--paper);stroke-width:5;paint-order:stroke}.map-route__event-ring{fill:none;stroke:currentColor;stroke-width:5;stroke-dasharray:8 8}.map-route__event-label{font-family:var(--font-body);font-size:25px;font-weight:760;fill:var(--ink);paint-order:stroke;stroke:var(--paper);stroke-width:9px;stroke-linejoin:round}

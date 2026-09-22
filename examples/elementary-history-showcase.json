@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "title": "Elementary history module showcase (synthetic)",
+  "language": "ko",
+  "theme": "education",
+  "topic": "synthetic elementary history visual grammar",
+  "style": {
+    "signals": {
+      "domain": "education",
+      "audience": "elementary",
+      "tone": [
+        "approachable",
+        "clear"
+      ],
+      "density": "low"
+    }
+  },
+  "slides": [
+    {
+      "id": "actor",
+      "title": "인물의 생각을 설명하는 장면",
+      "summary": "합성 예시 · 실제 역사 발언이 아닙니다.",
+      "communication_goal": "Demonstrate a labelled pedagogical character paraphrase.",
+      "intent": "dialogue",
+      "layout": "character-focus",
+      "blocks": [
+        {
+          "id": "person",
+          "module": "character-callout",
+          "data": {
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABkCAYAAAA7Ska5AAABbUlEQVR42u3asRHCMAyFYVvHICwABSMwAytQUHFMwmUPKgahgIFgBUhsWU/8GiCWP15kX45SKIrKVtvN7h2lF4uGEgXHIiYlAk6N/uo8X4/6V4n5NhWj0mORUUbiWHSUUTg1OsiouWNqKF7pMTUULxxTRPF4flUE8Zg7lgGlx7oW/ZdLk5gsZQq/3oj1SIw3zH06umyg1zorxaZTf3YABhhgvqr1/uRyZPdah8QAEwim9+vU8/mmOgN6o7u8Sq034THY3WZMq814nXauw3fpprxQhpxKczfniVJKw2++h8sU5i8ct+u5yiWGewwwwEjMl1b9kBhggAEGGGCAyQ8T7Q7Tqi8SAwwwwAADTBKYqEd1i/5IDDDAAAMMMMDkhYl+h1naJ4kBBhhggAFGHEblqF7SL4kBBhhggAEGmHwwaneYuX2TGGCAAQYYYERhVI/qOf2TGGCAAQYYYIDJA6N+h/l1HyQGGGAoiqIo1foAxvFtWfx6YwkAAAAASUVORK5CYII=",
+            "alt": "합성 인물 삽화",
+            "name": "인물 가",
+            "role": "합성 인물",
+            "speech": "이 선택을 하면 어떤 결과가 생길지 생각해 보자.",
+            "speechKind": "paraphrase",
+            "speechLabel": "수업용 재구성",
+            "caption": "회귀 테스트용 합성 삽화"
+          }
+        }
+      ],
+      "motion": [
+        {
+          "module": "speech-reveal",
+          "target": "person",
+          "reason": "Introduce the actor before revealing the teaching paraphrase."
+        }
+      ]
+    },
+    {
+      "id": "viewpoints",
+      "title": "두 입장을 비교하는 장면",
+      "summary": "합성 예시 · 한 화면에서 두 관점을 비교합니다.",
+      "communication_goal": "Demonstrate two labelled viewpoints without claiming historical quotations.",
+      "intent": "comparison",
+      "layout": "character-duel",
+      "blocks": [
+        {
+          "id": "left-person",
+          "module": "character-callout",
+          "slot": "left",
+          "data": {
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABkCAYAAAA7Ska5AAABbUlEQVR42u3asRHCMAyFYVvHICwABSMwAytQUHFMwmUPKgahgIFgBUhsWU/8GiCWP15kX45SKIrKVtvN7h2lF4uGEgXHIiYlAk6N/uo8X4/6V4n5NhWj0mORUUbiWHSUUTg1OsiouWNqKF7pMTUULxxTRPF4flUE8Zg7lgGlx7oW/ZdLk5gsZQq/3oj1SIw3zH06umyg1zorxaZTf3YABhhgvqr1/uRyZPdah8QAEwim9+vU8/mmOgN6o7u8Sq034THY3WZMq814nXauw3fpprxQhpxKczfniVJKw2++h8sU5i8ct+u5yiWGewwwwEjMl1b9kBhggAEGGGCAyQ8T7Q7Tqi8SAwwwwAADTBKYqEd1i/5IDDDAAAMMMMDkhYl+h1naJ4kBBhhggAFGHEblqF7SL4kBBhhggAEGmHwwaneYuX2TGGCAAQYYYERhVI/qOf2TGGCAAQYYYIDJA6N+h/l1HyQGGGAoiqIo1foAxvFtWfx6YwkAAAAASUVORK5CYII=",
+            "alt": "합성 인물 가",
+            "name": "인물 가",
+            "role": "입장 A",
+            "speech": "지금은 원칙을 지켜야 해.",
+            "speechKind": "paraphrase",
+            "speechLabel": "수업용 재구성"
+          }
+        },
+        {
+          "id": "right-person",
+          "module": "character-callout",
+          "slot": "right",
+          "data": {
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABkCAYAAAA7Ska5AAABbUlEQVR42u3aQRECMQyF4TaDEAzAAQno4MoBEXAABXhAAUI4gCCwALttmhf+CNimH2/Tzg6lUBSVrdarzTtKLxYNJQqORUxKBJwa/dV5vh71rxLzbSpGpccio4zEsegoo3BqdJBRc8fUULzSY2ooXjimiOLx/KoI4jF3LANKj3Ut+i+XJjFZyhR+vRHrkRhvmPt177KBXussFJtO/dkBGGCA+aqW24PLkd1rHRIDTCCY3q9Tz+eb6gzoje7yKrXehMdgd5sxrTbjddq5Dt+5m/JCGXIqTd2cJ0opDb/5HnenMH/huNzOVS4x3GOAAUZivrTqh8QAAwwwwAADTH6YaHeYVn2RGGCAAQYYYJLARD2qW/RHYoABBhhggAEmL0z0O8zcPkkMMMAAAwww4jAqR/WcfkkMMMAAAwwwwOSDUbvDTO2bxAADDDDAACMKo3pUT+mfxAADDDDAAANMHhj1O8yv+yAxwABDURRFqdYHMgJtaSovsqAAAAAASUVORK5CYII=",
+            "alt": "합성 인물 나",
+            "name": "인물 나",
+            "role": "입장 B",
+            "speech": "백성의 피해도 함께 생각해야 해.",
+            "speechKind": "paraphrase",
+            "speechLabel": "수업용 재구성"
+          }
+        }
+      ],
+      "motion": [
+        {
+          "module": "speech-reveal",
+          "target": "left-person",
+          "reason": "Reveal the first viewpoint as a distinct teaching beat."
+        },
+        {
+          "module": "speech-reveal",
+          "target": "right-person",
+          "reason": "Reveal the contrasting viewpoint as the next teaching beat."
+        }
+      ]
+    },
+    {
+      "id": "route",
+      "title": "지도 위 이동과 사건을 설명하는 장면",
+      "summary": "합성 지도 · 실제 지형이나 전쟁 경로가 아닙니다.",
+      "communication_goal": "Demonstrate curved geographic travel with a traveler and an event marker.",
+      "intent": "route",
+      "layout": "map-focus",
+      "blocks": [
+        {
+          "id": "campaign",
+          "module": "map-route",
+          "data": {
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAABICAIAAACyfKYoAAABy0lEQVR42u3bO26DQBSF4QGxXGS5QnKKlERKFUVZR1aRZXgN7tKnQLJQUAhg7pP/VJTjb67nBVN9366FyKeGAGigCdBAA02ABpoADTTQBGigCdBAC6ftu7bv3DavyUFcSrmczvfnIR9Pr34aWUU/+G/7biCe5uX9zQ96YOhxIf8bc/So0DOFvBBdmTse9KpCnufWtA4G/Ugh21qHgd6rkK2sA0ALEStbu4aWJta0bg5OfNzJ0IpYuqgdQZtXsai1C2g/A4WctTG0w7FYyNoM2vN0J2FteR6daVHhFHrfnXSIoYNXWXkr2nM5Zxs6qOijR24drQ19zHGDigYa6MTjhuihEhWdrqIPOw2qQnv+Ku6ey+ks107x07twL6XiHZPGfe8nYS0CneDV6u7W1fPnF0sCNixAE6sxOvcy+fEhu0ZZZ4ldoxyjolFemKaQWeKy0yWMhnLW2bPUKOvsDFlHayhvh05czo6+VEJZYzJ0qzy+G7uhhdK3PJsENTg8jI2mu7h5eoXLQuvOOn79ANtrEFPf5S0fNz7A9beZ7b9QH6z1XdL42Bc6/+qDbR2wo69VtK9WrPoTJPA1g17VBwl8PULnDltwoIEmQPvND6o+OPbHBnhXAAAAAElFTkSuQmCC",
+            "alt": "회귀 테스트용 합성 지도",
+            "routes": [
+              {
+                "label": "1차 이동",
+                "tone": "negative",
+                "arcHeight": 22,
+                "arcDirection": "up",
+                "start": {
+                  "label": "출발지",
+                  "x": 18,
+                  "y": 78
+                },
+                "end": {
+                  "label": "중간 지점",
+                  "x": 62,
+                  "y": 52
+                },
+                "traveler": {
+                  "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAoCAYAAAC8cqlMAAAA6UlEQVR42mNgGAWjgCaAkR6WPNg3/T+MreCUyTjkPILsAXRAbQ8xDZekxTQQsUGM/GiMjHqEzMxM7cxOs1JrmrkuUXkg6+RlxtGkNeqRQQxYBqOjQq20seav1ceuMg6ZGMHlCUJyTEPFE4TUMA0lT+BTy0Izh/wdIpmdlBAcdB0rUhzv+Je4VLuf+R/JjsZWejENtRjAVQQzDQdPEJW0BsoT+BxNcowMZEyQavdoo3HUIwPhEVIz3KDN7APlGXLsZKKVwfT0BEl5hB6eocQOsjVSq46hVgBRLZSJ9dhAFiCjYBSMglEweAAAms9XrSAZ0vcAAAAASUVORK5CYII=",
+                  "alt": "합성 말 탄 이동 캐릭터",
+                  "label": "이동"
+                }
+              },
+              {
+                "label": "2차 이동",
+                "tone": "warning",
+                "arcHeight": 18,
+                "arcDirection": "up",
+                "start": {
+                  "label": "중간 지점",
+                  "x": 62,
+                  "y": 52
+                },
+                "end": {
+                  "label": "도착지",
+                  "x": 78,
+                  "y": 23
+                },
+                "traveler": {
+                  "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAoCAYAAAC8cqlMAAAA6UlEQVR42mNgGAWjgCaAkR6WPNg3/T+MreCUyTjkPILsAXRAbQ8xDZekxTQQsUGM/GiMjHqEzMxM7cxOs1JrmrkuUXkg6+RlxtGkNeqRQQxYBqOjQq20seav1ceuMg6ZGMHlCUJyTEPFE4TUMA0lT+BTy0Izh/wdIpmdlBAcdB0rUhzv+Je4VLuf+R/JjsZWejENtRjAVQQzDQdPEJW0BsoT+BxNcowMZEyQavdoo3HUIwPhEVIz3KDN7APlGXLsZKKVwfT0BEl5hB6eocQOsjVSq46hVgBRLZSJ9dhAFiCjYBSMglEweAAAms9XrSAZ0vcAAAAASUVORK5CYII=",
+                  "alt": "합성 말 탄 이동 캐릭터"
+                }
+              }
+            ],
+            "events": [
+              {
+                "label": "충돌 지점",
+                "x": 62,
+                "y": 52,
+                "kind": "battle",
+                "tone": "negative",
+                "afterRoute": 1
+              },
+              {
+                "label": "포위 지점",
+                "x": 78,
+                "y": 23,
+                "kind": "siege",
+                "tone": "warning",
+                "afterRoute": 2
+              }
+            ]
+          }
+        }
+      ],
+      "motion": [
+        {
+          "module": "route-travel",
+          "target": "campaign",
+          "reason": "Reveal geographic movement in order, with events appearing after the relevant route."
+        }
+      ]
+    }
+  ]
+}
