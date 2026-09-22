@@ -77,7 +77,30 @@
               "properties": {
                 "module": {"type": "string", "minLength": 1, "maxLength": 64},
                 "target": {"type": "string", "minLength": 1, "maxLength": 64},
-                "reason": {"type": "string", "minLength": 1, "maxLength": 200}
+                "reason": {"type": "string", "minLength": 1, "maxLength": 200},
+                "pattern": {
+                  "enum": [
+                    "kinetic-type",
+                    "flat-shape",
+                    "info-motion",
+                    "ui-motion",
+                    "card-stack-3d",
+                    "particle-warp",
+                    "glitch",
+                    "liquid-morph",
+                    "isometric-build",
+                    "paper-cut",
+                    "type-mask",
+                    "environment-type",
+                    "occlusion",
+                    "scramble-decode",
+                    "variable-font",
+                    "swiss-grid",
+                    "extruded-type",
+                    "street-collage",
+                    "path-drawing"
+                  ]
+                }
               }
             }
           },

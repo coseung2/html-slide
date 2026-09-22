@@ -1,6 +1,7 @@
 import React from 'react';
 import {interpolate} from 'remotion';
 import {cueCompletion, cuePulse, hasCue, sequenceItemProgress} from './motion';
+import {MotionPattern, scrambleText} from './patterns';
 import type {Block, DesignTokens, Scene} from './types';
 
 type RendererProps = {
@@ -329,12 +330,15 @@ const Score: React.FC<RendererProps> = (props) => {
 };
 
 const Textual: React.FC<RendererProps> = (props) => {
-  const {block, design} = props;
+  const {block, design, scene, frame} = props;
+  const pattern = scene.cues.find((cue) => cue.target === block.id && cue.pattern === 'scramble-decode');
+  const scrambleProgress = pattern ? cueCompletion(scene, block.id, pattern.module, frame) : 1;
+  const display = (value: string) => pattern ? scrambleText(value, scrambleProgress) : value;
   if (block.module === 'quote') {
     return (
       <Frame {...props} transparent>
         <blockquote style={{margin: 0, fontSize: 52, lineHeight: 1.28, fontWeight: 700}}>
-          “{string(block.data.text)}”
+          “{display(string(block.data.text))}”
         </blockquote>
         <div style={{fontSize: 27, marginTop: 28, color: palette(design, 'muted', '#b5c0cc')}}>
           — {string(block.data.author)}
@@ -349,7 +353,7 @@ const Textual: React.FC<RendererProps> = (props) => {
           {string(block.data.label)}
         </div>
         <div style={{fontSize: 38, lineHeight: 1.32, fontWeight: 680}}>
-          {string(block.data.text)}
+          {display(string(block.data.text))}
         </div>
       </Frame>
     );
@@ -357,7 +361,7 @@ const Textual: React.FC<RendererProps> = (props) => {
   return (
     <Frame {...props} transparent>
       <div style={{fontSize: 54, lineHeight: 1.22, fontWeight: 760, letterSpacing: -1.4}}>
-        {string(block.data.text)}
+        {display(string(block.data.text))}
       </div>
     </Frame>
   );
@@ -371,7 +375,7 @@ const Fallback: React.FC<RendererProps> = (props) => (
   </Frame>
 );
 
-export const BlockRenderer: React.FC<RendererProps> = (props) => {
+const BaseBlockRenderer: React.FC<RendererProps> = (props) => {
   switch (props.block.module) {
     case 'metric': return <Metric {...props} />;
     case 'ranking': return <Ranking {...props} />;
@@ -389,3 +393,9 @@ export const BlockRenderer: React.FC<RendererProps> = (props) => {
     default: return <Fallback {...props} />;
   }
 };
+
+export const BlockRenderer: React.FC<RendererProps> = (props) => (
+  <MotionPattern block={props.block} scene={props.scene} frame={props.frame} design={props.design}>
+    <BaseBlockRenderer {...props} />
+  </MotionPattern>
+);

@@ -11,8 +11,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from core import Registry
 from core.registry import ContractError
+from core.validation import validate_deck
 from tools.compose_video import compile_storyboard
-from tools.video_pipeline import VideoPipelineError, sample_frames, validate_storyboard
+from tools.video_pipeline import (
+    VideoPipelineError,
+    motion_pattern_ids,
+    sample_frames,
+    validate_storyboard,
+)
 from tools.verify_video import verify_frame_directory, validate_h264_pixel_format
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -56,6 +62,37 @@ class VideoPipelineTests(unittest.TestCase):
         self.assertEqual(scene["blocks"][0]["id"], "message")
         self.assertEqual(scene["cues"][0]["target"], "message")
         self.assertGreater(scene["durationFrames"], scene["cues"][0]["atFrame"])
+
+    def test_all_reel_motion_patterns_are_registered(self):
+        patterns = motion_pattern_ids()
+        self.assertEqual(len(patterns), 19)
+        self.assertIn("kinetic-type", patterns)
+        self.assertIn("particle-warp", patterns)
+        self.assertIn("path-drawing", patterns)
+        for pattern in patterns:
+            candidate = {
+                **self.spec,
+                "slides": [{
+                    **self.spec["slides"][0],
+                    "motion": [{
+                        **self.spec["slides"][0]["motion"][0],
+                        "pattern": pattern,
+                    }],
+                }],
+            }
+            validate_deck(candidate, self.registry)
+            validate_storyboard(compile_storyboard(candidate, self.registry))
+
+    def test_selected_pattern_is_preserved_in_storyboard(self):
+        self.spec["slides"][0]["motion"][0]["pattern"] = "glitch"
+        validate_deck(self.spec, self.registry)
+        board = compile_storyboard(self.spec, self.registry)
+        self.assertEqual(board["scenes"][0]["cues"][0]["pattern"], "glitch")
+
+    def test_unknown_pattern_is_rejected_by_deck_schema(self):
+        self.spec["slides"][0]["motion"][0]["pattern"] = "made-up-effect"
+        with self.assertRaises(ContractError):
+            validate_deck(self.spec, self.registry)
 
     def test_duration_matches_scene_sum(self):
         self.spec["slides"] *= 2
@@ -126,6 +163,12 @@ class VideoPipelineTests(unittest.TestCase):
     def test_storyboard_rejects_cue_overflow(self):
         board = compile_storyboard(self.spec, self.registry)
         board["scenes"][0]["cues"][0]["durationFrames"] = board["scenes"][0]["durationFrames"]
+        with self.assertRaises(VideoPipelineError):
+            validate_storyboard(board)
+
+    def test_storyboard_rejects_unknown_pattern(self):
+        board = compile_storyboard(self.spec, self.registry)
+        board["scenes"][0]["cues"][0]["pattern"] = "made-up-effect"
         with self.assertRaises(VideoPipelineError):
             validate_storyboard(board)
 

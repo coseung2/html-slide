@@ -1,5 +1,5 @@
 import {Easing, interpolate} from 'remotion';
-import type {Cue, Scene} from './types';
+import type {Cue, MotionPatternId, Scene} from './types';
 
 export const cuesFor = (
   scene: Scene,
@@ -75,4 +75,28 @@ export const sequenceItemProgress = (
   if (!cues.length) return 1;
   const cue = cues.find((item) => item.step === index + 1);
   return cue ? completion(cue, frame) : 1;
+};
+
+export type PatternState = {
+  pattern: MotionPatternId;
+  progress: number;
+  pulse: number;
+};
+
+export const patternState = (
+  scene: Scene,
+  target: string,
+  frame: number
+): PatternState | null => {
+  const patterned = cuesFor(scene, target).filter((cue) => cue.pattern);
+  if (!patterned.length) return null;
+  const eligible = patterned.filter((cue) => frame >= cue.atFrame);
+  const cue = eligible.length ? eligible[eligible.length - 1] : patterned[0];
+  const progress = completion(cue, frame);
+  const pulse = frame < cue.atFrame
+    ? 0
+    : frame > cue.atFrame + cue.durationFrames
+      ? 0
+      : cuePulse(scene, target, cue.module, frame);
+  return {pattern: cue.pattern as MotionPatternId, progress, pulse};
 };

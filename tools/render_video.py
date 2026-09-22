@@ -68,7 +68,7 @@ def main(argv=None) -> int:
         work = (
             args.work_dir.resolve()
             if args.work_dir
-            else out.parent / f"{out.stem}.video-work"
+            else out.parent / f"{out.stem}-video-work"
         )
         if work.exists():
             shutil.rmtree(work)

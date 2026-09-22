@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "patterns": [
+    {"id":"kinetic-type","label":"Kinetic Type","category":"type","html":"supported","remotion":"supported","description":"Scale, translate and settle the target with rhythmic typographic emphasis."},
+    {"id":"flat-shape","label":"Flat Shape Motion","category":"object","html":"supported","remotion":"supported","description":"Geometric shapes travel around the target and resolve into the final composition."},
+    {"id":"info-motion","label":"Info Motion","category":"data","html":"supported","remotion":"supported","description":"Data-oriented reveal that pairs semantic count or chart growth with restrained emphasis."},
+    {"id":"ui-motion","label":"UI Motion","category":"interface","html":"supported","remotion":"supported","description":"Panel-like target slides and settles with interface-style focus treatment."},
+    {"id":"card-stack-3d","label":"3D Card Stack","category":"depth","html":"supported","remotion":"supported","description":"Layered cards create depth before resolving to the target plane."},
+    {"id":"particle-warp","label":"Particle Warp","category":"object","html":"limited","remotion":"supported","description":"Deterministic particles converge toward the target and disperse."},
+    {"id":"glitch","label":"Glitch","category":"type","html":"supported","remotion":"supported","description":"Short RGB displacement and jitter burst around the semantic beat."},
+    {"id":"liquid-morph","label":"Liquid Morph","category":"object","html":"supported","remotion":"supported","description":"Soft blob forms morph behind the target during the cue."},
+    {"id":"isometric-build","label":"Isometric Build","category":"depth","html":"limited","remotion":"supported","description":"Target rotates from an isometric plane into its final readable state."},
+    {"id":"paper-cut","label":"Paper Cut","category":"editorial","html":"supported","remotion":"supported","description":"Layered paper-like slabs assemble behind the target."},
+    {"id":"type-mask","label":"Type Mask","category":"type","html":"supported","remotion":"supported","description":"Target content is revealed through a directional clipping mask."},
+    {"id":"environment-type","label":"Environment Type","category":"depth","html":"limited","remotion":"supported","description":"Perspective and depth motion make the target feel embedded in a spatial scene."},
+    {"id":"occlusion","label":"Occlusion","category":"depth","html":"supported","remotion":"supported","description":"A foreground occluder crosses the target to create a depth-aware reveal."},
+    {"id":"scramble-decode","label":"Scramble Decode","category":"type","html":"supported","remotion":"supported","description":"Target resolves from a coded/noisy visual state into the accepted final frame."},
+    {"id":"variable-font","label":"Variable Font","category":"type","html":"supported","remotion":"supported","description":"Weight and width axes animate toward the final typographic state."},
+    {"id":"swiss-grid","label":"Swiss Grid","category":"editorial","html":"supported","remotion":"supported","description":"Grid guides and modular offsets resolve into a disciplined final layout."},
+    {"id":"extruded-type","label":"Extruded Type","category":"depth","html":"limited","remotion":"supported","description":"Layered shadows create a temporary extruded text/depth treatment."},
+    {"id":"street-collage","label":"Street Collage","category":"editorial","html":"supported","remotion":"supported","description":"Rotated strips and tape-like layers assemble around the target."},
+    {"id":"path-drawing","label":"Path Drawing","category":"line","html":"supported","remotion":"supported","description":"An SVG path traces around the target and resolves into the final state."}
+  ]
+}

@@ -96,6 +96,7 @@ def compile_storyboard(
                         "module": motion["module"],
                         "target": motion["target"],
                         "reason": motion["reason"],
+                        **({"pattern": motion["pattern"]} if motion.get("pattern") else {}),
                         "step": step,
                         "atFrame": at_frame,
                         "durationFrames": max(

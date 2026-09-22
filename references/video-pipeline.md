@@ -29,6 +29,7 @@ The generated storyboard preserves:
 - validated content blocks;
 - image/logo media as reviewed base64 raster data;
 - every semantic motion target, reason and presenter phase;
+- an optional Remotion motion-pattern choice attached to the semantic motion;
 - deterministic scene start frames and durations.
 
 Do not expose internal production metadata such as `communicationGoal`, layout IDs or
@@ -43,6 +44,7 @@ module IDs as visible video copy. They are available for routing and QA only.
 - Default phase spacing is 1.2 seconds.
 - Motion cues are generated only from validated slide `motion` declarations.
 - A cue always retains its original target and reason.
+- The optional `pattern` field changes the Remotion expression, not the semantic meaning of the motion module.
 - No blanket per-element animation is introduced by the compiler.
 - A scene without semantic motion renders immediately as a complete readable scene.
 
@@ -73,6 +75,34 @@ modules rather than reducing everything to generic cards:
 
 `focus` is applied only to its declared block. Scene entry opacity is structural
 transition behavior, not semantic emphasis.
+
+### Remotion motion-pattern pool
+
+The video renderer maintains 19 explicit patterns in `video/motion-patterns.json`:
+`kinetic-type`, `flat-shape`, `info-motion`, `ui-motion`, `card-stack-3d`,
+`particle-warp`, `glitch`, `liquid-morph`, `isometric-build`, `paper-cut`,
+`type-mask`, `environment-type`, `occlusion`, `scramble-decode`, `variable-font`,
+`swiss-grid`, `extruded-type`, `street-collage`, and `path-drawing`.
+
+Choose a pattern only after selecting the semantic target and writing the reason.
+The pattern is an expression layer; it must not become the reason a target is
+animated. A deck can therefore remain valid HTML even when the Remotion renderer
+uses a richer visual expression.
+
+Example motion declaration:
+
+```json
+{
+  "module": "focus",
+  "target": "headline",
+  "reason": "핵심 문장을 한 번만 강하게 주목시킨다",
+  "pattern": "kinetic-type"
+}
+```
+
+The Remotion wrapper always resolves to the accepted final content frame. Patterns
+that add temporary particles, occluders, grids, paper layers or RGB displacement
+must disappear after the cue rather than leaving the information obscured.
 
 The video entrypoint loads the repository-maintained Pretendard WOFF2 through CSS so Korean text does not depend on fonts installed on the runner. Remotion waits for CSS fonts before rendering. The HTML renderer remains the reference for exact browser layout fidelity. When a new
 HTML content or motion module is added, add or explicitly reject its video renderer

@@ -2,10 +2,32 @@ export type Cue = {
   module: string;
   target: string;
   reason: string;
+  pattern?: MotionPatternId;
   step: number;
   atFrame: number;
   durationFrames: number;
 };
+
+export type MotionPatternId =
+  | 'kinetic-type'
+  | 'flat-shape'
+  | 'info-motion'
+  | 'ui-motion'
+  | 'card-stack-3d'
+  | 'particle-warp'
+  | 'glitch'
+  | 'liquid-morph'
+  | 'isometric-build'
+  | 'paper-cut'
+  | 'type-mask'
+  | 'environment-type'
+  | 'occlusion'
+  | 'scramble-decode'
+  | 'variable-font'
+  | 'swiss-grid'
+  | 'extruded-type'
+  | 'street-collage'
+  | 'path-drawing';
 
 export type Block = {
   id: string;
