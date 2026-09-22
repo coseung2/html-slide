@@ -47,8 +47,9 @@ contain an LLM, embeddings service, factual research agent or image search servi
    summary. Report any font, factual-source, media or coverage limitations.
 9. When the user requests a Remotion video, keep the same validated deck JSON as the
    content source of truth. Compile it with `python tools/compose_video.py deck.json
-   --out dist/storyboard.json`, then render through the isolated `video/` runtime.
-   Read `references/video-pipeline.md`; do not invent a second content spec or add
+   --out dist/storyboard.json`, run `cd video && npm run typecheck`, then render
+   through the isolated `video/` runtime. Read `references/video-pipeline.md`;
+   do not invent a second content spec or add
    blanket motion that is absent from the deck's semantic motion declarations.
 
 Commands after `catalog` share the prefix `python tools/compose_deck.py`.
