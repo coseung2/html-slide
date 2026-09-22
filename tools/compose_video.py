@@ -19,6 +19,7 @@ from core.validation import load_spec
 DEFAULT_FPS = 30
 DEFAULT_BASE_SECONDS = 4.0
 DEFAULT_STEP_SECONDS = 1.2
+DEFAULT_LEAD_SECONDS = 0.6
 DEFAULT_TRANSITION_SECONDS = 0.35
 CSS_VAR = re.compile(r"--([a-z0-9-]+)\s*:\s*([^;}]+)")
 
@@ -58,11 +59,12 @@ def compile_storyboard(
     fps: int = DEFAULT_FPS,
     base_seconds: float = DEFAULT_BASE_SECONDS,
     step_seconds: float = DEFAULT_STEP_SECONDS,
+    lead_seconds: float = DEFAULT_LEAD_SECONDS,
     transition_seconds: float = DEFAULT_TRANSITION_SECONDS,
 ) -> dict:
     if fps < 1 or fps > 120:
         raise ContractError("fps must be between 1 and 120")
-    if base_seconds <= 0 or step_seconds < 0 or transition_seconds < 0:
+    if base_seconds <= 0 or step_seconds < 0 or lead_seconds < 0 or transition_seconds < 0:
         raise ContractError(
             "video timing values must be non-negative and base_seconds must be positive"
         )
@@ -79,7 +81,7 @@ def compile_storyboard(
             round((base_seconds + steps * step_seconds) * fps),
         )
         cue_gap = round(step_seconds * fps)
-        cue_start = round(base_seconds * fps)
+        cue_start = round(lead_seconds * fps)
         cues = []
         for motion in planned.get("motion", []):
             start_step = int(motion.get("startStep", 1))
@@ -144,6 +146,7 @@ def main(argv=None) -> int:
     parser.add_argument("--fps", type=int, default=DEFAULT_FPS)
     parser.add_argument("--base-seconds", type=float, default=DEFAULT_BASE_SECONDS)
     parser.add_argument("--step-seconds", type=float, default=DEFAULT_STEP_SECONDS)
+    parser.add_argument("--lead-seconds", type=float, default=DEFAULT_LEAD_SECONDS)
     parser.add_argument("--transition-seconds", type=float, default=DEFAULT_TRANSITION_SECONDS)
     args = parser.parse_args(argv)
 
@@ -156,6 +159,7 @@ def main(argv=None) -> int:
             fps=args.fps,
             base_seconds=args.base_seconds,
             step_seconds=args.step_seconds,
+            lead_seconds=args.lead_seconds,
             transition_seconds=args.transition_seconds,
         )
         args.out.parent.mkdir(parents=True, exist_ok=True)
