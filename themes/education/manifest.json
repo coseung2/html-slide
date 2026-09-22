@@ -1,1 +1,1 @@
-{"id":"education","version":1,"type":"themes","description":"education","tokens":{"paper":"#fff9ee","ink":"#263836","muted":"#59634d","accent":"#275c9c","surface":"#f1eedb","line":"#a2a890","radius":"12px"},"intents":[],"tags":["education"]}
+{"id":"education","version":1,"type":"themes","description":"Clear classroom teaching grammar","tokens":{"radius":"12px"},"intents":[],"tags":["education","classroom","learning","clear"]}

@@ -1,1 +1,1 @@
-{"id":"documentary","version":1,"type":"themes","description":"documentary","tokens":{"paper":"#161616","ink":"#f6f3e9","muted":"#c9c3b6","accent":"#ecc878","surface":"#282620","line":"#80776a","radius":"0px"},"intents":[],"tags":["documentary"]}
+{"id":"documentary","version":1,"type":"themes","description":"Cinematic evidence-led documentary grammar","tokens":{"radius":"0px"},"intents":[],"tags":["documentary","cinematic","serious","narrative"]}

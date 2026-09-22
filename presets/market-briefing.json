@@ -3,6 +3,12 @@
   "title": "지표 브리핑 구성 예시",
   "language": "ko",
   "theme": "financial-report",
+  "style": {
+    "typography": "auto",
+    "palette": "auto",
+    "dataviz": "auto",
+    "signals": {"domain": "finance", "audience": "analyst", "tone": ["analytical", "serious"], "density": "high"}
+  },
   "slides": [
     {
       "id": "bars",

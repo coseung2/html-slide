@@ -8,6 +8,8 @@ from .registry import Registry, ContractError
 from .validation import validate_deck
 from .renderers import esc, render_block
 
+STYLE_FAMILIES={'typography':'typography','palette':'palettes','dataviz':'dataviz'}
+
 
 def assign_slots(layout: dict, blocks: list[dict]) -> dict[str,list[dict]] | None:
     """Small constrained search, not greedy filling: honor every required slot."""
@@ -27,10 +29,41 @@ def assign_slots(layout: dict, blocks: list[dict]) -> dict[str,list[dict]] | Non
     return assigned if place(0) else None
 
 
+def _deck_density(spec: dict) -> str:
+    explicit=spec.get('style',{}).get('signals',{}).get('density')
+    if explicit: return explicit
+    values=[s.get('density','medium') for s in spec.get('slides',[])]
+    if not values: return 'medium'
+    score=sum({'low':0,'medium':1,'high':2}[x] for x in values)/len(values)
+    return 'low' if score < .5 else 'high' if score > 1.5 else 'medium'
+
+
+def resolve_styles(spec: dict, registry: Registry) -> dict:
+    style=spec.get('style',{}); signals=style.get('signals',{})
+    context={
+        'theme':spec['theme'],'language':spec.get('language','ko'),'topic':spec.get('topic',''),
+        'domain':signals.get('domain',''),'audience':signals.get('audience',''),
+        'tone':signals.get('tone',[]),'density':_deck_density(spec),
+    }
+    selected={}
+    for key,family in STYLE_FAMILIES.items():
+        requested=style.get(key,'auto')
+        if requested!='auto':
+            registry.get(family,requested)
+            selected[key]={'id':requested,'mode':'explicit','score':None,
+                           'reasons':['explicit style override'],'alternatives':[]}
+            continue
+        ranked=registry.style_search(family,**context)
+        winner=ranked[0]
+        selected[key]={**winner,'mode':'auto','alternatives':ranked[1:4]}
+    return selected
+
+
 def plan_deck(spec: dict, registry: Registry | None = None) -> dict:
     registry=registry or Registry()
     validate_deck(spec,registry)
-    plan={'schemaVersion':1,'title':spec['title'],'theme':spec['theme'],'slides':[],'warnings':[]}
+    plan={'schemaVersion':1,'title':spec['title'],'theme':spec['theme'],
+          'styles':resolve_styles(spec,registry),'slides':[],'warnings':[]}
     recent=[]
     for source in spec['slides']:
         slide=copy.deepcopy(source); theme=slide.get('theme',spec['theme'])
@@ -70,10 +103,10 @@ def build_deck(spec: dict, registry: Registry | None = None, *, asset_root: str 
     registry=registry or Registry(); plan=plan_deck(spec,registry)
     asset_root=Path(asset_root).resolve()
     css=[(registry.root/'core/stage.css').read_text(encoding='utf-8'),(registry.root/'core/shell.css').read_text(encoding='utf-8')]
-    used={('themes',spec['theme'])}; slides=[]
+    used=set(); used_themes={spec['theme']}; slides=[]
     for slide in plan['slides']:
         layout=registry.get('layouts',slide['layout'])
-        used.add(('layouts',slide['layout'])); used.add(('themes',slide['theme']))
+        used.add(('layouts',slide['layout'])); used_themes.add(slide['theme'])
         fragments={}
         for block in slide['blocks']:
             module=registry.block(block['module']); used.add((module['type'],module['id']))
@@ -100,13 +133,18 @@ def build_deck(spec: dict, registry: Registry | None = None, *, asset_root: str 
         slides.append(f'<section data-slide="{slide["id"]}" data-title="{esc(slide["title"])}" data-start="0" data-steps="{slide["steps"]}" data-theme="{slide["theme"]}" class="layout-{slide["layout"]}" aria-label="{esc(slide["title"])}"><div class="scene">{scene}</div></section>')
     for family,mid in sorted(used):
         entry=registry.get(family,mid)
-        css.append(registry.resource(entry,'theme.css' if family=='themes' else 'styles.css',optional=family!='themes'))
+        css.append(registry.resource(entry,'styles.css',optional=True))
+    for theme_id in sorted(used_themes):
+        css.append(registry.resource(registry.get('themes',theme_id),'theme.css'))
+    for key,family in STYLE_FAMILIES.items():
+        entry=registry.get(family,plan['styles'][key]['id'])
+        css.append(registry.resource(entry,'style.css'))
     if font is not None:
         import base64
         path=Path(font)
         if path.suffix.lower()!='.woff2' or path.read_bytes()[:4]!=b'wOF2': raise ContractError('font must be a valid WOFF2 font file')
         data=base64.b64encode(path.read_bytes()).decode('ascii')
-        css.insert(0,"@font-face{font-family:'Pretendard Variable';src:url(data:font/woff2;base64,"+data+") format('woff2');font-weight:100 900;font-display:block}")
+        css.insert(0,"@font-face{font-family:'HTMLSlide Embedded';src:url(data:font/woff2;base64,"+data+") format('woff2');font-weight:100 900;font-display:block}body{--font-custom:'HTMLSlide Embedded'}")
     else:
         plan['warnings'].append('Font not embedded: system-font metrics vary. Use --font and re-run browser QA for final projection.')
     runtime=(registry.root/'core/runtime.js').read_text(encoding='utf-8')
@@ -114,11 +152,12 @@ def build_deck(spec: dict, registry: Registry | None = None, *, asset_root: str 
     # Keep selection provenance, but avoid duplicating embedded media and content data.
     public_plan={**plan,'slides':[{k:v for k,v in slide.items() if k not in ('blocks','motion')} for slide in plan['slides']]}
     lang=spec.get('language','ko'); mode=spec.get('mode','live')
+    typography=plan['styles']['typography']['id']; palette=plan['styles']['palette']['id']; dataviz=plan['styles']['dataviz']['id']
     html=f'''<!doctype html>
 <html lang="{lang}" data-engine="html-slide-modular-v1">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{esc(spec['title'])}</title>
 <style>{''.join(css)}</style></head>
-<body data-theme="{spec['theme']}" data-mode="{mode}"><main data-stage aria-label="{esc(spec['title'])}">{''.join(slides)}</main>
+<body data-theme="{spec['theme']}" data-typography="{typography}" data-palette="{palette}" data-dataviz="{dataviz}" data-mode="{mode}"><main data-stage aria-label="{esc(spec['title'])}">{''.join(slides)}</main>
 <script type="application/json" id="deck-plan">{json_script(public_plan)}</script>
 <script>{runtime}</script></body></html>'''
     return html,plan

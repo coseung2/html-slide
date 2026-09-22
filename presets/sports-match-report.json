@@ -3,6 +3,12 @@
   "title": "스포츠 리포트 구성 예시",
   "language": "ko",
   "theme": "sports-broadcast",
+  "style": {
+    "typography": "auto",
+    "palette": "auto",
+    "dataviz": "auto",
+    "signals": {"domain": "sports", "audience": "fan", "tone": ["energetic", "broadcast"], "density": "medium"}
+  },
   "slides": [
     {
       "id": "standings",

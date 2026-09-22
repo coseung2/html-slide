@@ -31,9 +31,24 @@ included only when the block is selected.
 
 ## Theme
 
-Add `themes/<id>/manifest.json` and `theme.css`. Scope appearance tokens to
-`[data-theme="<id>"]`; never alter slot sizing, stage dimensions or body overflow.
-Check all text/background pairings manually and in the actual projected frame.
+Add `themes/<id>/manifest.json` and `theme.css`. A theme owns design grammar such as
+corner, border and surface-treatment behavior. It does **not** own deck color or font
+families. Scope appearance tokens to `[data-theme="<id>"]`; never alter slot sizing,
+stage dimensions or body overflow.
+
+## Art-direction style pack
+
+Add `styles/typography/<id>/`, `styles/palettes/<id>/` or `styles/dataviz/<id>/`
+with a version-1 `manifest.json` and `style.css`. Typography packs must expose
+`--font-body`, `--font-heading` and `--font-number`; palettes must expose semantic
+paper/text/surface/accent/status variables; dataviz packs must expose `--viz-1`
+through `--viz-6`. Scope CSS to the matching body data attribute.
+
+Metadata should describe useful theme recommendations, domains, audiences, tones
+and density rather than aesthetic adjectives alone. Typography also declares
+supported languages. Do not bundle a font file just to create a new style pack;
+font distribution rights must be explicit. Read `references/art-direction.md`
+before changing automatic selection behavior.
 
 ## Motion
 

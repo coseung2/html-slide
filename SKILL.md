@@ -1,6 +1,6 @@
 ---
 name: html-slide
-description: Build, revise and verify self-contained HTML presentation decks by selecting compatible layout, content, visual, theme and semantic-motion modules from a registry. Use for Korean or English slides, sports reports, market briefings, lessons and presentation redesigns. Accept topics, source material, existing HTML or structured deck JSON; deliver final HTML and requested static PDF/PPTX exports. Preserve target-bound emphasis, fixed-stage geometry and accessible static final frames.
+description: Build, revise and verify self-contained HTML presentation decks by selecting compatible layout, content, visual, theme, typography, palette, data-visualization and semantic-motion modules from a registry. Use for Korean or English slides, sports reports, market briefings, lessons and presentation redesigns. Accept topics, source material, existing HTML or structured deck JSON; deliver final HTML and requested static PDF/PPTX exports. Preserve target-bound emphasis, fixed-stage geometry and accessible static final frames.
 ---
 
 # HTML Slide Director: modular composition
@@ -18,15 +18,19 @@ contain an LLM, embeddings service, factual research agent or image search servi
 1. Establish audience, language, one communication goal per slide, factual sources,
    information density and available media. Research changing facts before authoring.
    Label synthetic examples. Never fill missing facts with plausible numbers.
-2. Discover available modules and their actual data contracts:
-   `python tools/compose_deck.py catalog`.
-   Narrow candidates with `search --intent ranking --theme sports-broadcast`.
+2. Discover available modules and art-direction packs with
+   `python tools/compose_deck.py catalog`. Narrow layouts with
+   `search --intent ranking --theme sports-broadcast`; inspect style routing with
+   `search --type typography --theme education --domain education --audience elementary`.
 3. Write a version-1 JSON specification against `core/deck.schema.json`. Use an
-   explicit goal and intent on every slide. A preset is an editable starting
+   explicit goal and intent on every slide. Keep typography, main palette and dataviz
+   at deck scope. Prefer `auto` plus domain/audience/tone/density signals unless the
+   user requests a specific visual system. A preset is an editable starting
    combination, never a mandatory page sequence.
-4. Run `plan deck.json --out plan.json`. Inspect selection reasons, rejected layouts,
-   slot capacities and repetition warnings. Revise or split crowded slides rather
-   than truncating text or shrinking typography.
+4. Run `plan deck.json --out plan.json`. Inspect layout selection reasons, rejected
+   layouts, slot capacities, repetition warnings, and the selected typography,
+   palette and dataviz packs with their alternatives. Revise or split crowded slides
+   rather than truncating text or shrinking typography.
 5. Build with `python tools/compose_deck.py build deck.json --out deck.html`.
    For a verified typography baseline, explicitly supply an authorized local
    WOFF2 with `--font path/to/font.woff2`. The full repository's existing font asset
@@ -46,7 +50,10 @@ Commands after `catalog` share the prefix `python tools/compose_deck.py`.
 
 ## Composition contract
 
-- `themes/`: appearance tokens only. Never change slot geometry in a theme.
+- `themes/`: design grammar such as corner/border treatment. Never own layout geometry, font families or deck colors.
+- `styles/typography/`: deck-level heading/body/number font roles, weights and line-height behavior.
+- `styles/palettes/`: semantic paper/ink/surface/accent/status colors.
+- `styles/dataviz/`: chart-series colors independent from the main accent.
 - `modules/layouts/`: named slots, capacities, allowed block types and spatial CSS.
 - `modules/content/`: data schemas and renderers for information.
 - `modules/visuals/`: images and logos; use explicit `contain` or `cover` choices.
@@ -64,7 +71,8 @@ static final frames in plain HTML/CSS; JavaScript and motion may explain but may
 not carry otherwise missing information. Gate live phase effects on `.deck-live`.
 
 Keep one point per slide, at most three typography levels, readable projection
-sizes and varied copy placement. Keep Korean copy Korean-first with `keep-all`;
+sizes and varied copy placement. Resolve typography/palette/dataviz once per deck;
+do not switch style packs slide-by-slide merely to create variety. Keep Korean copy Korean-first with `keep-all`;
 use intentional technical names rather than decorative English scaffold. Prefer
 concrete labels; avoid tiny bottom explanations, pill chips, leader lines and
 unmotivated visual decoration. Let evidence determine the visual, not vice versa.
@@ -112,9 +120,10 @@ For legacy decks, preserve the shared presenter runtime and linter contract in
 `references/runtime-contract.md` and `references/navigation.md`. The legacy linter
 must reject slide-entry autoplay on stepped decks and verify presenter phase state.
 
-Read [architecture](references/modular-architecture.md) for boundaries and
-[authoring](references/module-authoring.md) before adding a module. Read
-[migration](references/migrating-v1.md) when working on an existing deck.
+Read [architecture](references/modular-architecture.md) for boundaries,
+[art direction](references/art-direction.md) for automatic typography/color routing,
+and [authoring](references/module-authoring.md) before adding a module or style pack.
+Read [migration](references/migrating-v1.md) when working on an existing deck.
 Preserve older accepted decks and compatibility tools. Do not commit build caches,
 QA screenshots, export binaries or delivery ZIPs; commit maintained source and
 finished example HTML only when repository changes are requested.

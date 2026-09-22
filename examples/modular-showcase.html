@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ko" data-engine="html-slide-modular-v1">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>모듈 조합형 슬라이드 엔진</title>
+<style>/* Authored geometry is in stage pixels. Presenter chrome is outside this stage. */
+*{box-sizing:border-box}html,body{margin:0;padding:0;background:#111;color:var(--ink,#182630)}
+body{font-family:var(--font-body,'Pretendard Variable',Pretendard,'Noto Sans CJK KR',system-ui,sans-serif);font-weight:var(--body-weight,500);word-break:keep-all;overflow-wrap:break-word}
+[data-stage]{--stage-w:1920;--stage-h:1080;width:1920px;position:relative;transform-origin:top left}
+[data-slide]{width:1920px;height:1080px;position:relative;background:var(--paper);color:var(--ink);overflow:hidden;break-after:page}
+.deck-ready body{overflow:hidden}.deck-ready [data-stage]{height:1080px;position:absolute;left:0;top:0}
+.deck-ready [data-slide]{position:absolute;inset:0;visibility:hidden;pointer-events:none}
+.deck-ready [data-slide].is-active{visibility:visible;pointer-events:auto}
+.scene{position:absolute;inset:80px 100px 100px;display:grid;gap:44px;grid-template-rows:auto 1fr;min-width:0;min-height:0}
+.copy{align-self:center;min-width:0}.copy h1,.copy h2{font-family:var(--font-heading,var(--font-body));font-size:64px;line-height:var(--heading-line,1.5);font-weight:var(--heading-weight,780);margin:0;max-width:1400px;word-break:keep-all}
+.copy p{font-family:var(--font-body);font-size:36px;line-height:var(--body-line,1.55);font-weight:var(--body-weight,500);color:var(--muted);margin:24px 0 0;max-width:1280px}
+.slot{display:grid;gap:28px;min-height:0;min-width:0;align-content:stretch}
+.module{position:relative;min-width:0;min-height:0;padding:28px 32px;display:flex;flex-direction:column;justify-content:center;background:var(--surface);border:var(--module-border,0);box-shadow:var(--module-shadow,none);border-radius:var(--radius);font-family:var(--font-body);font-size:36px;line-height:var(--body-line,1.5)}
+.module p{margin:0}.module-label,.module-detail{font-family:var(--font-body);font-size:26px;line-height:var(--body-line,1.5);color:var(--muted)}
+.module-detail{margin-top:20px!important}.statement{font-family:var(--font-heading,var(--font-body));font-size:36px;line-height:var(--body-line,1.5);font-weight:var(--statement-weight,650)}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+@media print{@page{size:1920px 1080px;margin:0}html,body{background:none;overflow:visible!important}[data-stage]{position:static!important;transform:none!important;height:auto!important}[data-slide]{position:relative!important;visibility:visible!important;height:1080px;break-after:page;print-color-adjust:exact}[data-slide]:last-child{break-after:auto}.deck-shell,.deck-shell-progress,.deck-shell-overview,.deck-shell-sr{display:none!important}}
+/* Same out-of-stage presenter contract as motion/deck-shell.css. */
+.deck-shell{display:flex;position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:1000;align-items:center;gap:8px;max-width:calc(100% - 16px);padding:4px 6px;background:var(--paper,#fbfaf7);border:1px solid var(--line,#cfc8bc);border-radius:6px;box-shadow:0 2px 12px #11110f09;color:var(--ink,#11110f);font:600 14px/1.4 'Pretendard Variable',Pretendard,system-ui,sans-serif}
+.deck-shell button{min-height:38px;padding:8px 12px;border:0;border-radius:4px;background:transparent;color:inherit;font:inherit;white-space:nowrap;cursor:pointer}
+.deck-shell button:hover{background:color-mix(in srgb,var(--ink,#11110f) 7%,transparent)}
+.deck-shell button:focus-visible{outline:3px solid var(--accent,#c0392b);outline-offset:3px}
+.deck-shell button[aria-pressed="true"]{background:var(--ink,#11110f);color:var(--paper,#fff)}
+.deck-shell button:disabled{opacity:.38;cursor:default}.deck-shell__arrow{min-width:40px!important;padding:4px 12px!important;font-size:24px!important;line-height:1!important}
+.deck-shell__counter{min-width:76px;text-align:center;color:var(--muted,#5a5f6b);font-variant-numeric:tabular-nums}
+.deck-shell__phase{min-width:72px;padding-left:12px;border-left:1px solid var(--line,#cfc8bc);color:var(--muted,#5a5f6b);font-variant-numeric:tabular-nums}
+.deck-shell-progress{position:fixed;left:0;right:0;bottom:0;z-index:1001;height:3px;background:var(--line,#d8d2c6);pointer-events:none}
+.deck-shell-progress__value{width:100%;height:100%;background:var(--accent,#c0392b);transform:scaleX(0);transform-origin:left center;transition:transform 160ms ease-out}
+.deck-shell-overview{width:min(960px,calc(100% - 40px));max-height:80%;overflow:auto;padding:28px;border:1px solid var(--line,#cfc8bc);border-radius:12px;background:var(--paper,#fbfaf7);color:var(--ink,#11110f)}
+.deck-shell-overview::backdrop{background:#11110f80}.deck-shell-overview h2{margin:0 0 24px;font:750 24px/1.5 system-ui,sans-serif}
+.deck-shell-overview__list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.deck-shell-overview__list button{display:flex;align-items:flex-start;gap:12px;padding:20px;border:1px solid var(--line,#cfc8bc);border-radius:6px;background:var(--surface,#f0f0f0);color:var(--ink,#11110f);font:600 16px/1.5 system-ui,sans-serif;text-align:left;cursor:pointer}
+.deck-shell-overview__list button:hover,.deck-shell-overview__list button[aria-current="true"]{border-color:var(--accent,#c0392b)}
+.deck-shell-overview__close{margin-top:20px;padding:10px 22px;border:0;border-radius:6px;background:var(--ink,#11110f);color:var(--paper,#fff);font:700 16px/1.4 system-ui,sans-serif;cursor:pointer}
+.deck-shell-sr{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}
+.deck-sources{display:grid;gap:12px;margin-top:24px}.deck-sources a{color:var(--ink)}
+@media(max-width:650px){.deck-shell{gap:2px}.deck-shell button{padding:8px}.deck-shell__phase,.deck-shell__fullscreen{display:none}.deck-shell-overview__list{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){.deck-shell-progress__value{transition:none}}
+@media print{.deck-shell,.deck-shell-progress,.deck-shell-overview,.deck-shell-sr{display:none!important}}
+html.deck-capture .deck-shell,html.deck-capture .deck-shell-progress{visibility:hidden!important}
+.bar-chart{display:grid;gap:28px}.bar-row{display:grid;grid-template-columns:180px minmax(0,1fr) 100px;gap:20px;align-items:center;font-size:26px}.bar-row strong{text-align:right;font-variant-numeric:tabular-nums}
+.bar-track{height:30px;background:var(--paper)}.bar-fill{height:100%;background:var(--viz-1,var(--accent));transform-origin:left center}
+.bar-row:nth-child(6n+1) .bar-fill{background:var(--viz-1,var(--accent))}.bar-row:nth-child(6n+2) .bar-fill{background:var(--viz-2,var(--accent))}.bar-row:nth-child(6n+3) .bar-fill{background:var(--viz-3,var(--accent))}.bar-row:nth-child(6n+4) .bar-fill{background:var(--viz-4,var(--accent))}.bar-row:nth-child(6n+5) .bar-fill{background:var(--viz-5,var(--accent))}.bar-row:nth-child(6n) .bar-fill{background:var(--viz-6,var(--accent))}
+.comparison-copy{margin-top:24px!important;font-size:36px;line-height:1.6}
+.line-chart{width:100%;max-height:100%;overflow:visible}.line-chart text{font-size:26px;font-family:var(--font-body,'Pretendard Variable',system-ui,sans-serif);fill:var(--ink)}.chart-line{fill:none;stroke:var(--viz-1,var(--accent));stroke-width:5;stroke-linejoin:round}.chart-dot{fill:var(--viz-1,var(--accent))}.chart-axis{stroke:var(--line);stroke-width:2}
+.metric-value{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;font-family:var(--font-number,var(--font-body));font-size:64px;font-weight:var(--number-weight,780);line-height:1.35;font-variant-numeric:tabular-nums;color:var(--accent)}
+.metric-value [data-number]{min-width:1ch}.metric-unit{font-size:26px;color:var(--muted)}
+.process{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}.process-node{padding:24px 0;min-width:0;border-top:3px solid var(--accent);font-size:36px}.process-node strong{color:var(--accent);font-size:26px}.process-node p{margin-top:20px}
+.module blockquote{font-size:36px;line-height:1.5;margin:0;font-weight:650}
+.sequence-index,.rank-index{font-size:26px;font-variant-numeric:tabular-nums;color:var(--accent);font-weight:750;flex:0 0 48px}
+.ranking{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:36px}.ranking th,.ranking td{padding:13px 12px;border-bottom:1px solid var(--line);text-align:left}
+.ranking thead th{font-size:26px;color:var(--muted);font-weight:550}.ranking td,.ranking thead th:last-child{text-align:right}.rank-index{display:inline-block;width:60px}
+.score-teams{display:flex;justify-content:space-between;gap:24px;font-size:36px}.score-value{display:flex;justify-content:space-between;gap:32px;font-family:var(--font-number,var(--font-body));font-size:64px;line-height:1.6;font-weight:var(--number-weight,800);color:var(--accent);font-variant-numeric:tabular-nums}
+.score-value span:nth-child(2){color:var(--muted)}.score-teams span{max-width:46%}
+
+.module-list,.module-timeline{list-style:none;padding:0;margin:0;display:grid;gap:20px}
+.module-list li,.module-timeline li{display:flex;align-items:center;gap:24px;min-width:0}
+.sequence-index,.rank-index{font-size:26px;font-variant-numeric:tabular-nums;color:var(--accent);font-weight:750;flex:0 0 48px}
+.module-list .sequence-index{display:none}.module-timeline li{padding:20px 0;border-bottom:1px solid var(--line)}
+.layout-comparison .scene{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto 1fr}.layout-comparison .copy{grid-column:1/-1}.layout-comparison .slot-right{border-left:2px solid var(--line);padding-left:42px}
+.layout-hero .scene{grid-template-rows:auto 1fr;inset:136px 180px 136px;text-align:center}.layout-hero .copy h2{max-width:none}.layout-hero .copy p{margin-left:auto;margin-right:auto}.layout-hero .module{background:transparent}
+.layout-split-left .scene,.layout-ranking-board .scene,.layout-process-flow .scene{grid-template-columns:530px minmax(0,1fr);grid-template-rows:1fr;gap:70px}.layout-split-left .copy h2,.layout-split-right .copy h2,.layout-ranking-board .copy h2,.layout-image-focus .copy h2,.layout-process-flow .copy h2{font-size:64px}
+.layout-split-right .scene,.layout-image-focus .scene{grid-template-columns:minmax(0,1fr) 530px;grid-template-rows:1fr;gap:70px}.layout-split-right .copy{grid-column:2;grid-row:1}.layout-split-right .slot-main{grid-column:1;grid-row:1}.layout-image-focus .slot{height:100%}
+.layout-split-left .scene,.layout-ranking-board .scene,.layout-process-flow .scene{grid-template-columns:530px minmax(0,1fr);grid-template-rows:1fr;gap:70px}.layout-split-left .copy h2,.layout-split-right .copy h2,.layout-ranking-board .copy h2,.layout-image-focus .copy h2,.layout-process-flow .copy h2{font-size:64px}
+.layout-quote-focus .scene{inset:140px 210px 160px;grid-template-rows:auto 1fr}.layout-quote-focus blockquote{font-size:64px}.layout-quote-focus .module{border-left:5px solid var(--accent);border-radius:0}
+.layout-split-left .scene,.layout-ranking-board .scene,.layout-process-flow .scene{grid-template-columns:530px minmax(0,1fr);grid-template-rows:1fr;gap:70px}.layout-split-left .copy h2,.layout-split-right .copy h2,.layout-ranking-board .copy h2,.layout-image-focus .copy h2,.layout-process-flow .copy h2{font-size:64px}
+.layout-split-left .scene,.layout-ranking-board .scene,.layout-process-flow .scene{grid-template-columns:530px minmax(0,1fr);grid-template-rows:1fr;gap:70px}.layout-split-left .copy h2,.layout-split-right .copy h2,.layout-ranking-board .copy h2,.layout-image-focus .copy h2,.layout-process-flow .copy h2{font-size:64px}
+.layout-split-left .scene,.layout-ranking-board .scene,.layout-process-flow .scene{grid-template-columns:530px minmax(0,1fr);grid-template-rows:1fr;gap:70px}.layout-split-left .copy h2,.layout-split-right .copy h2,.layout-ranking-board .copy h2,.layout-image-focus .copy h2,.layout-process-flow .copy h2{font-size:64px}
+.layout-split-right .scene,.layout-image-focus .scene{grid-template-columns:minmax(0,1fr) 530px;grid-template-rows:1fr;gap:70px}.layout-split-right .copy{grid-column:2;grid-row:1}.layout-split-right .slot-main{grid-column:1;grid-row:1}.layout-image-focus .slot{height:100%}
+.layout-stat-grid .slot-main{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr}.layout-stat-grid .slot-main:has(>:nth-child(5)){grid-template-columns:repeat(3,minmax(0,1fr))}
+.layout-timeline .scene{grid-template-columns:600px minmax(0,1fr);grid-template-rows:1fr;gap:60px}.layout-timeline .module{background:transparent;padding:0}
+.deck-live [data-motion="chart-grow"][data-motion-state="pending"] .bar-fill{transform:scaleX(.001)}
+.deck-live [data-motion="chart-grow"] .bar-fill{transition:transform 420ms ease}
+.deck-live [data-motion="chart-grow"][data-motion-state="pending"] .chart-line{stroke-dasharray:2200;stroke-dashoffset:2200}
+.deck-live [data-motion="chart-grow"] .chart-line{transition:stroke-dashoffset 500ms ease;stroke-dasharray:2200;stroke-dashoffset:0}
+.focus-ring{position:absolute;inset:0;border:4px solid var(--accent);pointer-events:none;border-radius:var(--radius)}
+.deck-live [data-motion-state="pending"] .focus-ring{opacity:0}
+.deck-live [data-motion="score-reveal"][data-motion-state="pending"] .score-value{opacity:.08;transform:translateY(12px)}
+.deck-live [data-motion="score-reveal"] .score-value{transition:opacity 280ms ease,transform 280ms ease}
+.deck-live [data-sequence-state="pending"]{opacity:.18}.deck-live [data-sequence-item]{transition:opacity 220ms ease}
+.module-image,.module-logo{padding:0;background:transparent}.module-image img,.module-logo img{display:block;width:100%;height:100%;min-height:0}.module-logo{padding:70px}
+[data-theme="documentary"]{--radius:0px;--module-border:1px solid var(--line);--module-shadow:none;}
+[data-theme="editorial"]{--radius:0px;--module-border:1px solid var(--line);--module-shadow:none;}
+[data-theme="education"]{--radius:12px;--module-border:1px solid var(--line);--module-shadow:none;}
+[data-theme="financial-report"]{--radius:0px;--module-border:1px solid var(--line);--module-shadow:none;}
+[data-theme="sports-broadcast"]{--radius:0px;--module-border:1px solid var(--line);--module-shadow:none;}
+[data-theme="tech"]{--radius:0px;--module-border:1px solid var(--line);--module-shadow:none;}
+body[data-typography="tech-modern"]{--font-body:var(--font-custom,Inter,'Pretendard Variable',Pretendard,'Noto Sans CJK KR',system-ui,sans-serif);--font-heading:var(--font-custom,Inter,'Pretendard Variable',Pretendard,'Noto Sans CJK KR',system-ui,sans-serif);--font-number:var(--font-custom,Inter,'Aptos','Pretendard Variable',Pretendard,system-ui,sans-serif);--font-mono:'Cascadia Mono','SFMono-Regular',Consolas,monospace;--heading-weight:750;--body-weight:450;--number-weight:760;--statement-weight:650;--heading-line:1.4;--body-line:1.5}
+body[data-palette="midnight-blue"]{--paper:#08111f;--ink:#f7f9fc;--muted:#b2bfd0;--accent:#54a8ff;--surface:#111d2e;--line:#53677f;--positive:#4ed69c;--negative:#ff7575;--warning:#f5c451}
+body[data-dataviz="categorical-6"]{--viz-1:#4ba3ff;--viz-2:#ff8a3d;--viz-3:#4ed69c;--viz-4:#b985ff;--viz-5:#f5c451;--viz-6:#ff6fa8;--viz-positive:#4ed69c;--viz-negative:#ff7575}
+</style></head>
+<body data-theme="tech" data-typography="tech-modern" data-palette="midnight-blue" data-dataviz="categorical-6" data-mode="live"><main data-stage aria-label="모듈 조합형 슬라이드 엔진"><section data-slide="opening" data-title="모듈 조합형 슬라이드" data-start="0" data-steps="0" data-theme="tech" class="layout-hero" aria-label="모듈 조합형 슬라이드"><div class="scene"><header class="copy" data-copy><h2>모듈 조합형 슬라이드</h2><p>주제가 바뀌면, 필요한 화면 구성도 달라집니다.</p></header><div class="slot slot-main" data-slot="main"><article id="s-opening--building-blocks" class="module module-process" data-module="process" data-qa-box><div class="process"><div class="process-node" data-sequence-item><strong>01</strong><p>전달 목적</p></div><div class="process-node" data-sequence-item><strong>02</strong><p>화면 골격</p></div><div class="process-node" data-sequence-item><strong>03</strong><p>정보 표현</p></div><div class="process-node" data-sequence-item><strong>04</strong><p>아트디렉션</p></div><div class="process-node" data-sequence-item><strong>05</strong><p>선택적 모션</p></div><div class="process-node" data-sequence-item><strong>06</strong><p>최종 검증</p></div></div></article></div>
+</div></section><section data-slide="comparison" data-title="완성된 틀에서 필요한 조합으로" data-start="0" data-steps="0" data-theme="editorial" class="layout-comparison" aria-label="완성된 틀에서 필요한 조합으로"><div class="scene"><header class="copy" data-copy><h2>완성된 틀에서 필요한 조합으로</h2></header><div class="slot slot-left" data-slot="left"><article id="s-comparison--before" class="module module-comparison-text" data-module="comparison-text" data-qa-box><p class="module-label">템플릿 중심</p><p class="comparison-copy">정해진 화면에 내용을 맞추는 방식. 구조가 반복되고 정보가 많아지면 틀을 벗어납니다.</p>
+</article></div><div class="slot slot-right" data-slot="right"><article id="s-comparison--after" class="module module-comparison-text" data-module="comparison-text" data-qa-box><p class="module-label">모듈 중심</p><p class="comparison-copy">전달 목적에 맞는 골격과 정보 표현을 선택하는 방식. 디자인 문법, 폰트, 색상, 모션을 독립적으로 조합합니다.</p>
+</article></div>
+</div></section><section data-slide="planning" data-title="화면 선택의 순서" data-start="0" data-steps="6" data-theme="tech" class="layout-process-flow" aria-label="화면 선택의 순서"><div class="scene"><header class="copy" data-copy><h2>화면 선택의 순서</h2><p>이름이 아니라 사용 목적과 제약조건으로 선택합니다.</p></header><div class="slot slot-main" data-slot="main"><article data-motion="sequence-step" data-start-step="1" data-end-step="6" data-step="6" id="s-planning--pipeline" class="module module-process" data-module="process" data-qa-box><div class="process"><div class="process-node" data-sequence-item><strong>01</strong><p>목적 정하기</p></div><div class="process-node" data-sequence-item><strong>02</strong><p>후보 검색</p></div><div class="process-node" data-sequence-item><strong>03</strong><p>제약 검사</p></div><div class="process-node" data-sequence-item><strong>04</strong><p>슬롯 배치</p></div><div class="process-node" data-sequence-item><strong>05</strong><p>스타일 선택</p></div><div class="process-node" data-sequence-item><strong>06</strong><p>화면 검증</p></div></div></article></div>
+</div></section><section data-slide="catalog" data-title="독립적으로 교체하는 구성 요소" data-start="0" data-steps="0" data-theme="financial-report" class="layout-stat-grid" aria-label="독립적으로 교체하는 구성 요소"><div class="scene"><header class="copy" data-copy><h2>독립적으로 교체하는 구성 요소</h2><p>목록과 역할은 모듈 레지스트리에서 검색합니다.</p></header><div class="slot slot-main" data-slot="main"><article id="s-catalog--layouts" class="module module-metric" data-module="metric" data-qa-box><p class="module-label">레이아웃</p><p class="metric-value"><span data-number="10">10</span><span class="metric-unit">종</span></p><p class="module-detail">내용을 담는 화면의 골격</p></article><article id="s-catalog--content" class="module module-metric" data-module="metric" data-qa-box><p class="module-label">정보 모듈</p><p class="metric-value"><span data-number="11">11</span><span class="metric-unit">종</span></p><p class="module-detail">숫자, 순위, 인용, 차트 등의 표현</p></article><article id="s-catalog--themes" class="module module-metric" data-module="metric" data-qa-box><p class="module-label">스타일 팩</p><p class="metric-value"><span data-number="20">20</span><span class="metric-unit">종</span></p><p class="module-detail">타이포 7, 메인 색상 8, 차트 색상 5</p></article><article id="s-catalog--motion" class="module module-metric" data-module="metric" data-qa-box><p class="module-label">의미 기반 모션</p><p class="metric-value"><span data-number="5">5</span><span class="metric-unit">종</span></p><p class="module-detail">필요한 대상에만 선택적으로 적용</p></article></div>
+</div></section><section data-slide="standings" data-title="순위 정보의 화면 구성" data-start="0" data-steps="0" data-theme="sports-broadcast" class="layout-ranking-board" aria-label="순위 정보의 화면 구성"><div class="scene"><header class="copy" data-copy><h2>순위 정보의 화면 구성</h2><p>구성 검증용 가상 데이터입니다. 실제 경기 결과가 아닙니다.</p></header><div class="slot slot-main" data-slot="main"><article id="s-standings--table" class="module module-ranking" data-module="ranking" data-qa-box><table class="ranking"><thead><tr><th scope="col">예시 팀</th><th scope="col">예시 점수</th></tr></thead><tbody><tr data-sequence-item><th scope="row"><span class="rank-index">01</span>팀 가</th><td>18</td></tr><tr data-sequence-item><th scope="row"><span class="rank-index">02</span>팀 나</th><td>16</td></tr><tr data-sequence-item><th scope="row"><span class="rank-index">03</span>팀 다</th><td>15</td></tr><tr data-sequence-item><th scope="row"><span class="rank-index">04</span>팀 라</th><td>13</td></tr><tr data-sequence-item><th scope="row"><span class="rank-index">05</span>팀 마</th><td>12</td></tr><tr data-sequence-item><th scope="row"><span class="rank-index">06</span>팀 바</th><td>10</td></tr></tbody></table></article></div>
+</div></section><section data-slide="match" data-title="결과만 강조하는 모션" data-start="0" data-steps="1" data-theme="sports-broadcast" class="layout-split-right" aria-label="결과만 강조하는 모션"><div class="scene"><header class="copy" data-copy><h2>결과만 강조하는 모션</h2><p>가상 경기 결과로 점수 공개 동작을 확인합니다.</p></header><div class="slot slot-main" data-slot="main"><article data-motion="score-reveal" data-start-step="1" data-end-step="1" data-step="1" id="s-match--result" class="module module-score" data-module="score" data-qa-box><div class="score-teams"><span>예시 팀 가</span><span>예시 팀 나</span></div><div class="score-value"><span>3</span><span aria-hidden="true">:</span><span>2</span></div><p class="module-detail">모션은 결과가 핵심인 장면에만 적용합니다.</p></article></div>
+</div></section><section data-slide="bars" data-title="같은 기준으로 나란히 비교" data-start="0" data-steps="1" data-theme="financial-report" class="layout-split-left" aria-label="같은 기준으로 나란히 비교"><div class="scene"><header class="copy" data-copy><h2>같은 기준으로 나란히 비교</h2><p>축과 값은 그대로 두고 비교 대상만 강조합니다.</p></header><div class="slot slot-main" data-slot="main"><article data-motion="chart-grow" data-start-step="1" data-end-step="1" data-step="1" id="s-bars--chart" class="module module-bar-chart" data-module="bar-chart" data-qa-box><div class="bar-chart" role="img" aria-label="가상 비교 데이터"><div class="bar-row"><span>구성 가</span><div class="bar-track"><div class="bar-fill" style="width:28.57143%"></div></div><strong>24</strong></div><div class="bar-row"><span>구성 나</span><div class="bar-track"><div class="bar-fill" style="width:50.00000%"></div></div><strong>42</strong></div><div class="bar-row"><span>구성 다</span><div class="bar-track"><div class="bar-fill" style="width:80.95238%"></div></div><strong>68</strong></div><div class="bar-row"><span>구성 라</span><div class="bar-track"><div class="bar-fill" style="width:100.00000%"></div></div><strong>84</strong></div></div></article></div>
+</div></section><section data-slide="trend" data-title="변화의 방향을 읽는 화면" data-start="0" data-steps="0" data-theme="financial-report" class="layout-split-right" aria-label="변화의 방향을 읽는 화면"><div class="scene"><header class="copy" data-copy><h2>변화의 방향을 읽는 화면</h2><p>구조 설명을 위한 예시 데이터이며, 실제 시장 지표가 아닙니다.</p></header><div class="slot slot-main" data-slot="main"><article id="s-trend--trend" class="module module-line-chart" data-module="line-chart" data-qa-box><svg class="line-chart" viewBox="0 0 1000 440" role="img" aria-label="가상 추세 데이터"><line class="chart-axis" x1="40" y1="340.000" x2="960" y2="340.000"/><polyline class="chart-line" points="160.000,184.444 296.000,153.333 432.000,168.889 568.000,106.667 704.000,122.222 840.000,60.000"/><circle class="chart-dot" cx="160.000" cy="184.444" r="7"/><text x="160.000" y="162.444" text-anchor="middle">30</text><text x="160.000" y="407" text-anchor="middle">1주</text><circle class="chart-dot" cx="296.000" cy="153.333" r="7"/><text x="296.000" y="131.333" text-anchor="middle">36</text><text x="296.000" y="407" text-anchor="middle">2주</text><circle class="chart-dot" cx="432.000" cy="168.889" r="7"/><text x="432.000" y="146.889" text-anchor="middle">33</text><text x="432.000" y="407" text-anchor="middle">3주</text><circle class="chart-dot" cx="568.000" cy="106.667" r="7"/><text x="568.000" y="84.667" text-anchor="middle">45</text><text x="568.000" y="407" text-anchor="middle">4주</text><circle class="chart-dot" cx="704.000" cy="122.222" r="7"/><text x="704.000" y="100.222" text-anchor="middle">42</text><text x="704.000" y="407" text-anchor="middle">5주</text><circle class="chart-dot" cx="840.000" cy="60.000" r="7"/><text x="840.000" y="38.000" text-anchor="middle">54</text><text x="840.000" y="407" text-anchor="middle">6주</text></svg><table class="sr-only"><caption>가상 추세 데이터</caption><tbody><tr><th>1주</th><td>30</td></tr><tr><th>2주</th><td>36</td></tr><tr><th>3주</th><td>33</td></tr><tr><th>4주</th><td>45</td></tr><tr><th>5주</th><td>42</td></tr><tr><th>6주</th><td>54</td></tr></tbody></table></article></div>
+</div></section><section data-slide="lesson" data-title="학생 탐구의 다섯 단계" data-start="0" data-steps="5" data-theme="education" class="layout-timeline" aria-label="학생 탐구의 다섯 단계"><div class="scene"><header class="copy" data-copy><h2>학생 탐구의 다섯 단계</h2><p>순서가 필요한 내용은 타임라인으로 표현합니다.</p></header><div class="slot slot-main" data-slot="main"><article data-motion="sequence-step" data-start-step="1" data-end-step="5" data-step="5" id="s-lesson--ladder" class="module module-timeline" data-module="timeline" data-qa-box><ol class="module-timeline"><li data-sequence-item><span class="sequence-index">01</span><span>경험 떠올리기</span></li><li data-sequence-item><span class="sequence-index">02</span><span>현황 살펴보기</span></li><li data-sequence-item><span class="sequence-index">03</span><span>원인 질문하기</span></li><li data-sequence-item><span class="sequence-index">04</span><span>대안 비교하기</span></li><li data-sequence-item><span class="sequence-index">05</span><span>의견 정리하기</span></li></ol></article></div>
+</div></section><section data-slide="motion-rule" data-title="모션보다 먼저 완성되는 의미" data-start="0" data-steps="0" data-theme="editorial" class="layout-quote-focus" aria-label="모션보다 먼저 완성되는 의미"><div class="scene"><header class="copy" data-copy><h2>모션보다 먼저 완성되는 의미</h2></header><div class="slot slot-main" data-slot="main"><article id="s-motion-rule--principle" class="module module-quote" data-module="quote" data-qa-box><blockquote>정적 화면만으로도 메시지가 완성되어야 합니다. 모션은 그 의미를 설명하는 수단입니다.</blockquote><p class="module-detail">공통 제작 원칙</p>
+</article></div>
+</div></section><section data-slide="media" data-title="시각 자료와 레이아웃의 분리" data-start="0" data-steps="0" data-theme="documentary" class="layout-image-focus" aria-label="시각 자료와 레이아웃의 분리"><div class="scene"><div class="slot slot-main" data-slot="main"><article id="s-media--visual" class="module module-image" data-module="image" data-qa-box><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA+gAAAMgBAMAAABCNlUOAAAAMFBMVEXN/2CA4tHsyHisxO0gNUoQITYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD+tD9cAAAFrUlEQVR42u3dwXGCQBiA0aDkbgmUQAmUkAtVpgUONuCMFTh2gAWgpABkx1kiIPveVQXZL38uupLVX6RmZwlER3RER3RER3RER3RER3RER3RER3RER3REFx3RER3RER3RER3RER3RER3RER3RER3REV10REd0REd0REd0REd0REd0REd0REd0REd00REd0REd0REd0REd0REd0REd0REd0REd0dOWv/CcZivXWoUe/d3IVX7/mHRER3TRER3RER3RER3RER3RER3RER3RER3RER3RRUd0REd0REd0REd0REd0REd0REd0REd0RBcd0REd0REd0REd0REd0REd0REd0REd0RE9cXn0K/flsu/8fp5lfaplr7I7mnRER3RER3REFx3RER3RER3RER3RER3RER3RER3RER3RET1t8d97v59SWJ+uMemIjuiIjuiIjuiIjuiIjuiIjuiIjuiiIzqiIzqiIzqiIzqiIzqiIzqiIzqiIzqii47oiI7oiI7oiI7oiI7oiI7oiE6M+F+B3pfTz34/r359qunH6I4mHdERHdERHdERHdERHdFFR3REZ1vcazXMvVYRHdERHdERHdERHdERHdERHdEZyi1BeH2qtx26MemIjuiIjuiIjuiIjuiiIzqiIzqfyqdsYfayITqiIzqiIzqiIzqiIzqiIzqiIzqii47oiI7oiI7oiI7oiI7oiI7oiI7oiI7oiC46oiM6oiM6oiM6oiM6oiM6oiM6oiM6oiO66IiO6IiO6IiO6IiO6IiO6IiO6IiO6IiO6KIjOqIjOqIjOqIjOqIjOqIjOqIjOqIjOqIjuuiIjuiIjuiIjuiIjuiIjuiIjuiIjuiIjuiiIzqiIzqiIzqiIzqiIzqiIzqiIzqiIzqii47oiI7oiI7oiI7oiI7oiI7oiI7oiM6YrLYGJh3RER3RER3RER3RER3RER3RER3RER3REV10REd0REd0REd0REd0REd0REd0REd0REd00REd0REd0REd0REd0REd0REd0REd0REd0UVHdERHdERHdERndfIXnnPayLXuy9Cjl62McWHSER3RRUd0REd0REd0REd0REd0REd0REd0REd0RBcd0REd0REd0REd0REd0REd0REd0REd0RFddERHdERHdERHdERHdERHdERHdERHdERH9MTl8X8uxbLv/HGd4yzZYdmr7G8mHdERHdERHdFFR3RER3RER3RER3RER3RER3RER3RER3RET1v8994flxTWp29NOqIjOqIjOqIjOqIjOqIjOqIjOqIjuuiIjuiIjuiIjuiIjuiIjuiIjuiIjuiIjuiiIzqiIzqiIzqiIzqiIzqiIzqiEyP+V6B3xfSzP65rX5/sMP0Y/c2kIzqiIzqiIzqiIzqiI7roiI7obIt7rYa51yqiIzqiIzqiIzqiIzqiIzqiIzpDy+5lG7Giz+/+Yy/biNakIzqiIzqiIzqiIzqii47oiI7ofCp72cLsZUN0REd0REd0REd0REd0REd0RGdolXvZnlvkJm5v3Mv23Bw3cTPp/r0jOqIjOqIjOqIjOqIjOqIjOhPZyxZmLxuiIzqiIzqiIzqiIzqiIzqiIzpDuSUImn0v24jWpCM6oiM6oiO66IiO6IiO6IiO6KyIT9nC7GVDdERHdERHdERHdERHdERHdERHdEQXHdERHdERHdERHdERHdERHdERHdERHdERXXRER3RER3RER3RER3RER3RER3RER3RER3TRER3RER3RER3RER3RER3RER3RER3RER3RRUd0REd0REd0REd0REd0ROd9stoamHRER3RER3RER3RER3RER3RER3RER3RER3TRER3RER3RER3RER3RER3RER3RER3RER3RRUd0REd0REd0REd0REd0REd0REd0REd0RBcd0REd0REd0REd0REd0REd0REd0REd0RE9aX/59T0zqd+D2gAAAABJRU5ErkJggg==" alt="이미지 배치 검증용으로 만든 네 영역의 합성 도형" style="object-fit:contain"/></article></div><header class="copy" data-copy><h2>시각 자료와 레이아웃의 분리</h2><p>사진과 도표는 전용 슬롯에 배치합니다. 이 이미지는 배치 검증용 합성 도형입니다.</p></header>
+</div></section><section data-slide="close" data-title="판단은 AI, 제약 검사는 엔진" data-start="0" data-steps="1" data-theme="tech" class="layout-split-right" aria-label="판단은 AI, 제약 검사는 엔진"><div class="scene"><header class="copy" data-copy><h2>판단은 AI, 제약 검사는 엔진</h2><p>선택 이유와 조합 결과는 설계 보고서에 함께 남습니다.</p></header><div class="slot slot-main" data-slot="main"><article data-motion="focus" data-start-step="1" data-end-step="1" data-step="1" id="s-close--final" class="module module-statement" data-module="statement" data-qa-box><p class="statement">AI가 전달 목적을 정하고, 조합기가 호환 가능한 구성을 찾습니다. 화면 검증을 통과한 HTML이 최종 산출물입니다.</p>
+<span class="focus-ring" data-hl data-target="#s-close--final" data-step="1" aria-hidden="true"></span></article></div>
+</div></section></main>
+<script type="application/json" id="deck-plan">{"schemaVersion":1,"title":"모듈 조합형 슬라이드 엔진","theme":"tech","styles":{"typography":{"id":"tech-modern","type":"typography","score":112,"reasons":["theme recommendation","domain match","audience match","tone: modern","tags: digital, modern, product, tech","density match","language support"],"mode":"auto","alternatives":[{"id":"clean-sans","type":"typography","score":110,"reasons":["theme recommendation","domain match","audience match","tone: clear, modern","tags: clear, professional","density match","language support"]},{"id":"classroom-friendly","type":"typography","score":30,"reasons":["tone: clear","tags: clear","density match","language support"]},{"id":"data-dense","type":"typography","score":30,"reasons":["audience match","density match","language support"]}]},"palette":{"id":"midnight-blue","type":"palettes","score":106,"reasons":["theme recommendation","domain match","audience match","tone: modern","tags: digital, modern, professional, tech","density match"],"mode":"auto","alternatives":[{"id":"financial-teal","type":"palettes","score":30,"reasons":["audience match","tags: professional","density match"]},{"id":"monochrome","type":"palettes","score":30,"reasons":["audience match","tags: professional","density match"]},{"id":"classroom-warm","type":"palettes","score":24,"reasons":["tone: clear","tags: clear","density match"]}]},"dataviz":{"id":"categorical-6","type":"dataviz","score":98,"reasons":["theme recommendation","domain match","audience match","tone: clear, modern","tags: tech","density match"],"mode":"auto","alternatives":[{"id":"sequential-blue","type":"dataviz","score":82,"reasons":["theme recommendation","domain match","audience match","tone: modern","density match"]},{"id":"diverging-red-blue","type":"dataviz","score":24,"reasons":["audience match","density match"]},{"id":"finance-up-down","type":"dataviz","score":24,"reasons":["audience match","density match"]}]}},"slides":[{"id":"opening","title":"모듈 조합형 슬라이드","communication_goal":"모듈 조합형 슬라이드","intent":"overview","summary":"주제가 바뀌면, 필요한 화면 구성도 달라집니다.","layout":"hero","theme":"tech","slots":{"main":["building-blocks"]},"selection":{"id":"hero","score":null,"reasons":["explicit layout"],"rejected":[]},"steps":0},{"id":"comparison","title":"완성된 틀에서 필요한 조합으로","communication_goal":"완성된 틀에서 필요한 조합으로","intent":"comparison","summary":"","layout":"comparison","theme":"editorial","slots":{"left":["before"],"right":["after"]},"selection":{"id":"comparison","score":null,"reasons":["explicit layout"],"rejected":[]},"steps":0},{"id":"planning","title":"화면 선택의 순서","communication_goal":"화면 선택의 순서","intent":"process","summary":"이름이 아니라 사용 목적과 제약조건으로 선택합니다.","theme":"tech","layout":"process-flow","slots":{"main":["pipeline"]},"selection":{"id":"process-flow","type":"layouts","score":110,"reasons":["intent match","density match"],"rejected":[]},"steps":6},{"id":"catalog","title":"독립적으로 교체하는 구성 요소","communication_goal":"독립적으로 교체하는 구성 요소","intent":"kpi","summary":"목록과 역할은 모듈 레지스트리에서 검색합니다.","theme":"financial-report","layout":"stat-grid","slots":{"main":["layouts","content","themes","motion"]},"selection":{"id":"stat-grid","type":"layouts","score":110,"reasons":["intent match","density match"],"rejected":[]},"steps":0},{"id":"standings","title":"순위 정보의 화면 구성","communication_goal":"순위 정보의 화면 구성","intent":"ranking","summary":"구성 검증용 가상 데이터입니다. 실제 경기 결과가 아닙니다.","theme":"sports-broadcast","layout":"ranking-board","slots":{"main":["table"]},"selection":{"id":"ranking-board","type":"layouts","score":110,"reasons":["intent match","density match"],"rejected":[]},"steps":0},{"id":"match","title":"결과만 강조하는 모션","communication_goal":"결과만 강조하는 모션","intent":"result","summary":"가상 경기 결과로 점수 공개 동작을 확인합니다.","layout":"split-right","theme":"sports-broadcast","slots":{"main":["result"]},"selection":{"id":"split-right","score":null,"reasons":["explicit layout"],"rejected":[]},"steps":1},{"id":"bars","title":"같은 기준으로 나란히 비교","communication_goal":"같은 기준으로 나란히 비교","intent":"comparison","summary":"축과 값은 그대로 두고 비교 대상만 강조합니다.","layout":"split-left","theme":"financial-report","slots":{"main":["chart"]},"selection":{"id":"split-left","score":null,"reasons":["explicit layout"],"rejected":[]},"steps":1},{"id":"trend","title":"변화의 방향을 읽는 화면","communication_goal":"변화의 방향을 읽는 화면","intent":"trend","summary":"구조 설명을 위한 예시 데이터이며, 실제 시장 지표가 아닙니다.","layout":"split-right","theme":"financial-report","slots":{"main":["trend"]},"selection":{"id":"split-right","score":null,"reasons":["explicit layout"],"rejected":[]},"steps":0},{"id":"lesson","title":"학생 탐구의 다섯 단계","communication_goal":"학생 탐구의 다섯 단계","intent":"sequence","summary":"순서가 필요한 내용은 타임라인으로 표현합니다.","theme":"education","layout":"timeline","slots":{"main":["ladder"]},"selection":{"id":"timeline","type":"layouts","score":110,"reasons":["intent match","density match"],"rejected":[{"id":"process-flow","reason":"slot type/capacity/required-slot mismatch"}]},"steps":5},{"id":"motion-rule","title":"모션보다 먼저 완성되는 의미","communication_goal":"모션보다 먼저 완성되는 의미","intent":"quote","summary":"","theme":"editorial","layout":"quote-focus","slots":{"main":["principle"]},"selection":{"id":"quote-focus","type":"layouts","score":100,"reasons":["intent match"],"rejected":[]},"steps":0},{"id":"media","title":"시각 자료와 레이아웃의 분리","communication_goal":"시각 자료와 레이아웃의 분리","intent":"scene","summary":"사진과 도표는 전용 슬롯에 배치합니다. 이 이미지는 배치 검증용 합성 도형입니다.","theme":"documentary","layout":"image-focus","slots":{"main":["visual"]},"selection":{"id":"image-focus","type":"layouts","score":110,"reasons":["intent match","density match"],"rejected":[]},"steps":0},{"id":"close","title":"판단은 AI, 제약 검사는 엔진","communication_goal":"판단은 AI, 제약 검사는 엔진","intent":"conclusion","summary":"선택 이유와 조합 결과는 설계 보고서에 함께 남습니다.","layout":"split-right","theme":"tech","slots":{"main":["final"]},"selection":{"id":"split-right","score":null,"reasons":["explicit layout"],"rejected":[]},"steps":1}],"warnings":["Font not embedded: system-font metrics vary. Use --font and re-run browser QA for final projection."]}</script>
+<script>/* One state owner. CSS owns the complete final frame; JS only replays meaning. */
+(() => {
+  'use strict';
+  const root = document.documentElement;
+  const stage = document.querySelector('[data-stage]');
+  const slides = [...document.querySelectorAll('[data-slide]')];
+  if (!stage || !slides.length || window.__deckEngine) return;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const plan = JSON.parse(document.getElementById('deck-plan').textContent);
+  const params = new URLSearchParams(location.search);
+  let staticMode = params.get('mode') === 'static' || (params.get('mode') !== 'live' && document.body.dataset.mode === 'static');
+  let index = 0, phase = 0, previousFocus = null;
+  const jobs = new Map();
+  const isLive = () => !reduce.matches && !staticMode;
+  const max = (i = index) => Number(slides[i].dataset.steps || 0);
+  const format = n => new Intl.NumberFormat('en-US', {maximumFractionDigits: 4}).format(n);
+  const chrome = document.createElement('nav');
+  chrome.className = 'deck-shell'; chrome.setAttribute('aria-label', '발표 조작');
+  chrome.innerHTML = '<button class="deck-shell__arrow" data-deck-prev aria-label="이전 단계">&#8249;</button><span class="deck-shell__counter" data-deck-counter></span><button class="deck-shell__arrow" data-deck-next aria-label="다음 단계">&#8250;</button><span class="deck-shell__phase" data-deck-phase></span><button data-deck-static title="S" aria-pressed="false">정적</button><button data-deck-overview title="O">전체 보기</button><button class="deck-shell__fullscreen" data-deck-full title="F">전체 화면</button>';
+  const progress = document.createElement('div'); progress.className = 'deck-shell-progress';
+  progress.innerHTML = '<div class="deck-shell-progress__value" data-deck-progress></div>'; progress.setAttribute('aria-hidden','true');
+  const status = document.createElement('div'); status.className = 'deck-shell-sr'; status.setAttribute('role','status'); status.setAttribute('aria-live','polite');
+  const overview = document.createElement('dialog'); overview.className = 'deck-shell-overview';
+  overview.setAttribute('aria-label','슬라이드 전체 보기');
+  overview.innerHTML = '<h2>슬라이드 전체 보기</h2><div class="deck-shell-overview__list"></div><div class="deck-sources"></div><button class="deck-shell-overview__close">닫기</button>';
+  document.body.append(chrome,progress,status,overview);
+  const prev = chrome.querySelector('[data-deck-prev]'), next = chrome.querySelector('[data-deck-next]');
+  const staticBtn = chrome.querySelector('[data-deck-static]');
+  function fit() {
+    const k = Math.min(innerWidth/1920, innerHeight/1080);
+    stage.style.transform = `translate(${(innerWidth-1920*k)/2}px,${(innerHeight-1080*k)/2}px) scale(${k})`;
+  }
+  function cancelJobs() { jobs.forEach(request => cancelAnimationFrame(request)); jobs.clear(); }
+  function count(el, target) {
+    const start = performance.now();
+    function frame(now) {
+      const t = Math.min(1,(now-start)/500); el.textContent = format(target*(1-Math.pow(1-t,3)));
+      if (t < 1) jobs.set(el,requestAnimationFrame(frame)); else jobs.delete(el);
+    }
+    jobs.set(el,requestAnimationFrame(frame));
+  }
+  function state() { return {slide:index,phase,steps:isLive()?max():0,slideCount:slides.length,reducedMotion:reduce.matches,staticMode:!isLive()}; }
+  function render(animate = false) {
+    cancelJobs(); root.classList.toggle('deck-live',isLive());
+    slides.forEach((slide,i) => {
+      const active = i===index; slide.classList.toggle('is-active',active); slide.inert = !active;
+      slide.setAttribute('aria-hidden',String(!active));
+      [...slide.classList].filter(c=>c.startsWith('deck-step-')).forEach(c=>slide.classList.remove(c));
+      if (active) slide.classList.add('deck-step-'+phase);
+      slide.querySelectorAll('[data-motion]').forEach(block=>{
+        const first=Number(block.dataset.startStep),last=Number(block.dataset.endStep);
+        const done=!isLive() || phase>=last;
+        const was=block.dataset.motionState;
+        block.dataset.motionState=done?'done':'pending';
+        block.querySelectorAll('[data-sequence-item]').forEach((item,j)=>{
+          item.dataset.sequenceState=(!isLive() || phase>=first+j)?'done':'pending';
+        });
+        (block.dataset.motion==='number-count' ? block.querySelectorAll('[data-number]') : []).forEach(el=>{
+          const n=Number(el.dataset.number); el.textContent=format(done?n:0);
+          if (block.dataset.motion==='number-count' && active && done && isLive() && animate && was==='pending') count(el,n);
+        });
+      });
+    });
+    document.body.dataset.theme=slides[index].dataset.theme;
+    chrome.querySelector('[data-deck-counter]').textContent=`${String(index+1).padStart(2,'0')} / ${String(slides.length).padStart(2,'0')}`;
+    chrome.querySelector('[data-deck-phase]').textContent=isLive()?`${phase} / ${max()}`:'STATIC';
+    staticBtn.setAttribute('aria-pressed',String(!isLive())); staticBtn.disabled=reduce.matches;
+    prev.disabled=index===0 && (!isLive() || phase===0);
+    next.disabled=index===slides.length-1 && (!isLive() || phase===max());
+    const units=slides.map(s=>isLive()?1+Number(s.dataset.steps):1);
+    const total=units.reduce((a,b)=>a+b,0)-1;
+    const completed=units.slice(0,index).reduce((a,b)=>a+b,0)+(isLive()?phase:0);
+    progress.firstElementChild.style.transform=`scaleX(${total>0?completed/total:1})`;
+    status.textContent=`${index+1} / ${slides.length}. ${slides[index].dataset.title}. ${isLive()?phase+' / '+max():'정적 화면'}`;
+    try { history.replaceState(null,'',`#${index+1}${isLive()&&phase?'.'+phase:''}`); } catch (_) {}
+    window.dispatchEvent(new CustomEvent('deck:state',{detail:state()}));
+  }
+  function goto(n,p=0) {
+    if (!Number.isInteger(n) || n<0 || n>=slides.length || !Number.isFinite(Number(p))) return null;
+    index=n; phase=isLive()?Math.min(max(n),Math.max(0,Math.trunc(Number(p)))):0; render(); return state();
+  }
+  function forward() {
+    if (isLive() && phase<max()) {phase++;render(true);}
+    else if (index<slides.length-1) goto(index+1);
+  }
+  function back() {
+    if (isLive() && phase>0) {phase--;render();}
+    else if (index>0) goto(index-1,isLive()?max(index-1):0);
+  }
+  function setStatic(value) {staticMode=Boolean(value);phase=0;render();}
+  function openOverview() {
+    previousFocus=document.activeElement;
+    const list=overview.querySelector('.deck-shell-overview__list'); list.replaceChildren();
+    slides.forEach((s,i)=>{
+      const b=document.createElement('button');b.type='button';b.textContent=`${String(i+1).padStart(2,'0')}  ${s.dataset.title}`;
+      if (i===index) b.setAttribute('aria-current','true');
+      b.addEventListener('click',()=>{goto(i);closeOverview();});list.append(b);
+    });
+    const sources=overview.querySelector('.deck-sources');sources.replaceChildren();
+    const seen=new Set();
+    plan.slides.forEach(s=>(s.sources||[]).forEach(source=>{
+      if(seen.has(source.url))return;seen.add(source.url);
+      const a=document.createElement('a');a.href=source.url;a.textContent=source.label;a.target='_blank';a.rel='noopener noreferrer';sources.append(a);
+    }));
+    overview.showModal();list.querySelector('[aria-current]')?.focus();
+  }
+  function closeOverview() {overview.close();previousFocus?.focus();}
+  async function fullscreen() {
+    try {if(document.fullscreenElement)await document.exitFullscreen();else await root.requestFullscreen();}
+    catch(_){status.textContent='이 환경에서는 전체 화면을 사용할 수 없습니다.';}
+  }
+  prev.addEventListener('click',back);next.addEventListener('click',forward);
+  staticBtn.addEventListener('click',()=>setStatic(!staticMode));
+  chrome.querySelector('[data-deck-overview]').addEventListener('click',openOverview);
+  chrome.querySelector('[data-deck-full]').addEventListener('click',fullscreen);
+  overview.querySelector('.deck-shell-overview__close').addEventListener('click',closeOverview);
+  overview.addEventListener('cancel',e=>{e.preventDefault();closeOverview();});
+  stage.addEventListener('click',e=>{
+    if(e.target.closest('a,button,input,select,textarea,[contenteditable]')||getSelection()?.toString())return;
+    const r=stage.getBoundingClientRect();e.clientX<r.left+r.width/2?back():forward();
+  });
+  addEventListener('keydown',e=>{
+    if(e.defaultPrevented||e.altKey||e.ctrlKey||e.metaKey||overview.open||e.target.closest?.('input,textarea,select,[contenteditable]'))return;
+    if([' ','Enter'].includes(e.key)&&e.target.closest?.('a,button'))return;
+    const k=e.key.toLowerCase();
+    if(['ArrowRight','ArrowDown',' ','Enter','PageDown'].includes(e.key)){e.preventDefault();forward();}
+    else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){e.preventDefault();back();}
+    else if(k==='s'&&!reduce.matches){e.preventDefault();setStatic(!staticMode);}
+    else if(k==='o'){e.preventDefault();openOverview();}
+    else if(k==='f'){e.preventDefault();fullscreen();}
+    else if(k==='home'){e.preventDefault();goto(0);}
+    else if(k==='end'){e.preventDefault();goto(slides.length-1);}
+  });
+  function applyHash() {
+    const m=location.hash.match(/^#(\d+)(?:\.(\d+))?$/);
+    return m?goto(Math.max(0,Math.min(slides.length-1,Number(m[1])-1)),Number(m[2]||0)):null;
+  }
+  addEventListener('hashchange',applyHash);addEventListener('resize',fit);
+  let printState=null;
+  addEventListener('beforeprint',()=>{printState={staticMode,index,phase};setStatic(true);});
+  addEventListener('afterprint',()=>{if(printState){staticMode=printState.staticMode;index=printState.index;phase=printState.phase;printState=null;render();}});
+  reduce.addEventListener('change',()=>{phase=0;render();});
+  document.fonts?.ready.then(fit);
+  window.__deckGoto=goto;window.__deckNext=forward;window.__deckPrev=back;window.__deckState=state;
+  window.__deckShell={setStatic,isStatic:()=>!isLive(),openOverview,closeOverview,update:render};
+  window.__deckEngine={version:1,plan,fit};
+  // Preserve the public adapter shape used by legacy exporters and test harnesses.
+  window.deck={stage,slides,goto,next:forward,prev:back,state,render,measure:fit,reflow:fit,start:()=>0,phases:i=>isLive()?max(i):0,
+    get slide(){return index;},get phase(){return phase;},get reduce(){return reduce.matches;}};
+  root.classList.add('deck-ready');fit();if(!applyHash())render();
+})();
+</script></body></html>

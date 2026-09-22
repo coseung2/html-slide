@@ -1,1 +1,101 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","additionalProperties":false,"required":["schemaVersion","title","theme","slides"],"properties":{"schemaVersion":{"const":1},"title":{"type":"string","minLength":1,"maxLength":160},"language":{"enum":["ko","en"]},"theme":{"type":"string","minLength":1,"maxLength":64},"topic":{"type":"string","maxLength":120},"mode":{"enum":["live","static"]},"slides":{"type":"array","minItems":1,"maxItems":80,"items":{"type":"object","additionalProperties":false,"required":["id","title","communication_goal","intent","blocks"],"properties":{"id":{"type":"string","minLength":1,"maxLength":64},"title":{"type":"string","minLength":1,"maxLength":90},"summary":{"type":"string","maxLength":180},"communication_goal":{"type":"string","minLength":1,"maxLength":300},"intent":{"type":"string","minLength":1,"maxLength":64},"layout":{"type":"string","minLength":1,"maxLength":64},"theme":{"type":"string","minLength":1,"maxLength":64},"density":{"enum":["low","medium","high"]},"blocks":{"type":"array","minItems":1,"maxItems":8,"items":{"type":"object","additionalProperties":false,"required":["id","module","data"],"properties":{"id":{"type":"string","minLength":1,"maxLength":64},"module":{"type":"string","minLength":1,"maxLength":64},"slot":{"type":"string","minLength":1,"maxLength":64},"data":{"type":"object"}}}},"motion":{"type":"array","maxItems":2,"items":{"type":"object","additionalProperties":false,"required":["module","target","reason"],"properties":{"module":{"type":"string","minLength":1,"maxLength":64},"target":{"type":"string","minLength":1,"maxLength":64},"reason":{"type":"string","minLength":1,"maxLength":200}}}},"sources":{"type":"array","maxItems":12,"items":{"type":"object","additionalProperties":false,"required":["label","url"],"properties":{"label":{"type":"string","minLength":1,"maxLength":160},"url":{"type":"string","minLength":1,"maxLength":2000}}}}}}}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "title", "theme", "slides"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "title": {"type": "string", "minLength": 1, "maxLength": 160},
+    "language": {"enum": ["ko", "en"]},
+    "theme": {"type": "string", "minLength": 1, "maxLength": 64},
+    "topic": {"type": "string", "maxLength": 120},
+    "mode": {"enum": ["live", "static"]},
+    "style": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "typography": {"type": "string", "minLength": 1, "maxLength": 64},
+        "palette": {"type": "string", "minLength": 1, "maxLength": 64},
+        "dataviz": {"type": "string", "minLength": 1, "maxLength": 64},
+        "signals": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "domain": {"type": "string", "minLength": 1, "maxLength": 64},
+            "audience": {"type": "string", "minLength": 1, "maxLength": 64},
+            "tone": {
+              "type": "array",
+              "maxItems": 8,
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1, "maxLength": 40}
+            },
+            "density": {"enum": ["low", "medium", "high"]}
+          }
+        }
+      }
+    },
+    "slides": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 80,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "communication_goal", "intent", "blocks"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1, "maxLength": 64},
+          "title": {"type": "string", "minLength": 1, "maxLength": 90},
+          "summary": {"type": "string", "maxLength": 180},
+          "communication_goal": {"type": "string", "minLength": 1, "maxLength": 300},
+          "intent": {"type": "string", "minLength": 1, "maxLength": 64},
+          "layout": {"type": "string", "minLength": 1, "maxLength": 64},
+          "theme": {"type": "string", "minLength": 1, "maxLength": 64},
+          "density": {"enum": ["low", "medium", "high"]},
+          "blocks": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "module", "data"],
+              "properties": {
+                "id": {"type": "string", "minLength": 1, "maxLength": 64},
+                "module": {"type": "string", "minLength": 1, "maxLength": 64},
+                "slot": {"type": "string", "minLength": 1, "maxLength": 64},
+                "data": {"type": "object"}
+              }
+            }
+          },
+          "motion": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["module", "target", "reason"],
+              "properties": {
+                "module": {"type": "string", "minLength": 1, "maxLength": 64},
+                "target": {"type": "string", "minLength": 1, "maxLength": 64},
+                "reason": {"type": "string", "minLength": 1, "maxLength": 200}
+              }
+            }
+          },
+          "sources": {
+            "type": "array",
+            "maxItems": 12,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["label", "url"],
+              "properties": {
+                "label": {"type": "string", "minLength": 1, "maxLength": 160},
+                "url": {"type": "string", "minLength": 1, "maxLength": 2000}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

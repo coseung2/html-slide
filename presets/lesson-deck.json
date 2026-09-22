@@ -3,6 +3,12 @@
   "title": "탐구 수업 구성 예시",
   "language": "ko",
   "theme": "education",
+  "style": {
+    "typography": "auto",
+    "palette": "auto",
+    "dataviz": "auto",
+    "signals": {"domain": "education", "audience": "elementary", "tone": ["approachable", "clear"], "density": "medium"}
+  },
   "slides": [
     {
       "id": "planning",
@@ -21,7 +27,7 @@
               "후보 검색",
               "제약 검사",
               "슬롯 배치",
-              "테마 적용",
+              "스타일 선택",
               "화면 검증"
             ]
           }

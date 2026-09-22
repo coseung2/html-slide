@@ -4,6 +4,12 @@
   "language": "ko",
   "theme": "tech",
   "topic": "modular slide architecture",
+  "style": {
+    "typography": "auto",
+    "palette": "auto",
+    "dataviz": "auto",
+    "signals": {"domain": "technology", "audience": "professional", "tone": ["modern", "clear"], "density": "medium"}
+  },
   "slides": [
     {
       "id": "opening",
@@ -21,7 +27,7 @@
               "전달 목적",
               "화면 골격",
               "정보 표현",
-              "시각 테마",
+              "아트디렉션",
               "선택적 모션",
               "최종 검증"
             ]
@@ -52,7 +58,7 @@
           "module": "comparison-text",
           "data": {
             "label": "모듈 중심",
-            "text": "전달 목적에 맞는 골격과 정보 표현을 선택하는 방식. 테마와 모션은 독립적으로 적용합니다."
+            "text": "전달 목적에 맞는 골격과 정보 표현을 선택하는 방식. 디자인 문법, 폰트, 색상, 모션을 독립적으로 조합합니다."
           },
           "slot": "right"
         }
@@ -75,7 +81,7 @@
               "후보 검색",
               "제약 검사",
               "슬롯 배치",
-              "테마 적용",
+              "스타일 선택",
               "화면 검증"
             ]
           }
@@ -121,10 +127,10 @@
           "id": "themes",
           "module": "metric",
           "data": {
-            "label": "테마",
-            "value": 7,
+            "label": "스타일 팩",
+            "value": 20,
             "unit": "종",
-            "detail": "색상과 표현 분위기"
+            "detail": "타이포 7, 메인 색상 8, 차트 색상 5"
           }
         },
         {

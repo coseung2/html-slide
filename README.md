@@ -15,6 +15,7 @@ python -m playwright install chromium
 npm install
 python tools/compose_deck.py catalog
 python tools/compose_deck.py search --intent ranking --theme sports-broadcast
+python tools/compose_deck.py search --type typography --theme education --domain education --audience elementary --tone clear
 python tools/compose_deck.py init --preset sports-match-report --out deck.json
 python tools/compose_deck.py plan deck.json --out plan.json
 python tools/compose_deck.py build deck.json --out deck.html
@@ -22,8 +23,9 @@ python tools/verify_modular.py deck.html --out dist/qa
 python tools/export_modular.py deck.html --out dist/export
 ```
 
-`--font /absolute/path/font.woff2` embeds an explicitly supplied font; omitting it
-uses system fonts and emits a warning because metrics can vary across machines.
+`--font /absolute/path/font.woff2` embeds an explicitly supplied authorized font.
+Typography packs otherwise select role-based system fallback stacks, so omitting the
+font file still emits a warning because metrics can vary across machines.
 An existing system Chromium can be selected with `CHROME_PATH` or
 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. No network calls or API key are needed to
 compose a deck. The repository does **not** provide an LLM or autonomous research
@@ -38,17 +40,28 @@ service: AI reasoning happens outside the deterministic compiler.
 | `modules/content/` | Schema-checked information blocks |
 | `modules/visuals/` | Reviewed local images and logos |
 | `modules/motion/` | Intent/target-constrained semantic emphasis |
-| `themes/` | Independent appearance tokens, not page layouts |
+| `themes/` | Design grammar such as corner/border treatment, not page layouts or colors |
+| `styles/typography/` | Deck-level display/body/number font-role systems |
+| `styles/palettes/` | Semantic main colors for paper, ink, surfaces, accents and status |
+| `styles/dataviz/` | Chart-series colors independent from the main accent |
 | `presets/` | Editable example combinations, not mandatory templates |
 | `tools/` | Discovery, planning, building, browser QA and export |
 
 The current catalog includes 10 layouts, 11 content blocks, 2 visual blocks,
-5 motion effects, 7 themes and 3 starter presets. Add a module directory with a
-manifest, template and styles; discovery is automatic. The plan records selection
-reasons, rejected candidates, resolved slots and repetition warnings.
+5 motion effects, 7 themes, 7 typography packs, 8 main palettes, 5 data-visualization
+palettes and 3 starter presets. Registry discovery is automatic. The plan records
+layout selection reasons, rejected candidates, resolved slots, repetition warnings,
+and the selected art-direction packs with scores and alternatives.
+
+Art direction resolves once per deck. Leave `style.typography`, `style.palette`
+and `style.dataviz` as `auto`, then provide optional domain, audience, tone and
+density signals. The deterministic planner combines those signals with the selected
+theme's metadata. Any pack can also be pinned explicitly without changing content or
+layout.
 
 See [module authoring](references/module-authoring.md),
 [architecture](references/modular-architecture.md),
+[art direction](references/art-direction.md),
 [migration](references/migrating-v1.md) and [Korean guide](README.ko.md).
 
 ## Example and controls

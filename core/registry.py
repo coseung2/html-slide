@@ -11,6 +11,8 @@ class ContractError(ValueError):
 
 ID = re.compile(r"^[a-z][a-z0-9-]{0,63}$")
 FAMILIES = ('layouts', 'content', 'visuals', 'motion')
+STYLE_FAMILIES = ('typography', 'palettes', 'dataviz')
+ALL_FAMILIES = (*FAMILIES, 'themes', *STYLE_FAMILIES)
 
 def identifier(value: Any, where: str) -> str:
     if not isinstance(value, str) or not ID.fullmatch(value):
@@ -21,8 +23,13 @@ class Registry:
     def __init__(self, root: str | Path | None = None):
         self.root = Path(root or Path(__file__).resolve().parents[1]).resolve()
         self.entries: dict[tuple[str,str],dict[str,Any]] = {}
-        for family in (*FAMILIES, 'themes'):
-            folder = self.root / ('themes' if family == 'themes' else f'modules/{family}')
+        for family in ALL_FAMILIES:
+            if family == 'themes':
+                folder = self.root / 'themes'
+            elif family in STYLE_FAMILIES:
+                folder = self.root / 'styles' / family
+            else:
+                folder = self.root / 'modules' / family
             for path in sorted(folder.glob('*/manifest.json')):
                 try:
                     item = json.loads(path.read_text(encoding='utf-8'))
@@ -37,7 +44,7 @@ class Registry:
                     raise ContractError(f'{path}: directory/id mismatch or duplicate module')
                 item['_dir'] = path.parent
                 self.entries[(family,mid)] = item
-        for family in (*FAMILIES, 'themes'):
+        for family in ALL_FAMILIES:
             if not self.list(family):
                 raise ContractError(f'registry is missing the {family} family')
         for layout in self.list('layouts'):
@@ -53,6 +60,29 @@ class Registry:
         for item in self.list('content')+self.list('visuals'):
             if not isinstance(item.get('schema'),dict):
                 raise ContractError(f"{item['id']}: data schema required")
+        for item in self.list('typography'):
+            css=self.resource(item,'style.css')
+            if f'data-typography="{item["id"]}"' not in css:
+                raise ContractError(f"{item['id']}: typography CSS selector does not match its id")
+            if not item.get('languages') or not item.get('density'):
+                raise ContractError(f"{item['id']}: typography languages and density metadata required")
+            for token in ('font-body','font-heading','font-number'):
+                if f'--{token}:' not in css:
+                    raise ContractError(f"{item['id']}: missing typography token --{token}")
+        for item in self.list('palettes'):
+            css=self.resource(item,'style.css')
+            if f'data-palette="{item["id"]}"' not in css:
+                raise ContractError(f"{item['id']}: palette CSS selector does not match its id")
+            for token in ('paper','ink','muted','accent','surface','line','positive','negative','warning'):
+                if f'--{token}:' not in css:
+                    raise ContractError(f"{item['id']}: missing palette token --{token}")
+        for item in self.list('dataviz'):
+            css=self.resource(item,'style.css')
+            if f'data-dataviz="{item["id"]}"' not in css:
+                raise ContractError(f"{item['id']}: dataviz CSS selector does not match its id")
+            for n in range(1,7):
+                if f'--viz-{n}:' not in css:
+                    raise ContractError(f"{item['id']}: missing dataviz token --viz-{n}")
 
     def list(self, family: str | None = None) -> list[dict]:
         return [copy.deepcopy(v) for (f,_),v in self.entries.items() if family is None or f == family]
@@ -60,7 +90,7 @@ class Registry:
     def get(self, family: str, mid: str) -> dict:
         try: return copy.deepcopy(self.entries[(family,mid)])
         except (KeyError,TypeError) as exc:
-            raise ContractError(f'unknown {family} module: {mid!r}') from exc
+            raise ContractError(f'unknown {family} registry entry: {mid!r}') from exc
 
     def block(self, mid: str) -> dict:
         matches=[v for (f,i),v in self.entries.items() if i==mid and f in ('content','visuals')]
@@ -77,6 +107,8 @@ class Registry:
 
     def search(self, *, family: str='layouts', intent: str='', topic: str='', density: str='medium',
                theme: str | None=None, recent: list[str] | None=None) -> list[dict]:
+        if family in STYLE_FAMILIES:
+            raise ContractError(f'use style_search for {family}')
         if theme: self.get('themes',theme)
         terms=set(re.findall(r'[\w-]+',(intent+' '+topic).lower()))
         results=[]
@@ -91,6 +123,36 @@ class Registry:
             results.append({'id':item['id'],'type':family,'score':score,'reasons':reasons})
         return sorted(results,key=lambda x:(-x['score'],x['id']))
 
+    def style_search(self, family: str, *, theme: str, language: str='ko', topic: str='',
+                     domain: str='', audience: str='', tone: list[str] | None=None,
+                     density: str='medium') -> list[dict]:
+        if family not in STYLE_FAMILIES:
+            raise ContractError(f'unknown style family: {family}')
+        theme_item=self.get('themes',theme)
+        domain=domain.lower(); audience=audience.lower(); tone=[x.lower() for x in (tone or [])]
+        context=set(re.findall(r'[\w-]+',' '.join([
+            topic,domain,audience,' '.join(tone),' '.join(theme_item.get('tags',[]))
+        ]).lower()))
+        results=[]
+        for item in self.list(family):
+            languages=item.get('languages',['ko','en'])
+            if family=='typography' and language not in languages: continue
+            score=0; reasons=[]
+            if theme in item.get('themes',[]): score+=30; reasons.append('theme recommendation')
+            if domain and domain in item.get('domains',[]): score+=18; reasons.append('domain match')
+            if audience and audience in item.get('audiences',[]): score+=16; reasons.append('audience match')
+            tone_hits=set(tone).intersection(set(item.get('tones',[])))
+            if tone_hits: score+=10*len(tone_hits); reasons.append('tone: '+', '.join(sorted(tone_hits)))
+            tag_hits=context.intersection(set(item.get('tags',[])))
+            if tag_hits: score+=6*len(tag_hits); reasons.append('tags: '+', '.join(sorted(tag_hits)))
+            if density in item.get('density',['low','medium','high']): score+=8; reasons.append('density match')
+            if family=='typography' and language in languages: score+=6; reasons.append('language support')
+            results.append({'id':item['id'],'type':family,'score':score,'reasons':reasons})
+        if not results: raise ContractError(f'no compatible {family} style pack')
+        return sorted(results,key=lambda x:(-x['score'],x['id']))
+
     def catalog(self) -> dict:
-        return {'schemaVersion':1,'modules':[{k:v for k,v in item.items() if not k.startswith('_')}
-                  for item in self.list()]}
+        clean=lambda item:{k:v for k,v in item.items() if not k.startswith('_')}
+        return {'schemaVersion':1,
+                'modules':[clean(item) for family in (*FAMILIES,'themes') for item in self.list(family)],
+                'styles':[clean(item) for family in STYLE_FAMILIES for item in self.list(family)]}

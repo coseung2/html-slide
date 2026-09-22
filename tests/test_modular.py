@@ -25,14 +25,49 @@ class EngineTests(unittest.TestCase):
     def reject(self,spec):
         with self.assertRaises(ContractError):plan_deck(spec,self.registry)
     def test_counts(self):
-        self.assertEqual({f:len(self.registry.list(f))for f in ['layouts','content','visuals','motion','themes']},
-          {'layouts':10,'content':11,'visuals':2,'motion':5,'themes':7})
+        self.assertEqual({f:len(self.registry.list(f))for f in ['layouts','content','visuals','motion','themes','typography','palettes','dataviz']},
+          {'layouts':10,'content':11,'visuals':2,'motion':5,'themes':7,'typography':7,'palettes':8,'dataviz':5})
     def test_search_intent(self):
         self.assertEqual(self.registry.search(intent='ranking',theme='sports-broadcast')[0]['id'],'ranking-board')
     def test_search_deterministic(self):self.assertEqual(self.registry.search(intent='comparison'),self.registry.search(intent='comparison'))
+    def test_style_search_deterministic(self):
+        args={'theme':'education','language':'ko','domain':'education','audience':'elementary','tone':['approachable','clear'],'density':'medium'}
+        self.assertEqual(self.registry.style_search('typography',**args),self.registry.style_search('typography',**args))
+    def test_auto_art_direction_by_theme(self):
+        plan=plan_deck(self.spec,self.registry)
+        self.assertEqual(plan['styles']['typography']['id'],'tech-modern')
+        self.assertEqual(plan['styles']['palette']['id'],'midnight-blue')
+        self.assertEqual(plan['styles']['dataviz']['id'],'categorical-6')
+        self.assertEqual(plan['styles']['typography']['mode'],'auto')
+        self.assertTrue(plan['styles']['typography']['reasons'])
+    def test_education_signals_choose_classroom_sets(self):
+        self.spec['theme']='education';self.spec['style']={'signals':{'domain':'education','audience':'elementary','tone':['approachable','clear'],'density':'medium'}}
+        plan=plan_deck(self.spec,self.registry)
+        self.assertEqual(plan['styles']['typography']['id'],'classroom-friendly')
+        self.assertEqual(plan['styles']['palette']['id'],'classroom-warm')
+        self.assertEqual(plan['styles']['dataviz']['id'],'categorical-soft')
+    def test_signals_can_override_theme_default(self):
+        self.spec['theme']='education';self.spec['style']={'signals':{'domain':'business','audience':'professional','tone':['modern'],'density':'high'}}
+        self.assertEqual(plan_deck(self.spec,self.registry)['styles']['typography']['id'],'clean-sans')
+    def test_explicit_art_direction_override(self):
+        self.spec['style']={'typography':'clean-sans','palette':'monochrome','dataviz':'sequential-blue'}
+        html,plan=build_deck(self.spec,self.registry)
+        self.assertEqual(plan['styles']['typography']['mode'],'explicit')
+        self.assertIn('data-typography="clean-sans"',html)
+        self.assertIn('data-palette="monochrome"',html)
+        self.assertIn('data-dataviz="sequential-blue"',html)
+        self.assertIn('body[data-palette="monochrome"]{--paper:',html)
+        self.assertNotIn('body[data-palette="midnight-blue"]{--paper:',html)
+    def test_unknown_art_direction_rejected(self):
+        self.spec['style']={'palette':'missing'};self.reject(self.spec)
+    def test_unknown_style_property_rejected(self):
+        self.spec['style']={'shadow':'dramatic'};self.reject(self.spec)
     def test_unknown_search_theme(self):
         with self.assertRaises(ContractError):self.registry.search(theme='missing')
     def test_catalog_serializable(self):json.dumps(self.registry.catalog())
+    def test_catalog_separates_style_packs(self):
+        catalog=self.registry.catalog();self.assertEqual(len(catalog['styles']),20)
+        self.assertTrue(all(x['type'] in ('typography','palettes','dataviz') for x in catalog['styles']))
     def test_no_shared_mutation(self):
         x=self.registry.get('layouts','hero');x['slots'].clear();self.assertTrue(self.registry.get('layouts','hero')['slots'])
     def test_default_auto_layout(self):self.assertEqual(plan_deck(self.spec,self.registry)['slides'][0]['layout'],'hero')
@@ -125,6 +160,20 @@ class EngineTests(unittest.TestCase):
         for theme in self.registry.list('themes'):
             with self.subTest(theme=theme['id']):
                 self.spec['theme']=theme['id'];html,_=build_deck(self.spec,self.registry);self.assertIn('data-theme="'+theme['id']+'"',html)
+    def test_theme_does_not_own_palette_tokens(self):
+        for theme in self.registry.list('themes'):
+            css=self.registry.resource(theme,'theme.css')
+            for token in ('--paper:','--ink:','--accent:','--surface:'):
+                with self.subTest(theme=theme['id'],token=token):self.assertNotIn(token,css)
+    def test_art_direction_css_follows_theme_css(self):
+        html,plan=build_deck(self.spec,self.registry)
+        self.assertLess(html.index('[data-theme="tech"]'),html.index('body[data-palette="'+plan['styles']['palette']['id']+'"]'))
+    def test_each_style_pack_compiles(self):
+        for key,family,attr in [('typography','typography','data-typography'),('palette','palettes','data-palette'),('dataviz','dataviz','data-dataviz')]:
+            for item in self.registry.list(family):
+                with self.subTest(family=family,style=item['id']):
+                    self.spec['style']={key:item['id']};html,_=build_deck(self.spec,self.registry)
+                    self.assertIn(f'{attr}="{item["id"]}"',html)
     def test_sequence_phase_count(self):
         self.spec['slides'][0].update(intent='sequence',blocks=[{'id':'steps','module':'timeline','data':{'items':['a','b','c']}}],motion=[{'module':'sequence-step','target':'steps','reason':'Order matters'}])
         self.assertEqual(plan_deck(self.spec,self.registry)['slides'][0]['steps'],3)

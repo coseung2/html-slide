@@ -30,6 +30,18 @@ The stage must letterbox; it must not reflow between these viewports.
 - `transition: all` is forbidden because it silently opts layout properties
   into animation
 
+## Art direction
+
+- Theme, typography, main palette and dataviz palette are separate concerns.
+- Typography/palette/dataviz resolve once per deck unless an explicit future
+  contract introduces a scoped exception.
+- Theme CSS must not own `--paper`, `--ink`, `--accent` or `--surface`.
+- Palette CSS must provide semantic paper, ink, muted, accent, surface, line,
+  positive, negative and warning tokens.
+- Dataviz CSS must provide at least `--viz-1` through `--viz-6`.
+- Automatic style selection must record the selected ID, reasons and alternatives
+  in the plan. Explicit style IDs must bypass ranking.
+
 ## Presenter interaction
 
 - A stepped deck waits at its start phase until user input.

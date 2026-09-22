@@ -39,6 +39,10 @@ def validate_deck(spec: dict, registry) -> None:
     schema=json.loads((registry.root/'core/deck.schema.json').read_text(encoding='utf-8'))
     validate_schema(spec,schema,'deck')
     registry.get('themes',spec['theme'])
+    style=spec.get('style',{})
+    for key,family in (('typography','typography'),('palette','palettes'),('dataviz','dataviz')):
+        value=style.get(key,'auto')
+        if value!='auto': registry.get(family,value)
     slide_ids=set()
     for slide in spec['slides']:
         sid=identifier(slide['id'],'slide.id')

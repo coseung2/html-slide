@@ -7,7 +7,10 @@
 3. Run the catalog and map information to supported block schemas. Start with a
    preset only when its contents and purpose fit. Custom visuals may remain in the
    legacy deck until a real, tested module exists; do not fake migration support.
-4. Write a JSON spec, inspect its plan, build and compare static final frames.
+4. Write a JSON spec. Separate the old visual treatment into theme grammar plus
+   deck-level typography, palette and dataviz choices; do not clone an entire theme
+   merely to preserve one color. Inspect the plan, then build and compare static
+   final frames.
 5. Verify phases, keyboard and click controls, static/reduced motion and no-JS.
    Validate raster assets and embed an authorized font explicitly for delivery.
 6. Deliver the new HTML alongside any requested exports. Do not delete the old

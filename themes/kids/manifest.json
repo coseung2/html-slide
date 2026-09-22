@@ -1,1 +1,1 @@
-{"id":"kids","version":1,"type":"themes","description":"kids","tokens":{"paper":"#fcfaf2","ink":"#18333e","muted":"#476370","accent":"#904b84","surface":"#eaf2f3","line":"#91afb9","radius":"18px"},"intents":[],"tags":["kids"]}
+{"id":"kids","version":1,"type":"themes","description":"Friendly playful learning grammar for children","tokens":{"radius":"18px"},"intents":[],"tags":["kids","playful","friendly","classroom"]}
