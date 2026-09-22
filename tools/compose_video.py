@@ -46,16 +46,26 @@ def compile_storyboard(
         cue_gap = round(step_seconds * fps)
         cue_start = round(base_seconds * fps)
         cues = []
-        for cue_index, motion in enumerate(slide.get("motion", [])):
-            cues.append(
-                {
-                    "module": motion["module"],
-                    "target": motion["target"],
-                    "reason": motion["reason"],
-                    "atFrame": min(duration_frames - 1, cue_start + cue_index * cue_gap),
-                    "durationFrames": max(1, min(round(0.8 * fps), duration_frames)),
-                }
-            )
+        for motion in planned.get("motion", []):
+            start_step = int(motion.get("startStep", 1))
+            end_step = int(motion.get("endStep", start_step))
+            for step in range(start_step, end_step + 1):
+                cues.append(
+                    {
+                        "module": motion["module"],
+                        "target": motion["target"],
+                        "reason": motion["reason"],
+                        "step": step,
+                        "atFrame": min(
+                            duration_frames - 1,
+                            cue_start + (step - 1) * cue_gap,
+                        ),
+                        "durationFrames": max(
+                            1,
+                            min(round(0.8 * fps), duration_frames),
+                        ),
+                    }
+                )
 
         scenes.append(
             {
