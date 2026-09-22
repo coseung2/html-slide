@@ -28,8 +28,17 @@ def main() -> int:
     allowed = lint_text('<html lang="ko"><body><h1>다음 단계</h1><p data-copy-en-ok>OpenAI API</p></body></html>')
     check("reviewed English exception passes", allowed["errors"] == 0)
 
-    abbrev = lint_text('<html lang="ko"><body><h1>AI UI 검토</h1><p>API · HTML · UX</p></body></html>')
+    abbrev = lint_text('<html lang="ko"><body><h1>AI UI 검토</h1><p>API, HTML, UX</p></body></html>')
     check("compact abbreviations pass", abbrev["errors"] == 0)
+
+    prohibited = lint_text('<html lang="ko"><body><h1>물가 · 고용 — 전망</h1><p>3–8월</p></body></html>')
+    check("middle dot and long dashes are rejected", sum(f["code"] == "copy-prohibited-punctuation" for f in prohibited["findings"]) == 3)
+
+    punct_exception = lint_text('<html lang="ko"><body><p data-copy-en-ok>OpenAI · API</p></body></html>')
+    check("English exception cannot bypass punctuation rule", any(f["code"] == "copy-prohibited-punctuation" for f in punct_exception["findings"]))
+
+    tilde_range = lint_text('<html lang="ko"><body><h1>물가와 고용 전망</h1><p>3~8월</p></body></html>')
+    check("tilde numeric range passes", tilde_range["errors"] == 0)
 
     boundary = lint_text('<html lang="ko"><body><h1>SUMMARYCARD 구성</h1><p>요약 카드</p></body></html>')
     check("template token uses word boundaries", not any(f["code"] == "copy-template-english" for f in boundary["findings"]))

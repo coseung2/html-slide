@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Lightweight visible-copy lint for Korean HTML slide decks.
 
-This intentionally catches only deterministic problems: template English and
-English-heavy visible strings. Naturalness/translationese remains editorial.
+This intentionally catches only deterministic problems: template English,
+English-heavy visible strings, and banned punctuation in Korean deck source.
+Naturalness/translationese remains editorial.
 """
 from __future__ import annotations
 
@@ -23,6 +24,11 @@ TEMPLATE_ENGLISH = (
     "ACTION ITEMS",
     "KEY INSIGHTS",
 )
+PROHIBITED_KOREAN_PUNCTUATION = {
+    "·": "middle dot",
+    "–": "en dash",
+    "—": "em dash",
+}
 
 
 class VisibleText(HTMLParser):
@@ -91,6 +97,16 @@ def lint_text(source: str) -> dict:
         })
 
     if korean_mode:
+        for char, name in PROHIBITED_KOREAN_PUNCTUATION.items():
+            for match in re.finditer(re.escape(char), source):
+                findings.append({
+                    "severity": "error",
+                    "code": "copy-prohibited-punctuation",
+                    "line": source.count("\n", 0, match.start()) + 1,
+                    "text": char,
+                    "detail": f"{name} is prohibited in Korean slide source; rewrite with Korean punctuation or ~ for numeric ranges",
+                })
+
         for part in parser.parts:
             text = part["text"]
             if part["allowed"] or _is_urlish(text):

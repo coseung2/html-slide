@@ -134,7 +134,8 @@ When the deck language is Korean, write the slide copy **in Korean first**. Do n
 - Do not leave generic template scaffolding such as `KEY TAKEAWAYS`, `NEXT STEPS`, or `OVERVIEW` merely because English appears more polished. If Korean communicates the same thing faster, use `핵심 정리`, `다음 단계`, `개요`.
 - Avoid literal translation syntax. Rewrite for the Korean audience's reading order and register instead of preserving English noun stacks, abstract verbs, or source sentence structure.
 - Prefer concrete nouns and verbs such as `핵심 변화`, `비교 결과`, `문제 원인`, `검증 기준`, `다음 단계`. Avoid vague constructions such as `~을 설명한다`, `~을 보여준다`, or `~의 시그널` when a direct Korean label says the same thing.
-- Use `data-copy-en-ok` only for reviewed exceptions. It is not a blanket escape hatch for an English-heavy slide.
+- In Korean-facing copy, do not use the middle dot `·`, en dash `–`, or em dash `—`. Use particles, commas, line breaks, parentheses, or a tilde for numeric ranges instead. Example: `3–8월` → `3~8월`, `CPI · 근원 CPI` → `CPI, 근원 CPI`.
+- Use `data-copy-en-ok` only for reviewed exceptions. It is not a blanket escape hatch for an English-heavy slide, and it does not exempt the punctuation rule above.
 
 For detailed before/after examples and the final editorial pass, read `references/korean-copy.md`. For Korean decks, run `python tools/copy_lint.py deck.html --strict` before delivery; it catches excessive/template English but does **not** certify that prose sounds natural. Domain-specific copy belongs in the matching template guide under `templates/`.
 
