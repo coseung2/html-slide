@@ -1,6 +1,8 @@
 """Contracts for the deck-to-Remotion storyboard compiler."""
 from __future__ import annotations
 
+import base64
+import tempfile
 import unittest
 from pathlib import Path
 import sys
@@ -11,6 +13,7 @@ from core import Registry
 from core.registry import ContractError
 from tools.compose_video import compile_storyboard
 from tools.video_pipeline import VideoPipelineError, sample_frames, validate_storyboard
+from tools.verify_video import verify_frame_directory
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -125,6 +128,16 @@ class VideoPipelineTests(unittest.TestCase):
         board["scenes"][0]["cues"][0]["durationFrames"] = board["scenes"][0]["durationFrames"]
         with self.assertRaises(VideoPipelineError):
             validate_storyboard(board)
+
+    def test_png_frame_contract(self):
+        png = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZgL8AAAAASUVORK5CYII="
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "frame-000.png").write_bytes(png)
+            report = verify_frame_directory(root, [0], width=1, height=1)
+            self.assertEqual(report["count"], 1)
 
     def test_invalid_fps_rejected(self):
         with self.assertRaises(ContractError):

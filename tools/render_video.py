@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 import sys
 from pathlib import Path
@@ -25,9 +26,11 @@ from tools.video_pipeline import (
     npm_executable,
     remotion_executable,
     run_checked,
+    sample_frames,
     validate_storyboard,
     write_storyboard,
 )
+from tools.verify_video import verify_video_artifacts
 
 ROOT = Path(__file__).resolve().parents[1]
 VIDEO_DIR = ROOT / "video"
@@ -48,6 +51,7 @@ def main(argv=None) -> int:
     parser.add_argument("--log", choices=["error", "warn", "info", "verbose"], default="info")
     parser.add_argument("--skip-typecheck", action="store_true")
     parser.add_argument("--skip-browser-ensure", action="store_true")
+    parser.add_argument("--skip-frame-qa", action="store_true")
     parser.add_argument("--keep-work", action="store_true")
     args = parser.parse_args(argv)
 
@@ -120,17 +124,50 @@ def main(argv=None) -> int:
         if not out.is_file() or out.stat().st_size == 0:
             raise VideoPipelineError(f"render completed without a non-empty MP4: {out}")
 
+        frames_dir = None
+        if not args.skip_frame_qa:
+            frames = sample_frames(storyboard)
+            frames_dir = work / "frames"
+            frames_dir.mkdir(parents=True, exist_ok=True)
+            run_checked(
+                [
+                    remotion,
+                    "render",
+                    "src/index.ts",
+                    "DeckVideo",
+                    str(frames_dir),
+                    f"--props={storyboard_path}",
+                    f"--frames={','.join(str(frame) for frame in frames)}",
+                    "--sequence",
+                    "--image-format=png",
+                    "--image-sequence-pattern=frame-[frame].[ext]",
+                    f"--concurrency={args.concurrency}",
+                    f"--log={args.log}",
+                ],
+                cwd=VIDEO_DIR,
+                label="Remotion sampled-frame render",
+            )
+
+        report = verify_video_artifacts(
+            storyboard,
+            video=out,
+            frames_dir=frames_dir,
+            video_dir=VIDEO_DIR,
+        )
+        report_path = out.with_suffix(".qa.json")
+        report_path.write_text(
+            json.dumps(report, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
         print(
             f"Rendered {out}: {summary['scenes']} scenes, "
             f"{summary['durationSeconds']:.2f}s @ {summary['fps']}fps"
         )
         print(f"Storyboard: {storyboard_path}")
+        print(f"QA report: {report_path}")
         if not args.keep_work:
-            storyboard_path.unlink(missing_ok=True)
-            try:
-                work.rmdir()
-            except OSError:
-                pass
+            shutil.rmtree(work, ignore_errors=True)
         return 0
     except (ContractError, OSError, VideoPipelineError, ValueError) as exc:
         print(f"VIDEO RENDER FAIL: {exc}", file=sys.stderr)
