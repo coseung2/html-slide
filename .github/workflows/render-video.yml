@@ -18,59 +18,64 @@ on:
         required: true
         default: "50%"
         type: string
+  push:
+    branches:
+      - "render/**"
 
 permissions:
   contents: read
 
 concurrency:
-  group: remotion-render-${{ github.ref }}-${{ inputs.output_name }}
+  group: remotion-render-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   render:
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    env:
-      SPEC_PATH: ${{ inputs.spec_path }}
-      OUTPUT_NAME: ${{ inputs.output_name }}
-      RENDER_CONCURRENCY: ${{ inputs.concurrency }}
 
     steps:
-      - name: Checkout
+      - name: Checkout trusted renderer
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'push' && github.event.repository.default_branch || github.ref }}
+          fetch-depth: 1
 
-      - name: Validate render request
-        id: request
+      - name: Extract transient render job
+        if: github.event_name == 'push'
         shell: bash
         run: |
           set -euo pipefail
-          if [[ ! "$OUTPUT_NAME" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$ ]]; then
-            echo "output_name must match ^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$" >&2
-            exit 2
-          fi
-          if [[ ! "$RENDER_CONCURRENCY" =~ ^([1-9][0-9]*|[1-9][0-9]?%|100%)$ ]]; then
-            echo "concurrency must be a positive integer or a percentage from 1% to 100%" >&2
-            exit 2
-          fi
-          SPEC_REAL="$(realpath -e -- "$SPEC_PATH")"
-          ROOT_REAL="$(realpath -- "$GITHUB_WORKSPACE")"
-          case "$SPEC_REAL" in
-            "$ROOT_REAL"/*) ;;
-            *)
-              echo "spec_path must stay inside the checked-out repository" >&2
-              exit 2
-              ;;
-          esac
-          if [[ "$SPEC_REAL" != *.json ]]; then
-            echo "spec_path must point to a .json file" >&2
-            exit 2
-          fi
-          echo "spec_real=$SPEC_REAL" >> "$GITHUB_OUTPUT"
+          JOB_ROOT="$RUNNER_TEMP/html-slide-render-job"
+          mkdir -p "$JOB_ROOT"
+          git fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          git archive "$GITHUB_SHA" .render | tar -x -C "$JOB_ROOT" --strip-components=1
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Resolve render request
+        id: request
+        shell: bash
+        env:
+          MANUAL_SPEC_PATH: ${{ inputs.spec_path }}
+          MANUAL_OUTPUT_NAME: ${{ inputs.output_name }}
+          MANUAL_CONCURRENCY: ${{ inputs.concurrency }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            python tools/render_request.py push \
+              --root "$RUNNER_TEMP/html-slide-render-job" \
+              --ref-name "$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+          else
+            python tools/render_request.py manual \
+              --root "$GITHUB_WORKSPACE" \
+              --spec-path "$MANUAL_SPEC_PATH" \
+              --output-name "$MANUAL_OUTPUT_NAME" \
+              --concurrency "$MANUAL_CONCURRENCY" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -87,8 +92,12 @@ jobs:
         run: python -m unittest tests.test_video_pipeline
 
       - name: Render and verify MP4
+        env:
+          OUTPUT_NAME: ${{ steps.request.outputs.output_name }}
+          RENDER_CONCURRENCY: ${{ steps.request.outputs.render_concurrency }}
         run: |
           python tools/render_video.py "${{ steps.request.outputs.spec_real }}" \
+            --asset-root "${{ steps.request.outputs.asset_root }}" \
             --out "$GITHUB_WORKSPACE/dist/render/$OUTPUT_NAME.mp4" \
             --work-dir "$GITHUB_WORKSPACE/dist/render/work" \
             --concurrency "$RENDER_CONCURRENCY" \
@@ -98,7 +107,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.output_name }}-${{ github.run_id }}
+          name: ${{ steps.request.outputs.output_name }}-${{ github.run_id }}
           path: |
             dist/render/*.mp4
             dist/render/*.qa.json
@@ -106,3 +115,21 @@ jobs:
             dist/render/work/frames/*.png
           if-no-files-found: warn
           retention-days: 7
+
+  cleanup-render-branch:
+    needs: render
+    if: ${{ needs.render.result == 'success' && github.event_name == 'push' && startsWith(github.ref, 'refs/heads/render/') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Delete successful transient render branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const ref = context.ref.replace('refs/heads/', '');
+            await github.rest.git.deleteRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `heads/${ref}`,
+            });
