@@ -62,6 +62,36 @@ class VideoPipelineTests(unittest.TestCase):
             sum(scene["durationFrames"] for scene in board["scenes"])
         )
 
+    def test_layout_slots_and_design_tokens_are_preserved(self):
+        board = compile_storyboard(self.spec, self.registry)
+        scene = board["scenes"][0]
+        self.assertEqual(scene["slots"]["main"], ["message"])
+        self.assertIn("paper", board["design"]["palette"])
+        self.assertIn("ink", board["design"]["palette"])
+        self.assertIn("viz-1", board["design"]["dataviz"])
+
+    def test_image_blocks_are_self_contained(self):
+        png = (
+            "data:image/png;base64,"
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZgL8AAAAASUVORK5CYII="
+        )
+        self.spec["slides"][0].update(
+            intent="scene",
+            blocks=[{
+                "id": "photo",
+                "module": "image",
+                "data": {"src": png, "alt": "test image", "fit": "cover"}
+            }],
+            motion=[{
+                "module": "focus",
+                "target": "photo",
+                "reason": "사진 근거를 주목시킨다"
+            }]
+        )
+        board = compile_storyboard(self.spec, self.registry)
+        src = board["scenes"][0]["blocks"][0]["data"]["src"]
+        self.assertTrue(src.startswith("data:image/png;base64,"))
+
     def test_sequence_motion_expands_to_phase_cues(self):
         self.spec["slides"][0]["intent"] = "sequence"
         self.spec["slides"][0]["blocks"] = [{
