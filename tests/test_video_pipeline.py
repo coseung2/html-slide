@@ -62,6 +62,23 @@ class VideoPipelineTests(unittest.TestCase):
             sum(scene["durationFrames"] for scene in board["scenes"])
         )
 
+    def test_sequence_motion_expands_to_phase_cues(self):
+        self.spec["slides"][0]["intent"] = "sequence"
+        self.spec["slides"][0]["blocks"] = [{
+            "id": "steps",
+            "module": "timeline",
+            "data": {"items": ["a", "b", "c"]}
+        }]
+        self.spec["slides"][0]["motion"] = [{
+            "module": "sequence-step",
+            "target": "steps",
+            "reason": "순서를 단계별로 보여준다"
+        }]
+        board = compile_storyboard(self.spec, self.registry)
+        cues = board["scenes"][0]["cues"]
+        self.assertEqual([cue["step"] for cue in cues], [1, 2, 3])
+        self.assertEqual(len({cue["atFrame"] for cue in cues}), 3)
+
     def test_invalid_fps_rejected(self):
         with self.assertRaises(ContractError):
             compile_storyboard(self.spec, self.registry, fps=0)
