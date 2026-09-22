@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "title": "지표 브리핑 구성 예시",
+  "language": "ko",
+  "theme": "financial-report",
+  "slides": [
+    {
+      "id": "bars",
+      "title": "같은 기준으로 나란히 비교",
+      "communication_goal": "같은 기준으로 나란히 비교",
+      "intent": "comparison",
+      "summary": "축과 값은 그대로 두고 비교 대상만 강조합니다.",
+      "layout": "split-left",
+      "blocks": [
+        {
+          "id": "chart",
+          "module": "bar-chart",
+          "data": {
+            "label": "가상 비교 데이터",
+            "items": [
+              {
+                "label": "구성 가",
+                "value": 24
+              },
+              {
+                "label": "구성 나",
+                "value": 42
+              },
+              {
+                "label": "구성 다",
+                "value": 68
+              },
+              {
+                "label": "구성 라",
+                "value": 84
+              }
+            ]
+          }
+        }
+      ],
+      "motion": [
+        {
+          "module": "chart-grow",
+          "target": "chart",
+          "reason": "상대적인 크기의 차이를 설명합니다."
+        }
+      ]
+    },
+    {
+      "id": "trend",
+      "title": "변화의 방향을 읽는 화면",
+      "communication_goal": "변화의 방향을 읽는 화면",
+      "intent": "trend",
+      "summary": "구조 설명을 위한 예시 데이터이며, 실제 시장 지표가 아닙니다.",
+      "layout": "split-right",
+      "blocks": [
+        {
+          "id": "trend",
+          "module": "line-chart",
+          "data": {
+            "label": "가상 추세 데이터",
+            "items": [
+              {
+                "label": "1주",
+                "value": 30
+              },
+              {
+                "label": "2주",
+                "value": 36
+              },
+              {
+                "label": "3주",
+                "value": 33
+              },
+              {
+                "label": "4주",
+                "value": 45
+              },
+              {
+                "label": "5주",
+                "value": 42
+              },
+              {
+                "label": "6주",
+                "value": 54
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

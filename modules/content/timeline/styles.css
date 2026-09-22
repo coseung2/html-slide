@@ -1,0 +1,4 @@
+.module-list,.module-timeline{list-style:none;padding:0;margin:0;display:grid;gap:20px}
+.module-list li,.module-timeline li{display:flex;align-items:center;gap:24px;min-width:0}
+.sequence-index,.rank-index{font-size:26px;font-variant-numeric:tabular-nums;color:var(--accent);font-weight:750;flex:0 0 48px}
+.module-list .sequence-index{display:none}.module-timeline li{padding:20px 0;border-bottom:1px solid var(--line)}

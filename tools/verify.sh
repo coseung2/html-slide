@@ -6,6 +6,7 @@
 #   3. the motion behaviour checks pass in a live browser
 #   4. shared presenter and template regressions pass
 #   5. Korean-copy linter self-tests pass
+#   6. modular compiler, runtime and generated-deck checks pass
 #
 # Usage: bash tools/verify.sh    (exit 0 = all green)
 set -u
@@ -34,6 +35,10 @@ echo "== 4/5 presenter and template regressions =="
 echo
 echo "== 5/5 Korean copy lint self-test =="
 "$PY" tests/copy_lint_selftest.py || fail=1
+
+echo
+echo "== 6/6 modular composition and browser QA =="
+bash tools/verify_modular.sh || fail=1
 
 echo
 if [ "$fail" -eq 0 ]; then

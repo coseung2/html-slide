@@ -1,0 +1,1 @@
+.deck-live [data-sequence-state="pending"]{opacity:.18}.deck-live [data-sequence-item]{transition:opacity 220ms ease}

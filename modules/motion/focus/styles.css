@@ -1,0 +1,2 @@
+.focus-ring{position:absolute;inset:0;border:4px solid var(--accent);pointer-events:none;border-radius:var(--radius)}
+.deck-live [data-motion-state="pending"] .focus-ring{opacity:0}

@@ -1,0 +1,2 @@
+.deck-live [data-motion="score-reveal"][data-motion-state="pending"] .score-value{opacity:.08;transform:translateY(12px)}
+.deck-live [data-motion="score-reveal"] .score-value{transition:opacity 280ms ease,transform 280ms ease}

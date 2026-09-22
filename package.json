@@ -1,0 +1,8 @@
+{
+  "name": "html-slide-modular",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Goal-driven modular HTML presentation compiler",
+  "scripts": {"test": "python -m unittest discover -s tests -p test_modular.py", "catalog": "python tools/compose_deck.py catalog"},
+  "dependencies": {"pptxgenjs": "4.0.0"}
+}

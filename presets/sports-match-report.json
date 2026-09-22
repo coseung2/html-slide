@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "title": "스포츠 리포트 구성 예시",
+  "language": "ko",
+  "theme": "sports-broadcast",
+  "slides": [
+    {
+      "id": "standings",
+      "title": "순위 정보의 화면 구성",
+      "communication_goal": "순위 정보의 화면 구성",
+      "intent": "ranking",
+      "summary": "구성 검증용 가상 데이터입니다. 실제 경기 결과가 아닙니다.",
+      "layout": "ranking-board",
+      "blocks": [
+        {
+          "id": "table",
+          "module": "ranking",
+          "data": {
+            "label": "예시 팀",
+            "valueLabel": "예시 점수",
+            "items": [
+              {
+                "label": "팀 가",
+                "value": 18
+              },
+              {
+                "label": "팀 나",
+                "value": 16
+              },
+              {
+                "label": "팀 다",
+                "value": 15
+              },
+              {
+                "label": "팀 라",
+                "value": 13
+              },
+              {
+                "label": "팀 마",
+                "value": 12
+              },
+              {
+                "label": "팀 바",
+                "value": 10
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "match",
+      "title": "결과만 강조하는 모션",
+      "communication_goal": "결과만 강조하는 모션",
+      "intent": "result",
+      "summary": "가상 경기 결과로 점수 공개 동작을 확인합니다.",
+      "layout": "split-right",
+      "blocks": [
+        {
+          "id": "result",
+          "module": "score",
+          "data": {
+            "home": "예시 팀 가",
+            "away": "예시 팀 나",
+            "homeScore": 3,
+            "awayScore": 2,
+            "detail": "모션은 결과가 핵심인 장면에만 적용합니다."
+          }
+        }
+      ],
+      "motion": [
+        {
+          "module": "score-reveal",
+          "target": "result",
+          "reason": "이 장면의 핵심인 최종 점수를 강조합니다."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"id":"statement","version":1,"type":"content","description":"statement","renderer":"template","intents":["thesis","overview","conclusion"],"tags":[],"schema":{"type":"object","additionalProperties":false,"required":["text"],"properties":{"text":{"type":"string","minLength":1,"maxLength":180}}},"density":["low","medium","high"]}

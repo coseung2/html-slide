@@ -1,0 +1,1 @@
+{"id":"chart-grow","version":1,"type":"motion","intents":["comparison","ranking","distribution","trend","change"],"supports":["bar-chart","line-chart"],"tags":["comparison","ranking","distribution","trend","change"],"description":"chart grow","staticFinal":true,"maxPerSlide":2}

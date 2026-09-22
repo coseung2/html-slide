@@ -1,0 +1,1 @@
+{"id":"timeline","version":1,"type":"layouts","description":"timeline","intents":["timeline","sequence"],"density":["medium"],"tags":[],"aspectRatio":"16:9","slots":{"main":{"accepts":["timeline"],"min":1,"max":1}}}

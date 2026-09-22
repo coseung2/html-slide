@@ -1,0 +1,1 @@
+{"id":"score-reveal","version":1,"type":"motion","intents":["result","comparison"],"supports":["score"],"tags":["result","comparison"],"description":"score reveal","staticFinal":true,"maxPerSlide":2}

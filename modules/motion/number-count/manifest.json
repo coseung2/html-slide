@@ -1,0 +1,1 @@
+{"id":"number-count","version":1,"type":"motion","intents":["kpi","change","comparison"],"supports":["metric"],"tags":["kpi","change","comparison"],"description":"number count","staticFinal":true,"maxPerSlide":2}

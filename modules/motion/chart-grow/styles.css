@@ -1,0 +1,4 @@
+.deck-live [data-motion="chart-grow"][data-motion-state="pending"] .bar-fill{transform:scaleX(.001)}
+.deck-live [data-motion="chart-grow"] .bar-fill{transition:transform 420ms ease}
+.deck-live [data-motion="chart-grow"][data-motion-state="pending"] .chart-line{stroke-dasharray:2200;stroke-dashoffset:2200}
+.deck-live [data-motion="chart-grow"] .chart-line{transition:stroke-dashoffset 500ms ease;stroke-dasharray:2200;stroke-dashoffset:0}

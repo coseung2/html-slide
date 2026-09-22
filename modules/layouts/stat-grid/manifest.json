@@ -1,0 +1,1 @@
+{"id":"stat-grid","version":1,"type":"layouts","description":"stat grid","intents":["kpi","overview"],"density":["medium","high"],"tags":["finance","number"],"aspectRatio":"16:9","slots":{"main":{"accepts":["metric"],"min":2,"max":6}}}

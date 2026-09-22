@@ -1,0 +1,1 @@
+{"id":"sequence-step","version":1,"type":"motion","intents":["process","sequence","timeline","ranking","explanation","overview"],"supports":["process","timeline","ranking","bullet-list"],"tags":["process","sequence","timeline","ranking","explanation","overview"],"description":"sequence step","staticFinal":true,"maxPerSlide":2}

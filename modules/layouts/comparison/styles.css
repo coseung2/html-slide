@@ -1,0 +1,1 @@
+.layout-comparison .scene{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto 1fr}.layout-comparison .copy{grid-column:1/-1}.layout-comparison .slot-right{border-left:2px solid var(--line);padding-left:42px}

@@ -1,0 +1,2 @@
+.metric-value{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;font-size:64px;font-weight:780;line-height:1.35;font-variant-numeric:tabular-nums;color:var(--accent)}
+.metric-value [data-number]{min-width:1ch}.metric-unit{font-size:26px;color:var(--muted)}

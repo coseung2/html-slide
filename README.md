@@ -1,293 +1,88 @@
-# html-slide
+# html-slide: modular slide engine
 
-**English** · [한국어 README](README.ko.md)
-
-A reusable skill for building HTML presentation decks with **measured layout, deterministic QA, motion discipline, Korean copy checks, and one-command export**.
-
-The repository does not prescribe one visual style. The core is a **specification + enforcement layer** that applies to any deck. Optional visual directions live under `templates/` and should be used only when they match the requested format.
-
-## Core pieces
-
-- `SKILL.md` — authoring rules and markup contract
-- `tools/slide_lint.py` — static checks + real-browser geometry checks
-- `tests/motion_check.py` — motion, phase and target-binding regressions
-- `tools/copy_lint.py` — Korean-first visible-copy lint
-- `tools/export_deck.py` — accepted frames -> PNG + PDF + PPTX
-- `templates/` — optional visual starting points
-- `motion/` — reusable motion patterns grouped by what they explain
-
-The goal is simple:
-
-> **Do not ship a deck that only looks correct in one screenshot.**
-
----
+Compose by **communication goal**, not by filling a mandatory template.
+The AI writes a structured deck; the engine finds compatible modules, explains its
+choices, validates data and slots, and emits a self-contained HTML presentation.
 
 ## Quick start
 
-```bash
-pip install playwright
-playwright install chromium
+Python 3.10+ and `jsonschema` are required for composition. Browser QA additionally
+requires Playwright and Chromium. Node.js and PptxGenJS are needed only for PPTX export.
+
+```sh
+python -m pip install -r requirements-modular.txt
+python -m playwright install chromium
+npm install
+python tools/compose_deck.py catalog
+python tools/compose_deck.py search --intent ranking --theme sports-broadcast
+python tools/compose_deck.py init --preset sports-match-report --out deck.json
+python tools/compose_deck.py plan deck.json --out plan.json
+python tools/compose_deck.py build deck.json --out deck.html
+python tools/verify_modular.py deck.html --out dist/qa
+python tools/export_modular.py deck.html --out dist/export
 ```
 
-For PPTX export:
+`--font /absolute/path/font.woff2` embeds an explicitly supplied font; omitting it
+uses system fonts and emits a warning because metrics can vary across machines.
+An existing system Chromium can be selected with `CHROME_PATH` or
+`PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. No network calls or API key are needed to
+compose a deck. The repository does **not** provide an LLM or autonomous research
+service: AI reasoning happens outside the deterministic compiler.
 
-```bash
-pip install python-pptx
-```
+## Architecture
 
-Lint one deck:
-
-```bash
-python tools/slide_lint.py examples/reference-3slides.html
-```
-
-Save QA screenshots:
-
-```bash
-python tools/slide_lint.py examples/reference-3slides.html --shots out/shots
-```
-
-Run the whole repository gate:
-
-```bash
-bash tools/verify.sh
-```
-
-A deliverable state ends with:
-
-```text
-ALL GREEN
-```
-
----
-
-## Core rules
-
-### Bind emphasis to the real target
-
-A highlight must be structurally linked to what it emphasizes: as a child, through `data-target`, or from a target-derived clone.
-
-Do not draw a highlight at arbitrary slide coordinates.
-
-The linter measures target/highlight geometry across multiple viewport sizes and fails drifting emphasis.
-
-### One core point per slide
-
-The title, explanation and visual should all support one claim or relationship.
-
-Prefer showing over explaining. A useful default is roughly **70% visual / 30% copy**, adjusted to the content rather than enforced as a template.
-
-### Motion explains relationships
-
-Default animation properties are `transform` and `opacity`.
-
-Use motion to explain things such as:
-
-- this object is the subject
-- before became after
-- this value changed by this much
-- these steps happen in order
-- these objects are connected
-
-Do not animate every object for decoration.
-
-### Static state is the accepted state
-
-A captured frame, reduced-motion mode, print, PDF and PPTX must still show the complete message.
-
-Live presentation motion is scoped to `.deck-live`.
-
-### Keep one fixed coordinate system
-
-Author at 1920×1080 and scale the stage as one unit with `transform: scale()`.
-
-This keeps geometry, line breaks, emphasis and accepted-frame export stable across windows and projectors.
-
-### Templates are optional starting points
-
-Files under `templates/` are **visual grammars, not core rules**.
-
-Use one when it matches the user's requested format. If the content does not fit, recompose the scene instead of forcing the template.
-
----
-
-## Templates
-
-Two reference directions are currently included.
-
-### Broadcast data report
-
-`templates/sports-broadcast.html`
-
-A dark, high-contrast, data-heavy direction for scoreboards, rankings, comparisons and media-heavy reports.
-
-Domain-specific details stay in [its own guide](templates/sports-broadcast.md), not in the core README.
-
-### Lecture / editorial explanation
-
-`templates/lecture-editorial.html`
-
-A light editorial direction with one accent color, large examples, cause/result scenes, steps and before/after comparison.
-
-See [its guide](templates/lecture-editorial.md).
-
-Template policy and extension rules live in [templates/README.ko.md](templates/README.ko.md).
-
----
-
-## Korean-first copy
-
-For Korean decks, write audience-facing copy in Korean first rather than translating English scaffolding after layout.
-
-Keep English when it is genuinely faster or canonical: technical acronyms, official product names, standards, quoted phrases, sources or metadata.
-
-Examples:
-
-| Avoid by default | Prefer |
+| Directory | Responsibility |
 |---|---|
-| KEY TAKEAWAYS | 핵심 정리 |
-| NEXT STEPS | 다음 단계 |
-| PROJECT OVERVIEW | 프로젝트 개요 |
-| STATUS | 상태 |
-| SUMMARY | 요약 |
+| `core/` | Registry, strict contracts, slot solver, composer, safe rendering, stage and navigation |
+| `modules/layouts/` | Spatial skeletons and capacity/type-constrained slots |
+| `modules/content/` | Schema-checked information blocks |
+| `modules/visuals/` | Reviewed local images and logos |
+| `modules/motion/` | Intent/target-constrained semantic emphasis |
+| `themes/` | Independent appearance tokens, not page layouts |
+| `presets/` | Editable example combinations, not mandatory templates |
+| `tools/` | Discovery, planning, building, browser QA and export |
 
-Run:
+The current catalog includes 10 layouts, 11 content blocks, 2 visual blocks,
+5 motion effects, 7 themes and 3 starter presets. Add a module directory with a
+manifest, template and styles; discovery is automatic. The plan records selection
+reasons, rejected candidates, resolved slots and repetition warnings.
 
-```bash
-python tools/copy_lint.py deck.html --strict
+See [module authoring](references/module-authoring.md),
+[architecture](references/modular-architecture.md),
+[migration](references/migrating-v1.md) and [Korean guide](README.ko.md).
+
+## Example and controls
+
+Build `examples/modular-showcase.json` with the CLI, then open the resulting HTML:
+12 Korean slides demonstrate goal-driven
+composition across sports, finance, education, editorial and technology contexts.
+All illustrative scores, tables and series are synthetic, not current factual data.
+The source is `examples/modular-showcase.json`.
+
+Use arrows or the stage halves to move, **S** for static/live, **O** for overview,
+**F** for fullscreen, and Home/End for endpoints. Sources appear in overview.
+Every slide remains complete with JavaScript disabled or reduced motion enabled.
+PDF and PPTX use the exact same final-frame PNGs; PPTX is intentionally not editable.
+
+## Verification
+
+```sh
+python -m unittest discover -s tests -p 'test_modular.py'
+python tests/modular_runtime_check.py
+python tools/compose_deck.py build examples/modular-showcase.json --out examples/modular-showcase.html
+python tools/verify_modular.py examples/modular-showcase.html --out dist/showcase-qa
 ```
 
-Mark a reviewed exception with `data-copy-en-ok`.
+QA checks safe-area boundaries, text/box overflow, sibling overlap, loaded media,
+target-bound highlights, four viewport sizes, phase reversal, static navigation,
+overview, hash changes, reduced motion, print restoration and no-JS final values.
+Reports explicitly state coverage limitations; initial URL loading is not certified
+by the managed-browser `set_content` harness. Compilation is not visual acceptance.
 
-Detailed editorial guidance is in [references/korean-copy.md](references/korean-copy.md).
+## Compatibility
 
----
-
-## Verification gates
-
-`tools/verify.sh` runs five layers:
-
-1. all shipped deck lint
-2. linter self-test
-3. motion behaviour regressions
-4. presenter and template regressions
-5. Korean-copy linter self-test
-
-`tools/lint_all.sh` covers HTML in:
-
-- `examples/`
-- `motion/patterns/`
-- `templates/`
-
-The linter checks clipping, safe insets, text overflow, target binding, typography budgets, Korean `keep-all`, spacing, bottom-caption patterns and animation properties that move layout.
-
-`tests/motion_check.py` currently drives **134 behaviour checks**.
-
-The presenter/template regression suite currently contains **35 checks**.
-
-The copy-lint self-test currently contains **8 checks**.
-
----
-
-## Motion library
-
-`motion/patterns/index.html` is the gallery.
-
-Patterns are grouped by **what the motion explains**:
-
-| Group | Explains | Patterns |
-|---|---|---|
-| EMPHASIS | this object is the subject | `pat-ring`, `pat-pulse`, `pat-recede` |
-| REVEAL | how material arrives | `pat-group`, `pat-line-step` |
-| TRANSFORM | before became after | `pat-state`, FLIP |
-| QUANTITY | how much changed | `pat-roll`, `pat-bar` |
-| SEQUENCE | ordered phases | `pat-steps` |
-| CONNECTIVE | these objects are related | `pat-path` |
-| SWAP | this replaced that | `pat-swap` |
-| TYPE | text is being written | `pat-type` |
-| TRANSITION | one scene gives way to another | `pat-wipe`, `pat-focus-pull` |
-
-Read [motion/README.md](motion/README.md) before adding a new pattern.
-
----
-
-## Final export
-
-Do not hand-rebuild PDF or PPTX after the HTML is accepted.
-
-`tools/export_deck.py` lints the deck, captures the accepted 1920×1080 static frames, and feeds the same PNGs to both PDF and PPTX.
-
-```bash
-python tools/export_deck.py deck.html
-```
-
-Optional destination:
-
-```bash
-python tools/export_deck.py deck.html --out dist/deck
-```
-
-Output:
-
-```text
-dist/deck/
-├── frames/
-├── deck.pdf
-├── deck.pptx
-├── lint.json
-└── manifest.json
-```
-
-HTML remains the live presentation source. PDF and PPTX are static delivery formats.
-
----
-
-## Repository structure
-
-```text
-SKILL.md                  core authoring rules
-
-tools/
-├─ slide_lint.py
-├─ copy_lint.py
-├─ media_qa.py
-├─ export_deck.py
-├─ lint_all.sh
-└─ verify.sh
-
-tests/
-├─ linter_selftest.py
-├─ motion_check.py
-├─ template_runtime_check.py
-├─ copy_lint_selftest.py
-└─ ...
-
-templates/
-├─ README.ko.md
-├─ sports-broadcast.html
-├─ sports-broadcast.md
-├─ lecture-editorial.html
-└─ lecture-editorial.md
-
-motion/
-├─ deck-motion.js
-├─ deck-shell.js
-├─ motion.css
-├─ README.md
-└─ patterns/
-
-references/
-├─ korean-copy.md
-├─ runtime-contract.md
-├─ geometry-qa.md
-├─ motion-timing.md
-└─ SOURCES.md
-```
-
-## License and provenance
-
-The specification, linter, tests, examples, templates and motion library are this repository's work.
-
-Timing and method references are documented in `references/SOURCES.md`.
-
-Pretendard Variable is distributed under the SIL Open Font License in `assets/fonts/`.
+The original `motion/`, `templates/`, reference material and old examples are kept
+in the full repository. The original `tools/export_deck.py` remains for legacy HTML.
+New specs use the modular tools above. Do not include both runtimes in the same deck.
+Read `SKILL.md` as the active AI entrypoint; historical scene direction is retained
+in `references/legacy-direction.md` in the full repository.

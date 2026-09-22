@@ -1,0 +1,1 @@
+{"id":"hero","version":1,"type":"layouts","description":"hero","intents":["thesis","overview","conclusion"],"density":["low"],"tags":[],"aspectRatio":"16:9","slots":{"main":{"accepts":["statement","quote","metric","bullet-list","timeline","ranking","score","bar-chart","line-chart","process","comparison-text","image","logo"],"min":1,"max":1}}}

@@ -1,0 +1,1 @@
+{"id":"timeline","version":1,"type":"content","description":"timeline","renderer":"timeline","intents":["sequence","timeline","process"],"tags":[],"schema":{"type":"object","additionalProperties":false,"required":["items"],"properties":{"items":{"type":"array","minItems":2,"maxItems":5,"items":{"type":"string","minLength":1,"maxLength":90}}}},"density":["low","medium","high"]}

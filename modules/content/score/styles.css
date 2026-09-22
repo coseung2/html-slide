@@ -1,0 +1,2 @@
+.score-teams{display:flex;justify-content:space-between;gap:24px;font-size:36px}.score-value{display:flex;justify-content:space-between;gap:32px;font-size:64px;line-height:1.6;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.score-value span:nth-child(2){color:var(--muted)}.score-teams span{max-width:46%}

@@ -1,0 +1,1 @@
+.process{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}.process-node{padding:24px 0;min-width:0;border-top:3px solid var(--accent);font-size:36px}.process-node strong{color:var(--accent);font-size:26px}.process-node p{margin-top:20px}

@@ -6,6 +6,10 @@ PY=${PYTHON:-$HOME/.venvs/pw/bin/python}
 [ -x "$PY" ] || PY=python3
 fail=0
 for f in examples/*.html motion/patterns/*.html templates/*.html; do
+  # Modular decks have a separate contract and are verified by verify_modular.sh.
+  if grep -q 'data-engine="html-slide-modular-v1"' "$f"; then
+    continue
+  fi
   out=$("$PY" tools/slide_lint.py "$f" 2>&1)
   rc=$?
   printf '%-42s rc=%s %s\n' "$(basename "$f")" "$rc" \

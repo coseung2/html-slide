@@ -1,0 +1,1 @@
+.layout-split-left .scene,.layout-ranking-board .scene,.layout-process-flow .scene{grid-template-columns:530px minmax(0,1fr);grid-template-rows:1fr;gap:70px}.layout-split-left .copy h2,.layout-split-right .copy h2,.layout-ranking-board .copy h2,.layout-image-focus .copy h2,.layout-process-flow .copy h2{font-size:64px}

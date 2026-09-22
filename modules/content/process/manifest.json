@@ -1,0 +1,1 @@
+{"id":"process","version":1,"type":"content","description":"process","renderer":"process","intents":["process","sequence","overview"],"tags":[],"schema":{"type":"object","additionalProperties":false,"required":["items"],"properties":{"items":{"type":"array","minItems":2,"maxItems":6,"items":{"type":"string","minLength":1,"maxLength":55}}}},"density":["low","medium","high"]}

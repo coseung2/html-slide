@@ -1,0 +1,1 @@
+{"id":"split-left","version":1,"type":"layouts","description":"split left","intents":["explanation","overview","change","result"],"density":["low","medium"],"tags":[],"aspectRatio":"16:9","slots":{"main":{"accepts":["statement","quote","metric","bullet-list","timeline","ranking","score","bar-chart","line-chart","process","comparison-text","image","logo"],"min":1,"max":2}}}

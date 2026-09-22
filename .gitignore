@@ -2,3 +2,7 @@ __pycache__/
 *.pyc
 .shots/
 *.shot.png
+node_modules/
+dist/
+*.plan.json
+skill.zip
