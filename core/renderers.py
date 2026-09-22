@@ -77,6 +77,64 @@ def render_block(registry, block, asset_root: Path, dom_id: str) -> str:
         for row,(x,y) in zip(data['items'],points):
             body+=f'<circle class="chart-dot" cx="{x:.3f}" cy="{y:.3f}" r="7"/><text x="{x:.3f}" y="{y-22:.3f}" text-anchor="middle">{fmt(row["value"])}</text><text x="{x:.3f}" y="407" text-anchor="middle">{esc(row["label"])}</text>'
         body+='</svg><table class="sr-only"><caption>'+esc(data['label'])+'</caption><tbody>'+''.join(f'<tr><th>{esc(r["label"])}</th><td>{fmt(r["value"])}</td></tr>' for r in data['items'])+'</tbody></table>'
+    elif kind=='character-callout':
+        uri=media_data(data['src'],asset_root)
+        fit=data.get('fit','contain'); align=data.get('align','left')
+        role=f'<p class="character-callout__role">{esc(data["role"])}</p>' if data.get('role') else ''
+        caption=f'<p class="character-callout__caption">{esc(data["caption"])}</p>' if data.get('caption') else ''
+        body=(f'<figure class="character-callout character-callout--{align}">'
+              f'<div class="character-callout__portrait"><img src="{uri}" alt="{esc(data["alt"])}" style="object-fit:{fit}"/></div>'
+              f'<figcaption class="character-callout__copy"><p class="character-callout__name">{esc(data["name"])}</p>{role}'
+              f'<div class="character-callout__speech" data-speech-bubble data-speech-kind="{esc(data["speechKind"])}">'
+              f'<span class="character-callout__speech-label">{esc(data["speechLabel"])}</span>'
+              f'<p>{esc(data["speech"])}</p></div>{caption}</figcaption></figure>')
+    elif kind=='map-route':
+        uri=media_data(data['src'],asset_root)
+        fit='meet' if data.get('fit','contain')=='contain' else 'slice'
+        marker_id=dom_id+'--arrow'
+        route_parts=[]; accessible=[]
+        for i,row in enumerate(data['routes']):
+            sx=finite(row['start']['x'],f'{dom_id}.route[{i}].start.x')*10
+            sy=finite(row['start']['y'],f'{dom_id}.route[{i}].start.y')*6
+            ex=finite(row['end']['x'],f'{dom_id}.route[{i}].end.x')*10
+            ey=finite(row['end']['y'],f'{dom_id}.route[{i}].end.y')*6
+            arc=finite(row.get('arcHeight',18),f'{dom_id}.route[{i}].arcHeight')*6
+            cy=(sy+ey)/2 + (arc if row.get('arcDirection','up')=='down' else -arc)
+            cx=(sx+ex)/2
+            path=f'M {sx:.3f} {sy:.3f} Q {cx:.3f} {cy:.3f} {ex:.3f} {ey:.3f}'
+            tone=row.get('tone','accent')
+            def label_at(x,y):
+                anchor='end' if x>820 else 'start'
+                dx=-18 if anchor=='end' else 18
+                yy=y-18 if y>70 else y+36
+                return anchor,x+dx,yy
+            sa,sxtext,sytext=label_at(sx,sy); ea,extext,eytext=label_at(ex,ey)
+            route_label=''
+            if row.get('label'):
+                ly=max(40,min(560,cy-24))
+                route_label=f'<text class="map-route__route-label" x="{cx:.3f}" y="{ly:.3f}" text-anchor="middle">{esc(row["label"])}</text>'
+            traveler=''
+            if row.get('traveler'):
+                tr=row['traveler']; truri=media_data(tr['src'],asset_root)
+                trlabel=f'<text class="map-route__traveler-label" x="0" y="-52" text-anchor="middle">{esc(tr["label"])}</text>' if tr.get('label') else ''
+                traveler=(f'<g class="map-route__traveler" data-route-traveler transform="translate({ex:.3f} {ey:.3f}) scale(1)">'
+                          f'<image href="{truri}" x="-38" y="-38" width="76" height="76" preserveAspectRatio="xMidYMid meet"/>'
+                          f'{trlabel}</g>')
+            route_parts.append(
+                f'<g class="map-route__item map-route__item--{tone}" data-route-item>'
+                f'<path class="map-route__path" data-route-path d="{path}" pathLength="1" marker-end="url(#{marker_id})"/>'
+                f'<circle class="map-route__marker map-route__marker--start" cx="{sx:.3f}" cy="{sy:.3f}" r="10"/>'
+                f'<circle class="map-route__marker map-route__marker--end" cx="{ex:.3f}" cy="{ey:.3f}" r="12"/>'
+                f'<text class="map-route__place" x="{sxtext:.3f}" y="{sytext:.3f}" text-anchor="{sa}">{esc(row["start"]["label"])}</text>'
+                f'<text class="map-route__place" x="{extext:.3f}" y="{eytext:.3f}" text-anchor="{ea}">{esc(row["end"]["label"])}</text>'
+                f'{route_label}{traveler}</g>')
+            accessible.append(f'<li>{esc(row.get("label","Route"))}: {esc(row["start"]["label"])} to {esc(row["end"]["label"])}</li>')
+        body=(f'<div class="map-route"><svg class="map-route__svg" viewBox="0 0 1000 600" role="img" aria-label="{esc(data["alt"])}">'
+              f'<defs><marker id="{marker_id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">'
+              f'<path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker></defs>'
+              f'<image class="map-route__map" href="{uri}" x="0" y="0" width="1000" height="600" preserveAspectRatio="xMidYMid {fit}"/>'
+              f'<rect class="map-route__scrim" x="0" y="0" width="1000" height="600"/>'
+              f'{"".join(route_parts)}</svg><ol class="sr-only">{"".join(accessible)}</ol></div>')
     elif kind=='image':
         uri=media_data(data['src'],asset_root)
         fit='contain' if module['id']=='logo' else data.get('fit','cover')

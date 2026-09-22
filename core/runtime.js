@@ -39,6 +39,30 @@
     }
     jobs.set(el,requestAnimationFrame(frame));
   }
+  function placeRoute(item, atEnd) {
+    const path=item.querySelector('[data-route-path]'), traveler=item.querySelector('[data-route-traveler]');
+    if(!path||!traveler)return;
+    const length=path.getTotalLength(), point=path.getPointAtLength(atEnd?length:0);
+    traveler.setAttribute('transform','translate('+point.x+' '+point.y+') scale(1)');
+  }
+  function animateRoute(item) {
+    const path=item.querySelector('[data-route-path]'), traveler=item.querySelector('[data-route-traveler]');
+    if(!path)return;
+    const length=path.getTotalLength(), start=performance.now(), duration=900;
+    path.style.strokeDashoffset='1';
+    if(traveler)placeRoute(item,false);
+    function frame(now) {
+      const raw=Math.min(1,(now-start)/duration), t=1-Math.pow(1-raw,3);
+      path.style.strokeDashoffset=String(1-t);
+      if(traveler){
+        const point=path.getPointAtLength(length*t), lift=1+.14*Math.sin(Math.PI*t);
+        traveler.setAttribute('transform','translate('+point.x+' '+point.y+') scale('+lift+')');
+      }
+      if(raw<1)jobs.set(item,requestAnimationFrame(frame));
+      else{jobs.delete(item);path.style.strokeDashoffset='';placeRoute(item,true);}
+    }
+    jobs.set(item,requestAnimationFrame(frame));
+  }
   function state() { return {slide:index,phase,steps:isLive()?max():0,slideCount:slides.length,reducedMotion:reduce.matches,staticMode:!isLive()}; }
   function render(animate = false) {
     cancelJobs(); root.classList.toggle('deck-live',isLive());
@@ -55,6 +79,15 @@
         block.querySelectorAll('[data-sequence-item]').forEach((item,j)=>{
           item.dataset.sequenceState=(!isLive() || phase>=first+j)?'done':'pending';
         });
+        if(block.dataset.motion==='route-travel'){
+          block.querySelectorAll('[data-route-item]').forEach((item,j)=>{
+            const routeDone=!isLive() || phase>=first+j, routeWas=item.dataset.routeState;
+            item.dataset.routeState=routeDone?'done':'pending';
+            const path=item.querySelector('[data-route-path]');if(path)path.style.strokeDashoffset='';
+            if(active&&routeDone&&isLive()&&animate&&routeWas==='pending'){placeRoute(item,false);animateRoute(item);}
+            else placeRoute(item,routeDone);
+          });
+        }
         (block.dataset.motion==='number-count' ? block.querySelectorAll('[data-number]') : []).forEach(el=>{
           const n=Number(el.dataset.number); el.textContent=format(done?n:0);
           if (block.dataset.motion==='number-count' && active && done && isLive() && animate && was==='pending') count(el,n);

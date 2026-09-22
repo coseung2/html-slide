@@ -1,0 +1,171 @@
+{
+  "id": "map-route",
+  "version": 1,
+  "type": "visuals",
+  "description": "Reviewed raster map with labelled curved routes, optional traveler illustrations, and static-complete route evidence",
+  "renderer": "map-route",
+  "intents": [
+    "route",
+    "movement",
+    "campaign",
+    "travel",
+    "geography",
+    "sequence"
+  ],
+  "tags": [
+    "education",
+    "history",
+    "map",
+    "route",
+    "movement",
+    "war",
+    "geography"
+  ],
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "src",
+      "alt",
+      "routes"
+    ],
+    "properties": {
+      "src": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 12000000
+      },
+      "alt": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 180
+      },
+      "fit": {
+        "enum": [
+          "contain",
+          "cover"
+        ]
+      },
+      "routes": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 4,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "start",
+            "end"
+          ],
+          "properties": {
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 70
+            },
+            "tone": {
+              "enum": [
+                "accent",
+                "negative",
+                "positive",
+                "warning"
+              ]
+            },
+            "arcHeight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 45
+            },
+            "arcDirection": {
+              "enum": [
+                "up",
+                "down"
+              ]
+            },
+            "start": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "label",
+                "x",
+                "y"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 50
+                },
+                "x": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "y": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                }
+              }
+            },
+            "end": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "label",
+                "x",
+                "y"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 50
+                },
+                "x": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "y": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                }
+              }
+            },
+            "traveler": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "src",
+                "alt"
+              ],
+              "properties": {
+                "src": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 12000000
+                },
+                "alt": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 180
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "density": [
+    "low",
+    "medium"
+  ]
+}

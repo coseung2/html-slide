@@ -1,0 +1,93 @@
+{
+  "id": "character-callout",
+  "version": 1,
+  "type": "visuals",
+  "description": "Character illustration paired with a provenance-labelled speech or thought callout",
+  "renderer": "character-callout",
+  "intents": [
+    "character",
+    "dialogue",
+    "decision",
+    "scene",
+    "explanation"
+  ],
+  "tags": [
+    "education",
+    "history",
+    "character",
+    "story",
+    "elementary"
+  ],
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "src",
+      "alt",
+      "name",
+      "speech",
+      "speechKind",
+      "speechLabel"
+    ],
+    "properties": {
+      "src": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 12000000
+      },
+      "alt": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 180
+      },
+      "name": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      },
+      "role": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "speech": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 180
+      },
+      "speechKind": {
+        "enum": [
+          "paraphrase",
+          "quotation",
+          "narration"
+        ]
+      },
+      "speechLabel": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 50
+      },
+      "caption": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 120
+      },
+      "align": {
+        "enum": [
+          "left",
+          "right"
+        ]
+      },
+      "fit": {
+        "enum": [
+          "contain",
+          "cover"
+        ]
+      }
+    }
+  },
+  "density": [
+    "low",
+    "medium"
+  ]
+}

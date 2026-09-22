@@ -1,0 +1,1 @@
+.deck-live [data-motion="speech-reveal"] [data-speech-bubble]{transition:opacity 260ms ease,transform 260ms ease}.deck-live [data-motion="speech-reveal"][data-motion-state="pending"] [data-speech-bubble]{opacity:0;transform:translateY(22px) scale(.98)}

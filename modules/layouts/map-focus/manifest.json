@@ -1,0 +1,37 @@
+{
+  "id": "map-focus",
+  "version": 1,
+  "type": "layouts",
+  "description": "Wide geographic stage for routes, campaigns, migrations, and other spatial movement",
+  "intents": [
+    "route",
+    "movement",
+    "campaign",
+    "travel",
+    "geography",
+    "sequence"
+  ],
+  "density": [
+    "low",
+    "medium"
+  ],
+  "tags": [
+    "education",
+    "history",
+    "map",
+    "route",
+    "movement",
+    "war",
+    "geography"
+  ],
+  "aspectRatio": "16:9",
+  "slots": {
+    "main": {
+      "accepts": [
+        "map-route"
+      ],
+      "min": 1,
+      "max": 1
+    }
+  }
+}

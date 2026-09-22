@@ -1,0 +1,24 @@
+{
+  "id": "speech-reveal",
+  "version": 1,
+  "type": "motion",
+  "intents": [
+    "character",
+    "dialogue",
+    "decision",
+    "scene",
+    "explanation"
+  ],
+  "supports": [
+    "character-callout"
+  ],
+  "tags": [
+    "education",
+    "character",
+    "dialogue",
+    "viewpoint"
+  ],
+  "description": "Reveal the actor's labelled speech or thought only after the actor is established",
+  "staticFinal": true,
+  "maxPerSlide": 2
+}

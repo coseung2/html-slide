@@ -60,6 +60,12 @@ class Registry:
         for item in self.list('content')+self.list('visuals'):
             if not isinstance(item.get('schema'),dict):
                 raise ContractError(f"{item['id']}: data schema required")
+        for item in self.list('motion'):
+            if not isinstance(item.get('supports'),list) or not item['supports']:
+                raise ContractError(f"{item['id']}: motion supports list required")
+            phase_by=item.get('phaseBy')
+            if phase_by is not None and (not isinstance(phase_by,str) or not re.fullmatch(r'[A-Za-z][A-Za-z0-9_]*',phase_by)):
+                raise ContractError(f"{item['id']}: phaseBy must name a data-list property")
         for item in self.list('typography'):
             css=self.resource(item,'style.css')
             if f'data-typography="{item["id"]}"' not in css:

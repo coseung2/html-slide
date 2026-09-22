@@ -88,7 +88,15 @@ def plan_deck(spec: dict, registry: Registry | None = None) -> dict:
         for effect in slide.get('motion',[]):
             effect['startStep']=phase+1
             target=next(b for b in slide['blocks'] if b['id']==effect['target'])
-            phase+=len(target['data']['items']) if effect['module']=='sequence-step' else 1
+            motion=registry.get('motion',effect['module'])
+            phase_by=motion.get('phaseBy')
+            if phase_by:
+                beats=target['data'].get(phase_by)
+                if not isinstance(beats,list) or not beats:
+                    raise ContractError(f"{slide['id']}: motion {effect['module']} expects a non-empty data list at {phase_by}")
+                phase+=len(beats)
+            else:
+                phase+=1
             effect['endStep']=phase
         slide['steps']=phase
         plan['slides'].append(slide); recent.append(slide['layout'])

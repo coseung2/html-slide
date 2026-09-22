@@ -77,6 +77,12 @@ use intentional technical names rather than decorative English scaffold. Prefer
 concrete labels; avoid tiny bottom explanations, pill chips, leader lines and
 unmotivated visual decoration. Let evidence determine the visual, not vice versa.
 
+For elementary lesson decks, especially history and social studies, read
+references/education-storytelling.md. Match the visual grammar to the reasoning task:
+actors and viewpoints use character callouts, spatial movement uses map routes,
+and surviving artifacts use evidence images. Never present invented dialogue as a
+historical quotation; label pedagogical paraphrases explicitly.
+
 Before polishing explanatory copy, delete prose that merely repeats a visible title,
 label, chart or table. Keep caveats only when omitting them would materially mislead.
 Release-status metadata such as `잠정치`, `예비치` or later-revision warnings should
