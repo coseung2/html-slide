@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import html
 import mimetypes
+import math
 import re
 from pathlib import Path
 from .registry import ContractError
@@ -91,7 +92,6 @@ def render_block(registry, block, asset_root: Path, dom_id: str) -> str:
     elif kind=='map-route':
         uri=media_data(data['src'],asset_root)
         fit='meet' if data.get('fit','contain')=='contain' else 'slice'
-        marker_id=dom_id+'--arrow'
         route_parts=[]; accessible=[]
         for i,row in enumerate(data['routes']):
             sx=finite(row['start']['x'],f'{dom_id}.route[{i}].start.x')*10
@@ -99,9 +99,10 @@ def render_block(registry, block, asset_root: Path, dom_id: str) -> str:
             ex=finite(row['end']['x'],f'{dom_id}.route[{i}].end.x')*10
             ey=finite(row['end']['y'],f'{dom_id}.route[{i}].end.y')*6
             arc=finite(row.get('arcHeight',18),f'{dom_id}.route[{i}].arcHeight')*6
-            cy=(sy+ey)/2 + (arc if row.get('arcDirection','up')=='down' else -arc)
+            cy=max(30,min(570,(sy+ey)/2 + (arc if row.get('arcDirection','up')=='down' else -arc)))
             cx=(sx+ex)/2
             path=f'M {sx:.3f} {sy:.3f} Q {cx:.3f} {cy:.3f} {ex:.3f} {ey:.3f}'
+            angle=math.degrees(math.atan2(ey-cy,ex-cx))
             tone=row.get('tone','accent')
             def label_at(x,y):
                 anchor='end' if x>820 else 'start'
@@ -122,16 +123,15 @@ def render_block(registry, block, asset_root: Path, dom_id: str) -> str:
                           f'{trlabel}</g>')
             route_parts.append(
                 f'<g class="map-route__item map-route__item--{tone}" data-route-item>'
-                f'<path class="map-route__path" data-route-path d="{path}" pathLength="1" marker-end="url(#{marker_id})"/>'
+                f'<path class="map-route__path" data-route-path d="{path}" pathLength="1"/>'
                 f'<circle class="map-route__marker map-route__marker--start" cx="{sx:.3f}" cy="{sy:.3f}" r="10"/>'
                 f'<circle class="map-route__marker map-route__marker--end" cx="{ex:.3f}" cy="{ey:.3f}" r="12"/>'
+                f'<path class="map-route__arrow" d="M -18 -12 L 0 0 L -18 12 Z" transform="translate({ex:.3f} {ey:.3f}) rotate({angle:.3f})"/>'
                 f'<text class="map-route__place" x="{sxtext:.3f}" y="{sytext:.3f}" text-anchor="{sa}">{esc(row["start"]["label"])}</text>'
                 f'<text class="map-route__place" x="{extext:.3f}" y="{eytext:.3f}" text-anchor="{ea}">{esc(row["end"]["label"])}</text>'
                 f'{route_label}{traveler}</g>')
             accessible.append(f'<li>{esc(row.get("label","Route"))}: {esc(row["start"]["label"])} to {esc(row["end"]["label"])}</li>')
         body=(f'<div class="map-route"><svg class="map-route__svg" viewBox="0 0 1000 600" role="img" aria-label="{esc(data["alt"])}">'
-              f'<defs><marker id="{marker_id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">'
-              f'<path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker></defs>'
               f'<image class="map-route__map" href="{uri}" x="0" y="0" width="1000" height="600" preserveAspectRatio="xMidYMid {fit}"/>'
               f'<rect class="map-route__scrim" x="0" y="0" width="1000" height="600"/>'
               f'{"".join(route_parts)}</svg><ol class="sr-only">{"".join(accessible)}</ol></div>')

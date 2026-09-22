@@ -5,6 +5,7 @@
 .map-route__item{color:var(--accent)}.map-route__item--negative{color:var(--negative)}.map-route__item--positive{color:var(--positive)}.map-route__item--warning{color:var(--warning)}
 .map-route__path{fill:none;stroke:currentColor;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:0;filter:drop-shadow(0 2px 2px rgba(0,0,0,.18));transition:stroke-dashoffset 520ms ease}
 .map-route__marker{fill:var(--paper);stroke:currentColor;stroke-width:7}.map-route__marker--end{fill:currentColor;stroke:var(--paper);stroke-width:5}
+.map-route__arrow{fill:currentColor;stroke:var(--paper);stroke-width:3;paint-order:stroke}
 .map-route__place,.map-route__route-label,.map-route__traveler-label{font-family:var(--font-body);font-weight:750;fill:var(--ink);paint-order:stroke;stroke:var(--paper);stroke-width:9px;stroke-linejoin:round}
 .map-route__place{font-size:28px}.map-route__route-label{font-size:26px;fill:currentColor}.map-route__traveler-label{font-size:24px;fill:var(--ink)}
 .map-route__traveler{filter:drop-shadow(0 7px 7px rgba(0,0,0,.24));transform-box:fill-box;transform-origin:center}
