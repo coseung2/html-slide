@@ -23,6 +23,17 @@ from tools.video_pipeline import (
 
 ROOT = Path(__file__).resolve().parents[1]
 VIDEO_DIR = ROOT / "video"
+H264_8BIT_420_PIXEL_FORMATS = frozenset({"yuv420p", "yuvj420p"})
+
+
+def validate_h264_pixel_format(pixel_format: Any) -> str:
+    """Accept FFmpeg's limited- and full-range names for planar 8-bit 4:2:0."""
+    if not isinstance(pixel_format, str) or pixel_format not in H264_8BIT_420_PIXEL_FORMATS:
+        raise VideoPipelineError(
+            "unexpected H.264 8-bit 4:2:0 pixel format: "
+            f"{pixel_format}; expected one of {sorted(H264_8BIT_420_PIXEL_FORMATS)}"
+        )
+    return pixel_format
 
 
 def _ratio(value: str) -> float:
@@ -141,9 +152,7 @@ def verify_video_artifacts(
         raise VideoPipelineError(
             f"video height mismatch: expected {summary['height']}, got {stream.get('height')}"
         )
-    pixel_format = stream.get("pix_fmt")
-    if pixel_format and pixel_format != "yuv420p":
-        raise VideoPipelineError(f"unexpected pixel format: {pixel_format}")
+    pixel_format = validate_h264_pixel_format(stream.get("pix_fmt"))
 
     rate_text = str(stream.get("avg_frame_rate") or stream.get("r_frame_rate") or "0")
     actual_fps = _ratio(rate_text)
@@ -174,6 +183,7 @@ def verify_video_artifacts(
             "bytes": Path(video).stat().st_size,
             "codec": stream.get("codec_name"),
             "pixelFormat": pixel_format,
+            "colorRange": stream.get("color_range"),
             "width": int(stream["width"]),
             "height": int(stream["height"]),
             "fps": actual_fps,

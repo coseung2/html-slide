@@ -13,7 +13,7 @@ from core import Registry
 from core.registry import ContractError
 from tools.compose_video import compile_storyboard
 from tools.video_pipeline import VideoPipelineError, sample_frames, validate_storyboard
-from tools.verify_video import verify_frame_directory
+from tools.verify_video import verify_frame_directory, validate_h264_pixel_format
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -138,6 +138,12 @@ class VideoPipelineTests(unittest.TestCase):
             (root / "frame-000.png").write_bytes(png)
             report = verify_frame_directory(root, [0], width=1, height=1)
             self.assertEqual(report["count"], 1)
+
+    def test_h264_420_pixel_format_contract(self):
+        self.assertEqual(validate_h264_pixel_format("yuv420p"), "yuv420p")
+        self.assertEqual(validate_h264_pixel_format("yuvj420p"), "yuvj420p")
+        with self.assertRaises(VideoPipelineError):
+            validate_h264_pixel_format("yuv422p")
 
     def test_invalid_fps_rejected(self):
         with self.assertRaises(ContractError):

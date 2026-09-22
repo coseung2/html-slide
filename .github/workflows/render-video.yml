@@ -5,6 +5,7 @@ on:
     branches: ["feature/remotion-pipeline"]
     paths:
       - ".github/workflows/render-video.yml"
+      - "tools/verify_video.py"
   workflow_dispatch:
     inputs:
       spec_path:
