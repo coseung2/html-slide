@@ -1100,7 +1100,10 @@ def presenter_contract_checks(page, rep: Report) -> None:
         s.querySelectorAll('[data-step]').forEach(el => {
           if (el !== s) max = Math.max(max, parseInt(el.getAttribute('data-step'), 10) || 0);
         });
-        return {i, max};
+        const rawStart = parseInt(s.getAttribute('data-start'), 10);
+        const start = Number.isFinite(rawStart)
+          ? Math.min(Math.max(rawStart, 0), max) : 0;
+        return {i, max, start};
       }).filter(x => x.max > 0);
       return {
         count: slides.length,
@@ -1129,10 +1132,12 @@ def presenter_contract_checks(page, rep: Report) -> None:
             "the presenter shell shows slide position and phase position separately (§10)",
             layer="browser")
 
-    target = next((x for x in meta["stepped"] if x["i"] < meta["count"] - 1),
-                  meta["stepped"][0])
-    idx, max_phase = target["i"], target["max"]
-    page.evaluate("([i]) => window.__deckGoto(i, 0)", [idx])
+    target = next((x for x in meta["stepped"]
+                   if x["start"] < x["max"] and x["i"] < meta["count"] - 1),
+                  next((x for x in meta["stepped"] if x["start"] < x["max"]),
+                       meta["stepped"][0]))
+    idx, max_phase, start_phase = target["i"], target["max"], target["start"]
+    page.evaluate("([i, p]) => window.__deckGoto(i, p)", [idx, start_phase])
     page.wait_for_timeout(80)
     before = page.evaluate("() => window.__deckState()")
     page.wait_for_timeout(1400)
@@ -1150,26 +1155,28 @@ def presenter_contract_checks(page, rep: Report) -> None:
     if not box:
         return
     y = box["y"] + box["height"] * 0.5
-    page.mouse.click(box["x"] + box["width"] * 0.75, y)
-    page.wait_for_timeout(80)
-    forward = page.evaluate("() => window.__deckState()")
-    if forward.get("slide") != idx or forward.get("phase") != 1:
-        rep.add(
-            "presenter-step", ERROR,
-            f"right-half click did not advance exactly one phase "
-            f"(got slide={forward.get('slide')} phase={forward.get('phase')})",
-            "one presenter advance equals one declared phase (§10)", layer="browser")
+    if start_phase < max_phase:
+        page.mouse.click(box["x"] + box["width"] * 0.75, y)
+        page.wait_for_timeout(80)
+        forward = page.evaluate("() => window.__deckState()")
+        expected = start_phase + 1
+        if forward.get("slide") != idx or forward.get("phase") != expected:
+            rep.add(
+                "presenter-step", ERROR,
+                f"right-half click did not advance exactly one phase "
+                f"(got slide={forward.get('slide')} phase={forward.get('phase')})",
+                "one presenter advance equals one declared phase (§10)", layer="browser")
 
-    page.mouse.click(box["x"] + box["width"] * 0.25, y)
-    page.wait_for_timeout(80)
-    backward = page.evaluate("() => window.__deckState()")
-    if backward.get("slide") != idx or backward.get("phase") != 0:
-        rep.add(
-            "presenter-back", ERROR,
-            f"left-half click did not reverse exactly one phase "
-            f"(got slide={backward.get('slide')} phase={backward.get('phase')})",
-            "Back reverses the phase machine before changing slides (§10)",
-            layer="browser")
+        page.mouse.click(box["x"] + box["width"] * 0.25, y)
+        page.wait_for_timeout(80)
+        backward = page.evaluate("() => window.__deckState()")
+        if backward.get("slide") != idx or backward.get("phase") != start_phase:
+            rep.add(
+                "presenter-back", ERROR,
+                f"left-half click did not reverse exactly one phase "
+                f"(got slide={backward.get('slide')} phase={backward.get('phase')})",
+                "Back reverses the phase machine before changing slides (§10)",
+                layer="browser")
 
     if idx < meta["count"] - 1:
         page.evaluate("([i, p]) => window.__deckGoto(i, p)", [idx, max_phase])
