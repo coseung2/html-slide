@@ -188,15 +188,40 @@ pipeline changes, installs the pinned runtime, runs modular and video unit tests
 typechecks the Remotion source, compiles the maintained showcase storyboard and
 validates that storyboard. It deliberately does not encode a full MP4 on every push.
 
-`.github/workflows/render-video.yml` is the full render path. Run **Render Remotion
-video** manually and provide a repository-relative JSON spec path, artifact base name
-and concurrency. The workflow validates the request, runs `render_video.py` and
-uploads MP4, QA JSON, storyboard and sampled PNGs as a short-lived Actions artifact.
+`.github/workflows/render-video.yml` is the full render path. It supports two entry
+points. **Render Remotion video** can still be started manually with a repository-relative
+JSON spec path, artifact base name and concurrency. For agent environments that can
+push Git branches but cannot call `workflow_dispatch`, pushing a disposable
+`render/**` branch starts the same renderer automatically.
 
-`workflow_dispatch` is intentionally not an excuse to commit user-specific job
-inputs. Normal user deck specs, downloaded media, videos and QA captures remain
-outside Git. The manual workflow is appropriate for maintained fixtures or inputs
-that the user explicitly intends to make public in the repository.
+A transient render branch carries job input only under `.render/`. The minimum form
+is `.render/deck.json`; optional `.render/request.json` may override `spec_path`,
+`output_name` and `concurrency`:
+
+```json
+{
+  "spec_path": "deck.json",
+  "output_name": "pohang-intro-60s",
+  "concurrency": "50%"
+}
+```
+
+For push-triggered jobs, Actions checks out the repository default branch as the
+trusted renderer, fetches the triggering commit only as data, and extracts only its
+`.render/` directory into runner temporary storage. Code, dependencies or workflow
+changes made on the transient branch are therefore not executed. `tools/render_request.py`
+rejects absolute/traversal paths, non-JSON specs, invalid artifact names, invalid
+concurrency values and unknown request keys before rendering.
+
+After a successful push-triggered render, a separate least-privilege cleanup job with
+`contents: write` deletes the `render/**` branch. Failed branches remain available for
+debugging and should be deleted after inspection. Rendered MP4, QA JSON, storyboard
+and sampled PNGs are uploaded as short-lived Actions artifacts and are never committed.
+
+User-specific render branches are transport, not maintained history: never merge them
+to `main`, never use `examples/` as a job archive, and never commit the resulting
+video/QA artifacts. Manual `workflow_dispatch` remains appropriate for maintained
+fixtures or inputs the user explicitly intends to keep in the repository.
 
 ## Verification boundary
 

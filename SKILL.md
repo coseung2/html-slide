@@ -55,6 +55,9 @@ contain an LLM, embeddings service, factual research agent or image search servi
    the runtime, ensure the Remotion browser, render H.264, sample semantic key frames
    and verify the encoded output. Read `references/video-pipeline.md`; do not invent
    a second content spec or add blanket motion absent from semantic motion declarations.
+   When an agent can push Git branches but cannot call `workflow_dispatch`, use the
+   documented disposable `render/**` transport branch; keep job input under `.render/`,
+   never merge that branch, and rely on the workflow cleanup after a successful render.
 
 Commands after `catalog` share the prefix `python tools/compose_deck.py`.
 
