@@ -107,6 +107,7 @@ class VideoPipelineTests(unittest.TestCase):
         board = compile_storyboard(self.spec, self.registry)
         cues = board["scenes"][0]["cues"]
         self.assertEqual([cue["step"] for cue in cues], [1, 2, 3])
+        self.assertEqual([cue["atFrame"] for cue in cues], [18, 54, 90])
         self.assertEqual(len({cue["atFrame"] for cue in cues}), 3)
 
     def test_invalid_fps_rejected(self):
