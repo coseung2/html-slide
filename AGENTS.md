@@ -18,12 +18,16 @@ The repository should accumulate reusable capability, not completed jobs.
 ## Default authoring
 
 Start with communication goals and evidence, then write JSON and inspect the plan.
-Treat presets as editable combinations, not mandatory templates. Use `core/`,
-`modules/`, `themes/`, `styles/` and the modular CLI for new work. Keep theme grammar,
-typography, main palette, dataviz palette, layout geometry, data rendering, media and
-meaningful motion independently owned. Resolve art-direction packs once per deck and
-record automatic selection reasons. Never fabricate missing facts or silently
-truncate overflowing data.
+New AI-authored decks use `quality.profile: "strict"`; legacy/preset material may stay
+advisory until deliberately migrated. Prefer `layout: "auto"`; an explicit layout
+needs `layout_reason`. When one concrete subject can carry a progressive explanation,
+declare a narrative anchor and reuse it rather than replacing it with unrelated card
+layouts. Treat presets as editable combinations, not mandatory templates. Use
+`core/`, `modules/`, `themes/`, `styles/` and the modular CLI for new work. Keep
+theme grammar, typography, main palette, dataviz palette, layout geometry, data
+rendering, media and meaningful motion independently owned. Resolve art-direction
+packs once per deck and record automatic selection reasons. Never fabricate missing
+facts or silently truncate overflowing data.
 
 For each real deck:
 
