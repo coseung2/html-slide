@@ -11,6 +11,7 @@ Class lesson from building a verified deck repo: step/phase CSS that hides conte
 - The linter measures under `emulate_media(reduced_motion="reduce")` plus a no-transition style tag, with any `deck-step-*` classes stripped: what it sees is what a capture/export sees.
 - The presenter state machine is shared infrastructure. Deck-specific HTML may theme the shell and declare phases, but must not replace navigation with its own `go()/next()/prev()` clock. A self-contained build may inline the standard runtime unchanged.
 - Activating a slide is not a phase trigger. A stepped slide enters at `data-start` and remains there indefinitely until presenter input.
+- Hidden stepped slides must be parked at their declared start phase before activation. The runtime suppresses transitions/animations while preparing an incoming slide so the accepted final frame can never visibly reverse into the start phase.
 - One input advances one phase. A phase may internally stagger marks for a few hundred milliseconds, but no timer may advance the machine to the next phase or slide.
 
 ## State machine (`deck-motion.js` pattern)

@@ -32,6 +32,21 @@ class RuntimeChecks(unittest.TestCase):
         self.deck();self.page.evaluate('__deckNext();__deckShell.setStatic(true)');self.page.wait_for_timeout(580);self.assertEqual(self.value(),'12,345.25')
     def test_focus_does_not_change_numeric_information(self):
         self.deck(motion='focus');self.assertEqual(self.value(),'12,345.25');self.page.evaluate('__deckNext()');self.assertEqual(self.value(),'12,345.25')
+    def test_slide_entry_starts_stable_not_final_to_start(self):
+        spec={'schemaVersion':1,'title':'Entry fixture','language':'en','theme':'tech','slides':[
+            {'id':'first','title':'First','communication_goal':'Provide a starting slide','intent':'kpi','layout':'split-left',
+             'blocks':[{'id':'m1','module':'metric','data':{'label':'First','value':1}}]},
+            {'id':'second','title':'Second','communication_goal':'Verify entry phase stability','intent':'kpi','layout':'split-left',
+             'blocks':[{'id':'m2','module':'metric','data':{'label':'Second','value':2}}],
+             'motion':[{'module':'number-count','target':'m2','reason':'Declare a real second phase'}]}
+        ]}
+        raw,_=build_deck(spec);self.page.set_content(raw,wait_until='load');self.page.evaluate('document.fonts.ready')
+        self.page.add_style_tag(content=".deck-live [data-slide='second'] [data-number]{transition:opacity .35s linear}.deck-live [data-slide='second'].deck-step-0 [data-number]{opacity:0}")
+        self.page.evaluate('__deckGoto(0,0);__deckNext()')
+        target=self.page.locator("[data-slide='second'] [data-number]")
+        self.assertLess(float(target.evaluate("el=>getComputedStyle(el).opacity")),.02)
+        self.page.wait_for_timeout(80)
+        self.assertLess(float(target.evaluate("el=>getComputedStyle(el).opacity")),.02)
     def test_qa_detects_deliberately_overflowing_copy(self):
         self.deck(motion='focus');self.page.evaluate('__deckShell.setStatic(true)');self.assertEqual(self.page.evaluate(GEOMETRY)['errors'],[])
         self.page.add_style_tag(content='.copy{width:2500px!important}')

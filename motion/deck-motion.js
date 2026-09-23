@@ -142,23 +142,46 @@
     const from = this.prevSlide;                       // the scene we came from
     const dir = (from === null || from === undefined || from === this.slide)
       ? 0 : Math.sign(this.slide - from);
+    const incoming = this.slides[this.slide];
+    // The accepted plain-CSS frame is the finished state. Hidden slides therefore
+    // sit on that finished frame unless we pre-position them. Suppress transitions
+    // while an incoming slide is moved to its declared start phase; otherwise its
+    // first visible beat is a reverse animation from final -> start.
+    const preparing = Boolean(incoming && (from === null || from === undefined || from !== this.slide));
+    if (preparing) incoming.classList.add('deck-prep');
+
     this.slides.forEach((s, n) => {
       const active = n === this.slide;
       // Only the scene we just left is "leaving". A transition is a pair, not a
       // pile: any other slide is simply off-stage.
       const leaving = !active && n === from;
+
+      // Preserve the leaving slide's current phase through its exit. Every other
+      // hidden slide is parked at data-start so the next activation is already in
+      // the correct presenter state before it becomes visible.
+      if (!leaving) {
+        [...s.classList].filter(c => c.startsWith('deck-step-')).forEach(
+          c => s.classList.remove(c));
+        const parked = active ? this.phase : this.start(n);
+        const max = Math.max(this.phases(n), 1);
+        for (let p = 0; p <= max; p++) {
+          s.classList.toggle('deck-step-' + p, parked === p);
+        }
+      }
+
       s.classList.toggle('is-active', active);
       s.classList.toggle('is-leaving', leaving);
       s.inert = !active;
       s.setAttribute('aria-hidden', String(!active));
-      // Remove stale phases when reduced motion changes the declared range.
-      [...s.classList].filter(c => c.startsWith('deck-step-')).forEach(
-        c => s.classList.remove(c));
-      const max = Math.max(this.phases(n), 1);
-      for (let p = 0; p <= max; p++) {
-        s.classList.toggle('deck-step-' + p, active && this.phase === p);
-      }
     });
+
+    // Flush the prepared start frame with transitions disabled, then release the
+    // guard. Removing the guard changes no visual property, so no entry animation
+    // is generated and the first presenter click remains the first real beat.
+    if (preparing) {
+      incoming.getBoundingClientRect();
+      incoming.classList.remove('deck-prep');
+    }
     this.prevSlide = this.slide;
 
     if (!this.stage) return;

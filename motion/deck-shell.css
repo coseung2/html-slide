@@ -38,6 +38,14 @@
 .deck-shell button:focus-visible{outline:3px solid var(--accent,#c0392b);outline-offset:3px}
 .deck-shell button[aria-pressed="true"]{background:var(--ink,#11110f);color:#fff}
 .deck-shell button:disabled{opacity:.38;cursor:default}
+
+/* Runtime preparation guard. Hidden slides are parked at their data-start phase
+   before activation. This guard prevents authored transitions/animations from
+   replaying the accepted final frame backwards while that parking happens. */
+.deck-prep,.deck-prep *,.deck-prep *::before,.deck-prep *::after{
+  transition:none!important;
+  animation:none!important;
+}
 .deck-shell__arrow{min-width:40px!important;padding:4px 12px!important;font-size:24px!important;line-height:1!important}
 .deck-shell__counter{
   min-width:76px;
