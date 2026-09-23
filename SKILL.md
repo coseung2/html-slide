@@ -16,21 +16,28 @@ contain an LLM, embeddings service, factual research agent or image search servi
 ## Workflow
 
 1. Establish audience, language, one communication goal per slide, factual sources,
-   information density and available media. Research changing facts before authoring.
-   Label synthetic examples. Never fill missing facts with plausible numbers.
+   information density and available media. Identify the concrete visual evidence for
+   each claim and, when the explanation can follow one recurring object, declare a
+   deck-level narrative anchor. Research changing facts before authoring. Label
+   synthetic examples. Never fill missing facts with plausible numbers.
 2. Discover available modules and art-direction packs with
    `python tools/compose_deck.py catalog`. Narrow layouts with
    `search --intent ranking --theme sports-broadcast`; inspect style routing with
    `search --type typography --theme education --domain education --audience elementary`.
 3. Write a version-1 JSON specification against `core/deck.schema.json`. Use an
-   explicit goal and intent on every slide. Keep typography, main palette and dataviz
-   at deck scope. Prefer `auto` plus domain/audience/tone/density signals unless the
-   user requests a specific visual system. A preset is an editable starting
-   combination, never a mandatory page sequence.
+   explicit goal and intent on every slide and set `quality.profile` to `strict`
+   for new work. Keep typography, main palette and dataviz at deck scope. Prefer
+   `layout: "auto"`; an explicit layout requires `layout_reason`. When continuity
+   is recurring or progressive, declare `narrative.anchor` and reuse it through
+   slide-level `anchor_ref`. A preset is an editable starting combination, never a
+   mandatory page sequence.
 4. Run `plan deck.json --out plan.json`. Inspect layout selection reasons, rejected
-   layouts, slot capacities, repetition warnings, and the selected typography,
-   palette and dataviz packs with their alternatives. Revise or split crowded slides
-   rather than truncating text or shrinking typography.
+   layouts, slot capacities, the `quality` report, repetition warnings, and the
+   selected typography, palette and dataviz packs with their alternatives. Strict
+   quality issues are build-blocking: replace generic prose/structure with concrete
+   visual evidence, improve anchor continuity, or change the composition rather than
+   weakening thresholds to obtain a pass. Revise or split crowded slides rather than
+   truncating text or shrinking typography.
 5. Build with `python tools/compose_deck.py build deck.json --out deck.html`.
    For a verified typography baseline, explicitly supply an authorized local
    WOFF2 with `--font path/to/font.woff2`. The full repository's existing font asset
@@ -84,7 +91,12 @@ static final frames in plain HTML/CSS; JavaScript and motion may explain but may
 not carry otherwise missing information. Gate live phase effects on `.deck-live`.
 
 Keep one point per slide, at most three typography levels, readable projection
-sizes and varied copy placement. Resolve typography/palette/dataviz once per deck;
+sizes and varied copy placement. New decks use the strict visual-quality gate. Prefer
+concrete screenshots, data, diagrams or interface scenes over a sequence of generic
+statement/process/timeline cards when the claim can be shown. A recurring subject
+should remain visually identifiable across the slides that transform or interrogate
+it. Explicit layouts need a meaningful `layout_reason`; layout selection is not a
+shortcut around the planner. Resolve typography/palette/dataviz once per deck;
 do not switch style packs slide-by-slide merely to create variety. Keep Korean copy Korean-first with `keep-all`;
 use intentional technical names rather than decorative English scaffold. Prefer
 concrete labels; avoid tiny bottom explanations, pill chips, leader lines and
@@ -141,8 +153,9 @@ must reject slide-entry autoplay on stepped decks and verify presenter phase sta
 
 Read [architecture](references/modular-architecture.md) for boundaries,
 [art direction](references/art-direction.md) for automatic typography/color routing,
-and [authoring](references/module-authoring.md) before adding a module or style pack.
-Read [migration](references/migrating-v1.md) when working on an existing deck and
+[visual quality](references/visual-quality.md) for strict evidence/continuity/repetition
+gates, and [authoring](references/module-authoring.md) before adding a module or style
+pack. Read [migration](references/migrating-v1.md) when working on an existing deck and
 [video pipeline](references/video-pipeline.md) when producing Remotion output.
 Preserve older accepted decks and compatibility tools. Treat this repository as the
 AI's reusable production skill, not as a history of completed user jobs. Generate
