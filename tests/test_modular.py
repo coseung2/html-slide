@@ -72,7 +72,54 @@ class EngineTests(unittest.TestCase):
         x=self.registry.get('layouts','hero');x['slots'].clear();self.assertTrue(self.registry.get('layouts','hero')['slots'])
     def test_default_auto_layout(self):self.assertEqual(plan_deck(self.spec,self.registry)['slides'][0]['layout'],'hero')
     def test_explicit_layout(self):
-        self.spec['slides'][0]['layout']='split-right';self.assertEqual(plan_deck(self.spec,self.registry)['slides'][0]['layout'],'split-right')
+        self.spec['slides'][0]['layout']='split-right'
+        plan=plan_deck(self.spec,self.registry)
+        self.assertEqual(plan['slides'][0]['layout'],'split-right')
+        self.assertTrue(plan['slides'][0]['selection']['alternatives'])
+    def test_quality_report_is_emitted(self):
+        plan=plan_deck(self.spec,self.registry)
+        self.assertEqual(plan['quality']['profile'],'advisory')
+        self.assertTrue(plan['quality']['passed'])
+        self.assertIn('concreteVisualRatio',plan['quality']['metrics'])
+    def test_strict_explicit_layout_requires_reason(self):
+        self.spec['quality']={'profile':'strict'}
+        self.spec['slides'][0]['layout']='split-right'
+        self.reject(self.spec)
+    def test_strict_explicit_layout_with_reason_passes(self):
+        self.spec['quality']={'profile':'strict'}
+        self.spec['slides'][0]['layout']='split-right'
+        self.spec['slides'][0]['layout_reason']='Keep the short thesis beside the visual slot.'
+        plan=plan_deck(self.spec,self.registry)
+        self.assertTrue(plan['quality']['passed'])
+        self.assertIn('reason: Keep the short thesis beside the visual slot.',plan['slides'][0]['selection']['reasons'])
+    def test_strict_comparison_requires_concrete_evidence(self):
+        self.spec['quality']={'profile':'strict'}
+        self.spec['slides'][0].update(intent='comparison',blocks=[
+            {'id':'left','module':'comparison-text','data':{'label':'Before','text':'Generic before state'}},
+            {'id':'right','module':'comparison-text','data':{'label':'After','text':'Generic after state'}},
+        ])
+        self.reject(self.spec)
+    def test_quality_flags_repetitive_generic_deck(self):
+        self.spec['slides']=[{
+            'id':f's{i}','title':f'Slide {i}','communication_goal':'Explain one point','intent':'thesis',
+            'blocks':[{'id':'message','module':'statement','data':{'text':'One complete idea.'}}]
+        } for i in range(6)]
+        plan=plan_deck(self.spec,self.registry)
+        codes={issue['code'] for issue in plan['quality']['issues']}
+        self.assertIn('low-concrete-visual-coverage',codes)
+        self.assertIn('generic-structure-run',codes)
+        self.assertIn('layout-share-too-high',codes)
+        self.assertIn('layout-run-too-long',codes)
+    def test_recurring_narrative_tracks_anchor_coverage(self):
+        self.spec['narrative']={'continuity':'recurring','anchor':'quiz-app'}
+        self.spec['slides']=[{
+            'id':f's{i}','title':f'Slide {i}','communication_goal':'Explain one point','intent':'thesis',
+            'anchor_ref':'quiz-app' if i==0 else 'other',
+            'blocks':[{'id':'message','module':'statement','data':{'text':'One complete idea.'}}]
+        } for i in range(3)]
+        plan=plan_deck(self.spec,self.registry)
+        codes={issue['code'] for issue in plan['quality']['issues']}
+        self.assertIn('narrative-anchor-coverage-low',codes)
     def test_no_input_mutation(self):
         before=copy.deepcopy(self.spec);build_deck(self.spec,self.registry);self.assertEqual(self.spec,before)
     def test_deterministic_build(self):self.assertEqual(build_deck(self.spec,self.registry),build_deck(self.spec,self.registry))
