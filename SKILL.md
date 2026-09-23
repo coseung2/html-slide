@@ -13,6 +13,19 @@ The AI interprets the brief and writes a deck specification. The compiler perfor
 deterministic metadata ranking, compatibility checks and rendering; it does not
 contain an LLM, embeddings service, factual research agent or image search service.
 
+## Lecture/workshop routing
+
+When the presentation purpose is a lecture, workshop, tutorial, lesson or training
+session, read **references/lecture-direction.md** and inspect
+**examples/lecture-format-reference.html** before planning the deck. Treat them as a
+visual-rhythm and art-direction reference, not as a content template.
+
+Preserve the user's actual teaching goals and sources. Reuse the reference principles:
+short titles, typography-led key concepts when text itself is the visual, recurring
+concrete examples, direct comparisons, evidence-first scenes, and layout variation
+driven by the learning point. Do not force file/local/deploy content onto unrelated
+lectures.
+
 ## Workflow
 
 1. Establish audience, language, one communication goal per slide, factual sources,
