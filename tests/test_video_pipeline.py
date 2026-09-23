@@ -67,11 +67,19 @@ class VideoPipelineTests(unittest.TestCase):
 
     def test_all_reel_motion_patterns_are_registered(self):
         patterns = load_motion_patterns()
-        self.assertEqual(len(patterns), 19)
+        self.assertEqual(len(patterns), 27)
         self.assertEqual(set(patterns), motion_pattern_ids())
         self.assertIn("kinetic-type", patterns)
         self.assertIn("particle-warp", patterns)
         self.assertIn("path-drawing", patterns)
+        self.assertIn("word-by-word", patterns)
+        self.assertIn("line-split", patterns)
+        self.assertIn("highlight-sweep", patterns)
+        self.assertIn("strike-through", patterns)
+        self.assertIn("typewriter-code", patterns)
+        self.assertIn("number-counter", patterns)
+        self.assertIn("text-path", patterns)
+        self.assertIn("oversized-crop-type", patterns)
         for pattern in patterns.values():
             self.assertTrue(pattern["targets"])
             self.assertTrue(pattern["semanticModules"])

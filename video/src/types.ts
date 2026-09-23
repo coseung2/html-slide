@@ -30,7 +30,15 @@ export type MotionPatternId =
   | 'swiss-grid'
   | 'extruded-type'
   | 'street-collage'
-  | 'path-drawing';
+  | 'path-drawing'
+  | 'word-by-word'
+  | 'line-split'
+  | 'highlight-sweep'
+  | 'strike-through'
+  | 'typewriter-code'
+  | 'number-counter'
+  | 'text-path'
+  | 'oversized-crop-type';
 
 export type Block = {
   id: string;

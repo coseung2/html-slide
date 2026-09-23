@@ -15,6 +15,11 @@ const color = (design: DesignTokens, key: string, fallback: string) =>
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 
+const blockText = (block: Block): string => {
+  const value = block.data.text ?? block.data.label ?? block.data.value ?? '';
+  return typeof value === 'string' || typeof value === 'number' ? String(value) : '';
+};
+
 export const scrambleText = (value: string, progress: number): string => {
   const glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%?';
   const keep = Math.floor(value.length * clamp(progress));
@@ -63,8 +68,8 @@ const Particles: React.FC<{design: DesignTokens; pulse: number}> = ({design, pul
   </>
 );
 
-const Overlay: React.FC<{pattern: string; progress: number; pulse: number; design: DesignTokens}> = ({
-  pattern, progress, pulse, design
+const Overlay: React.FC<{pattern: string; progress: number; pulse: number; design: DesignTokens; block: Block}> = ({
+  pattern, progress, pulse, design, block
 }) => {
   const accent = color(design, 'accent', '#54a8ff');
   const paper = color(design, 'paper', '#08111f');
@@ -146,6 +151,34 @@ const Overlay: React.FC<{pattern: string; progress: number; pulse: number; desig
       opacity:pulse * 0.9
     }} />;
   }
+  if (pattern === 'highlight-sweep') {
+    return <span style={{
+      position:'absolute', left:'4%', top:'38%', height:'28%',
+      width:(92 * progress) + '%', background:accent, opacity:pulse * 0.3,
+      transform:'skewX(-7deg)', transformOrigin:'left center', borderRadius:12
+    }} />;
+  }
+  if (pattern === 'strike-through') {
+    return <span style={{
+      position:'absolute', left:'5%', top:'50%', height:8,
+      width:(90 * progress) + '%', background:accent,
+      opacity:pulse * 0.9, transform:'translateY(-50%) rotate(-1deg)', borderRadius:999
+    }} />;
+  }
+  if (pattern === 'text-path') {
+    const label = blockText(block).slice(0, 96);
+    const pathId = 'text-path-' + block.id.replace(/[^a-zA-Z0-9_-]/g, '-');
+    return <svg viewBox="0 0 1000 600" preserveAspectRatio="none" style={{
+      position:'absolute', inset:0, width:'100%', height:'100%', overflow:'visible', opacity:pulse * 0.8
+    }}>
+      <defs>
+        <path id={pathId} d="M70 420 C260 80 740 80 930 420" />
+      </defs>
+      <text fill={accent} fontSize="42" fontWeight="800" letterSpacing="2">
+        <textPath href={'#' + pathId} startOffset={((1 - progress) * 20) + '%'}>{label}</textPath>
+      </text>
+    </svg>;
+  }
   return null;
 };
 
@@ -153,6 +186,19 @@ export const MotionPattern: React.FC<Props> = ({block, scene, frame, design, chi
   const state = patternState(scene, block.id, frame);
   if (!state) return <>{children}</>;
   const {pattern, progress, pulse} = state;
+  if (pattern === 'line-split' && progress < 0.999) {
+    const travel = (1 - progress) * 72;
+    return <div style={{position:'relative', width:'100%', height:'100%', minWidth:0, minHeight:0, overflow:'hidden'}}>
+      <div style={{
+        position:'absolute', inset:0, clipPath:'inset(0 0 50% 0)',
+        transform:'translateX(' + (-travel) + 'px)', opacity:0.2 + progress * 0.8
+      }}>{children}</div>
+      <div style={{
+        position:'absolute', inset:0, clipPath:'inset(50% 0 0 0)',
+        transform:'translateX(' + travel + 'px)', opacity:0.2 + progress * 0.8
+      }}>{children}</div>
+    </div>;
+  }
   let transform = 'none';
   let opacity = 1;
   let filter = 'none';
@@ -197,6 +243,12 @@ export const MotionPattern: React.FC<Props> = ({block, scene, frame, design, chi
   } else if (pattern === 'paper-cut' || pattern === 'street-collage') {
     transform = 'rotate(' + ((1 - progress) * -2.5) + 'deg) scale(' + (0.96 + progress * 0.04) + ')';
     opacity = 0.35 + progress * 0.65;
+  } else if (pattern === 'number-counter') {
+    transform = 'translateY(' + ((1 - progress) * 34) + 'px) scale(' + (0.96 + progress * 0.04) + ')';
+    opacity = 0.18 + progress * 0.82;
+  } else if (pattern === 'oversized-crop-type') {
+    transform = 'scale(' + (1 + (1 - progress) * 0.72) + ') translateY(' + ((1 - progress) * 18) + 'px)';
+    opacity = 0.18 + progress * 0.82;
   }
 
   return <div style={{position:'relative', width:'100%', height:'100%', minWidth:0, minHeight:0}}>
@@ -207,7 +259,7 @@ export const MotionPattern: React.FC<Props> = ({block, scene, frame, design, chi
       {children}
     </div>
     <div aria-hidden style={{position:'absolute', inset:0, zIndex:3, pointerEvents:'none', overflow:'hidden'}}>
-      <Overlay pattern={pattern} progress={progress} pulse={pulse} design={design} />
+      <Overlay pattern={pattern} progress={progress} pulse={pulse} design={design} block={block} />
     </div>
   </div>;
 };

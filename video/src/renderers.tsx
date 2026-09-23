@@ -331,9 +331,50 @@ const Score: React.FC<RendererProps> = (props) => {
 
 const Textual: React.FC<RendererProps> = (props) => {
   const {block, design, scene, frame} = props;
-  const pattern = scene.cues.find((cue) => cue.target === block.id && cue.pattern === 'scramble-decode');
-  const scrambleProgress = pattern ? cueCompletion(scene, block.id, pattern.module, frame) : 1;
-  const display = (value: string) => pattern ? scrambleText(value, scrambleProgress) : value;
+  const activePattern = scene.cues.find((cue) =>
+    cue.target === block.id &&
+    ['scramble-decode', 'word-by-word', 'typewriter-code'].includes(cue.pattern ?? '')
+  );
+  const textProgress = activePattern
+    ? cueCompletion(scene, block.id, activePattern.module, frame)
+    : 1;
+
+  const display = (value: string): React.ReactNode => {
+    if (activePattern?.pattern === 'scramble-decode') {
+      return scrambleText(value, textProgress);
+    }
+    if (activePattern?.pattern === 'typewriter-code') {
+      const chars = Array.from(value);
+      const shown = Math.floor(chars.length * Math.max(0, Math.min(1, textProgress)));
+      return <>
+        {chars.slice(0, shown).join('')}
+        {textProgress < 1 ? (
+          <span style={{opacity: Math.floor(frame / 4) % 2 === 0 ? 1 : 0.25}}>▍</span>
+        ) : null}
+      </>;
+    }
+    if (activePattern?.pattern === 'word-by-word') {
+      const parts = value.split(/(\s+)/u);
+      const wordCount = Math.max(1, parts.filter((part) => part && !/^\s+$/u.test(part)).length);
+      let wordIndex = 0;
+      return <>
+        {parts.map((part, index) => {
+          if (!part || /^\s+$/u.test(part)) {
+            return <React.Fragment key={index}>{part}</React.Fragment>;
+          }
+          const current = wordIndex++;
+          const local = Math.max(0, Math.min(1, textProgress * (wordCount + 0.8) - current));
+          return <span key={index} style={{
+            display:'inline-block',
+            opacity:local,
+            transform:'translateY(' + ((1 - local) * 18) + 'px)'
+          }}>{part}</span>;
+        })}
+      </>;
+    }
+    return value;
+  };
+
   if (block.module === 'quote') {
     return (
       <Frame {...props} transparent>
