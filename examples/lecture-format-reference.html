@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lecture format reference</title>
+<style>
+@font-face{font-family:'Pretendard Variable';src:url('../assets/fonts/PretendardVariable.woff2') format('woff2-variations');font-weight:45 920;font-style:normal;font-display:block}
+:root{--paper:#f3f1ec;--surface:#fbfaf7;--ink:#151613;--muted:#6d6961;--line:#cec8bd;--accent:#b93930}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{overflow:hidden;background:#111;color:var(--ink);font-family:'Pretendard Variable',Pretendard,'Noto Sans CJK KR','Malgun Gothic',sans-serif;word-break:keep-all;font-synthesis:none}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:top left;background:var(--paper)}
+.slide{position:absolute;inset:0;padding:104px 112px 116px;visibility:hidden;opacity:0;background:var(--paper)}
+.slide.is-active{visibility:visible;opacity:1}
+.scene{height:100%}
+.kicker{font-size:24px;font-weight:800;color:var(--accent);letter-spacing:.04em}
+.title{font-size:72px;line-height:1.18;font-weight:850;letter-spacing:-.045em}
+.body{font-size:32px;line-height:1.55;color:var(--muted);font-weight:600}
+.mono{font-family:'DejaVu Sans Mono','Noto Sans Mono CJK KR',monospace;letter-spacing:-.04em}
+.stack{display:flex;flex-direction:column;gap:28px}
+.typo-hero{display:grid;align-content:center;gap:24px}
+.typo-hero .mega{font-size:154px;line-height:1.02;font-weight:900;letter-spacing:-.075em}
+.typo-hero .mega .accent{color:var(--accent)}
+.typo-hero .sub{font-size:32px;color:var(--muted)}
+.filename{display:grid;grid-template-columns:1fr 540px;gap:84px;align-items:center}
+.filename .file{font-size:128px;line-height:1;font-weight:900;letter-spacing:-.06em}
+.file-detail{border-top:3px solid var(--ink);padding-top:24px}
+.file-detail strong{display:block;font-size:34px;margin-bottom:16px}
+.file-detail p{font-size:26px;line-height:1.55;color:var(--muted)}
+.address-compare{display:grid;grid-template-rows:auto 1fr;gap:54px}
+.address-head{max-width:1200px}
+.address-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;align-items:stretch}
+.browser{background:var(--surface);border-top:3px solid var(--ink);display:flex;flex-direction:column;min-width:0}
+.browser-bar{padding:18px 20px;border-bottom:1px solid var(--line);font:700 23px/1.3 'DejaVu Sans Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.browser-body{flex:1;padding:32px;display:flex;flex-direction:column;justify-content:space-between;gap:34px}
+.browser-body b{font-size:34px}
+.app-silhouette{height:220px;border:1px solid var(--line);background:white;padding:22px;display:grid;grid-template-columns:110px 1fr;gap:18px}
+.app-silhouette aside{border-right:1px solid var(--line)}
+.app-silhouette main{display:grid;grid-template-rows:46px 1fr;gap:18px}
+.app-silhouette main i{display:block;background:#ece8e1}
+.browser-foot{font-size:24px;color:var(--muted)}
+.local-split{display:grid;grid-template-columns:1fr 120px 1fr;align-items:center;height:100%}
+.local-word{font-size:118px;font-weight:900;letter-spacing:-.065em}
+.local-col p{margin-top:26px;font-size:30px;color:var(--muted)}
+.colon{font-size:118px;color:var(--accent);text-align:center;font-weight:900}
+.neq{display:grid;place-items:center;height:100%;text-align:center}
+.neq-main{font-size:164px;font-weight:900;letter-spacing:-.075em}
+.neq-main .sign{color:var(--accent);padding:0 38px}
+.neq p{font-size:32px;color:var(--muted);margin-top:34px}
+.flow-scene{display:grid;grid-template-rows:auto 1fr;gap:70px}
+.flow{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:38px;align-items:center}
+.flow:before{content:'';position:absolute;left:6%;right:6%;top:50%;height:3px;background:var(--line)}
+.flow-step{position:relative;z-index:1;background:var(--paper);padding:18px 8px;text-align:center}
+.flow-step b{display:block;font-size:30px}
+.flow-step span{display:block;font-size:22px;color:var(--muted);margin-top:10px}
+.flow-step.current b{color:var(--accent)}
+.recap{display:grid;grid-template-columns:repeat(3,1fr);gap:50px;align-items:center;height:100%}
+.recap-col{border-top:4px solid var(--ink);padding-top:30px;min-height:350px}
+.recap-col b{font-size:72px}
+.recap-col p{font-size:28px;line-height:1.55;color:var(--muted);margin-top:28px}
+.recap-col:nth-child(3){border-color:var(--accent)}
+.recap-col:nth-child(3) b{color:var(--accent)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<link rel="stylesheet" href="../motion/deck-shell.css">
+</head>
+<body>
+<div id="stage" data-stage>
+<section class="slide" data-slide="01-hero">
+  <div class="scene typo-hero">
+    <div class="kicker">LECTURE FORMAT / SYNTHETIC REFERENCE</div>
+    <div class="mega">파일 <span class="accent">→</span> 실행 <span class="accent">→</span> 공개</div>
+    <div class="sub">핵심 개념이 곧 화면이 되는 타이포그래피 장면</div>
+  </div>
+</section>
+
+<section class="slide" data-slide="02-filename">
+  <div class="scene filename">
+    <div>
+      <div class="kicker">KEY TERM</div>
+      <div class="file mono">index.html</div>
+    </div>
+    <div class="file-detail">
+      <strong>파일명을 설명하지 말고 보여준다</strong>
+      <p>개념어·주소·명령어처럼 문자 자체가 증거일 때는 카드보다 큰 타이포그래피가 먼저다.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-slide="03-compare">
+  <div class="scene address-compare">
+    <div class="address-head stack">
+      <div class="kicker">SAME ARTIFACT / DIFFERENT CONTEXT</div>
+      <h1 class="title">같은 화면, 다른 주소</h1>
+      <p class="body">비교할 때는 대상은 유지하고 실행 맥락만 바꾼다.</p>
+    </div>
+    <div class="address-grid">
+      <div class="browser">
+        <div class="browser-bar">file:///lesson/index.html</div>
+        <div class="browser-body"><b>파일</b><div class="app-silhouette"><aside></aside><main><i></i><i></i></main></div><div class="browser-foot">직접 열기</div></div>
+      </div>
+      <div class="browser">
+        <div class="browser-bar">http://localhost:3000</div>
+        <div class="browser-body"><b>로컬 서버</b><div class="app-silhouette"><aside></aside><main><i></i><i></i></main></div><div class="browser-foot">내 컴퓨터에서 실행</div></div>
+      </div>
+      <div class="browser">
+        <div class="browser-bar">https://demo.example</div>
+        <div class="browser-body"><b>공개 URL</b><div class="app-silhouette"><aside></aside><main><i></i><i></i></main></div><div class="browser-foot">다른 기기에서도 접근</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-slide="04-localhost">
+  <div class="scene local-split">
+    <div class="local-col"><div class="local-word mono">localhost</div><p>지금 보고 있는 이 컴퓨터</p></div>
+    <div class="colon mono">:</div>
+    <div class="local-col"><div class="local-word mono">3000</div><p>그 컴퓨터 안에서 열어 둔 포트</p></div>
+  </div>
+</section>
+
+<section class="slide" data-slide="05-not-equal">
+  <div class="scene neq">
+    <div>
+      <div class="neq-main">저장 <span class="sign">≠</span> 배포</div>
+      <p>의미 있는 대비는 한 장 전체를 써도 된다.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-slide="06-flow">
+  <div class="scene flow-scene">
+    <div class="stack">
+      <div class="kicker">PROCESS</div>
+      <h1 class="title">변경은 경로를 따라 이동한다</h1>
+      <p class="body">순서가 핵심이면 설명문보다 경로가 먼저 보이게 한다.</p>
+    </div>
+    <div class="flow">
+      <div class="flow-step"><b>편집</b><span>source</span></div>
+      <div class="flow-step"><b>실행</b><span>local</span></div>
+      <div class="flow-step current"><b>검증</b><span>browser</span></div>
+      <div class="flow-step"><b>빌드</b><span>deploy</span></div>
+      <div class="flow-step"><b>공개</b><span>URL</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-slide="07-recap">
+  <div class="scene recap">
+    <div class="recap-col"><b>파일</b><p>무엇을 만들었는지 보여주는 원본</p></div>
+    <div class="recap-col"><b>실행</b><p>어디에서 어떤 환경으로 동작하는지 확인</p></div>
+    <div class="recap-col"><b>공개</b><p>다른 사람이 접근할 수 있는 상태로 전달</p></div>
+  </div>
+</section>
+</div>
+<script src="../motion/deck-motion.js"></script>
+<script src="../motion/deck-shell.js"></script>
+</body>
+</html>
