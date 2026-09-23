@@ -60,6 +60,9 @@ class Registry:
         for item in self.list('content')+self.list('visuals'):
             if not isinstance(item.get('schema'),dict):
                 raise ContractError(f"{item['id']}: data schema required")
+            role=item.get('visualRole')
+            if role is not None and role not in ('evidence','structure','support','copy'):
+                raise ContractError(f"{item['id']}: visualRole must be evidence, structure, support, or copy")
         for item in self.list('typography'):
             css=self.resource(item,'style.css')
             if f'data-typography="{item["id"]}"' not in css:
