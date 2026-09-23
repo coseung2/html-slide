@@ -78,11 +78,20 @@ transition behavior, not semantic emphasis.
 
 ### Remotion motion-pattern pool
 
-The video renderer maintains 19 explicit patterns in `video/motion-patterns.json`:
+The video renderer maintains 27 explicit patterns in `video/motion-patterns.json`:
 `kinetic-type`, `flat-shape`, `info-motion`, `ui-motion`, `card-stack-3d`,
 `particle-warp`, `glitch`, `liquid-morph`, `isometric-build`, `paper-cut`,
 `type-mask`, `environment-type`, `occlusion`, `scramble-decode`, `variable-font`,
-`swiss-grid`, `extruded-type`, `street-collage`, and `path-drawing`.
+`swiss-grid`, `extruded-type`, `street-collage`, `path-drawing`, `word-by-word`,
+`line-split`, `highlight-sweep`, `strike-through`, `typewriter-code`,
+`number-counter`, `text-path`, and `oversized-crop-type`.
+
+The eight typography-focused additions are Remotion-native expression patterns. They
+reuse the existing semantic motion modules instead of introducing a second meaning
+layer: `focus` drives word/line/highlight/strike/typewriter/path/crop treatments,
+while `number-count` and `score-reveal` can drive `number-counter`. Their catalog
+entries report HTML as unsupported until the browser runtime gains equivalent
+pattern-specific rendering.
 
 Choose a pattern only after selecting the semantic target and writing the reason.
 The pattern is an expression layer; it must not become the reason a target is
