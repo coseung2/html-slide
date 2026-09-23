@@ -24,10 +24,14 @@ allowed cases; an accepted data schema alone does not prove geometry is safe.
 
 Add a manifest with the correct `type`, an object `schema` with
 `additionalProperties:false`, and a template using escaped scalar placeholders.
-Built-in complex types use the vetted renderer functions in `core/renderers.py`;
-new complex renderers require an explicit implementation and tests. Never inject
-untrusted raw HTML or evaluate code from a manifest. Optional `styles.css` is
-included only when the block is selected.
+Declare `visualRole` when the block has a stable role in deck-level quality analysis:
+`evidence` for concrete image/data proof, `structure` for process/timeline/diagram
+scaffolding, `support` for marks such as logos, or `copy` for primarily textual
+blocks. New visual modules that omit this metadata are not assumed to be concrete
+evidence. Built-in complex types use the vetted renderer functions in
+`core/renderers.py`; new complex renderers require an explicit implementation and
+tests. Never inject untrusted raw HTML or evaluate code from a manifest. Optional
+`styles.css` is included only when the block is selected.
 
 ## Theme
 

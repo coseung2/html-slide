@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 from .registry import Registry, ContractError
 from .validation import validate_deck
+from .quality import evaluate_deck_quality, enforce_deck_quality
 from .renderers import esc, render_block
 
 STYLE_FAMILIES={'typography':'typography','palette':'palettes','dataviz':'dataviz'}
@@ -68,8 +69,13 @@ def plan_deck(spec: dict, registry: Registry | None = None) -> dict:
     for source in spec['slides']:
         slide=copy.deepcopy(source); theme=slide.get('theme',spec['theme'])
         explicit=slide.get('layout','auto')!='auto'
-        candidates=([{'id':slide['layout'],'score':None,'reasons':['explicit layout']}] if explicit else
-          registry.search(intent=slide['intent'],topic=spec.get('topic',''),density=slide.get('density','medium'),theme=theme,recent=recent))
+        ranked=registry.search(intent=slide['intent'],topic=spec.get('topic',''),density=slide.get('density','medium'),theme=theme,recent=recent)
+        if explicit:
+            reason=slide.get('layout_reason','').strip()
+            reasons=['explicit layout']+(['reason: '+reason] if reason else [])
+            candidates=[{'id':slide['layout'],'score':None,'reasons':reasons}]
+        else:
+            candidates=ranked
         chosen=None; rejected=[]
         for candidate in candidates:
             layout=registry.get('layouts',candidate['id'])
@@ -83,7 +89,8 @@ def plan_deck(spec: dict, registry: Registry | None = None) -> dict:
             plan['warnings'].append(f"{slide['id']}: layout {chosen['id']} repeats three times; review visual rhythm")
         slide['layout']=chosen['id']; slide['theme']=theme
         slide['slots']={k:[b['id'] for b in v] for k,v in slots.items()}
-        slide['selection']={**chosen,'rejected':rejected}
+        alternatives=[candidate for candidate in ranked if candidate['id']!=chosen['id']][:3]
+        slide['selection']={**chosen,'rejected':rejected,'alternatives':alternatives}
         phase=0
         for effect in slide.get('motion',[]):
             effect['startStep']=phase+1
@@ -92,6 +99,10 @@ def plan_deck(spec: dict, registry: Registry | None = None) -> dict:
             effect['endStep']=phase
         slide['steps']=phase
         plan['slides'].append(slide); recent.append(slide['layout'])
+    plan['quality']=evaluate_deck_quality(spec,plan['slides'],registry)
+    for issue in plan['quality']['issues']:
+        plan['warnings'].append('quality/'+issue['code']+': '+issue['message'])
+    enforce_deck_quality(plan['quality'])
     return plan
 
 
