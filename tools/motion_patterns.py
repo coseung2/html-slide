@@ -26,7 +26,6 @@ def _cli(argv: list[str] | None = None) -> int:
     search.add_argument("--intent", required=True)
     search.add_argument("--target", required=True)
     search.add_argument("--semantic", required=True)
-    search.add_argument("--renderer", choices=["html", "remotion"], default="remotion")
     search.add_argument("--tone", action="append", default=[])
     search.add_argument("--intensity", choices=["low", "medium", "high"], default="medium")
     search.add_argument("--density", choices=["low", "medium", "high"], default="medium")
@@ -39,7 +38,7 @@ def _cli(argv: list[str] | None = None) -> int:
     try:
         if args.command == "catalog":
             result = {
-                "version": 2,
+                "version": 3,
                 "patterns": list(load_motion_patterns().values()),
             }
         else:
@@ -47,7 +46,6 @@ def _cli(argv: list[str] | None = None) -> int:
                 intent=args.intent,
                 target=args.target,
                 semantic_module=args.semantic,
-                renderer=args.renderer,
                 tones=args.tone,
                 intensity=args.intensity,
                 density=args.density,
