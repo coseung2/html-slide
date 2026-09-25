@@ -9,6 +9,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from core import Registry
 from tools.compose_hyperframes import compile_hyperframes
+from tools.hyperframes_pipeline import (
+    HyperFramesPipelineError,
+    sample_times,
+    validate_manifest,
+)
+from tools.render_video import _workers
+from tools.verify_hyperframes import validate_h264_pixel_format
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -99,6 +106,36 @@ class HyperFramesCompositionTests(unittest.TestCase):
         self.assertAlmostEqual(cue["at"], 0.6)
         self.assertAlmostEqual(cue["duration"], 0.8)
         self.assertIn('id="hf-plan"', html)
+
+    def test_manifest_contract_and_sample_times(self):
+        _, manifest = compile_hyperframes(self.spec, self.registry)
+        summary = validate_manifest(manifest)
+        self.assertEqual(summary["scenes"], 2)
+        self.assertEqual(summary["cues"], 1)
+        times = sample_times(manifest)
+        self.assertEqual(times[0], 0.0)
+        self.assertLess(times[-1], manifest["durationSeconds"])
+        self.assertIn(0.6, times)
+
+    def test_manifest_rejects_cue_overflow(self):
+        _, manifest = compile_hyperframes(self.spec, self.registry)
+        manifest["scenes"][0]["cues"][0]["duration"] = 99
+        with self.assertRaises(HyperFramesPipelineError):
+            validate_manifest(manifest)
+
+    def test_worker_compatibility_mapping(self):
+        self.assertEqual(_workers(3, None), 3)
+        self.assertEqual(_workers(99, None), 24)
+        self.assertGreaterEqual(_workers(None, "50%"), 1)
+        self.assertEqual(_workers(None, "2"), 2)
+        with self.assertRaises(HyperFramesPipelineError):
+            _workers(None, "bad")
+
+    def test_h264_420_pixel_format_contract(self):
+        self.assertEqual(validate_h264_pixel_format("yuv420p"), "yuv420p")
+        self.assertEqual(validate_h264_pixel_format("yuvj420p"), "yuvj420p")
+        with self.assertRaises(HyperFramesPipelineError):
+            validate_h264_pixel_format("yuv422p")
 
     def test_presenter_runtime_and_browser_clock_transitions_are_removed(self):
         html, _ = compile_hyperframes(self.spec, self.registry)
