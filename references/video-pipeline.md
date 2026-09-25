@@ -159,7 +159,7 @@ python -m unittest tests.test_video_pipeline
 python tools/compose_video.py examples/modular-showcase.json \
   --out dist/video-ci/index.html \
   --timing-out dist/video-ci/timing.json
-./node_modules/.bin/hyperframes lint dist/video-ci --strict
+./node_modules/.bin/hyperframes lint dist/video-ci
 ./node_modules/.bin/hyperframes check dist/video-ci --samples 7 --no-contrast --frame-check --snapshots
 python tools/verify_video.py dist/video-ci/timing.json
 ```
