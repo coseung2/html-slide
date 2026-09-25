@@ -195,7 +195,7 @@ html,body{width:1920px!important;height:1080px!important;overflow:hidden!importa
         "durationSeconds": duration,
         "scenes": scenes,
     }
-    runtime = (registry.root / "core" / "hyperframes_runtime.js").read_text(encoding="utf-8").replace("__HF_PLAN_ID__", "hf-plan").replace("__HF_ROOT_ID__", "html-slide-composition")
+    runtime = (registry.root / "core" / "hyperframes_runtime.js").read_text(encoding="utf-8")
     if "</script" in runtime.lower():
         raise ContractError("unsafe script closing sequence in HyperFrames runtime")
     payload = (
@@ -203,7 +203,7 @@ html,body{width:1920px!important;height:1080px!important;overflow:hidden!importa
         + json_script(hf_plan)
         + "</script><script>"
         + runtime
-        + "</script>"
+        + "</script><script>window.__mountHtmlSlideHyperframes('html-slide-composition','hf-plan')</script>"
     )
     html = html.replace("</body>", payload + "</body>", 1)
     return html, hf_plan
