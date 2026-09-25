@@ -14,6 +14,7 @@ from tools.hyperframes_pipeline import (
     sample_times,
     validate_manifest,
 )
+from tools.hyperframes_project import compile_hyperframes_project
 from tools.render_video import _workers
 from tools.verify_hyperframes import validate_h264_pixel_format
 
@@ -136,6 +137,25 @@ class HyperFramesCompositionTests(unittest.TestCase):
         self.assertEqual(validate_h264_pixel_format("yuvj420p"), "yuvj420p")
         with self.assertRaises(HyperFramesPipelineError):
             validate_h264_pixel_format("yuv422p")
+
+    def test_project_splits_slides_into_isolated_subcompositions(self):
+        index_html, fragments, manifest = compile_hyperframes_project(
+            self.spec,
+            self.registry,
+        )
+        self.assertIn("data-no-timeline", index_html)
+        self.assertIn('data-composition-src="./compositions/one.html"', index_html)
+        self.assertEqual(
+            set(fragments),
+            {"compositions/one.html", "compositions/two.html"},
+        )
+        self.assertIn('data-composition-id="html-slide-one"', fragments["compositions/one.html"])
+        self.assertIn('data-slide="one"', fragments["compositions/one.html"])
+        self.assertNotIn('data-slide="two"', fragments["compositions/one.html"])
+        self.assertEqual(
+            manifest["compositionFiles"],
+            ["compositions/one.html", "compositions/two.html"],
+        )
 
     def test_presenter_runtime_and_browser_clock_transitions_are_removed(self):
         html, _ = compile_hyperframes(self.spec, self.registry)
