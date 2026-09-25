@@ -8,6 +8,7 @@ on:
       - "styles/**"
       - "tools/compose_hyperframes.py"
       - "tools/hyperframes_pipeline.py"
+      - "tools/hyperframes_project.py"
       - "tools/motion_patterns.py"
       - "tools/render_video.py"
       - "tools/render_request.py"
@@ -84,9 +85,8 @@ jobs:
 
       - name: Compile showcase HyperFrames composition
         run: |
-          python tools/compose_hyperframes.py examples/modular-showcase.json \
-            --out dist/video-ci/index.html \
-            --manifest dist/video-ci/video.manifest.json \
+          python tools/hyperframes_project.py examples/modular-showcase.json \
+            --out-dir dist/video-ci \
             --font assets/fonts/PretendardVariable.woff2
           cp video/node_modules/gsap/dist/gsap.min.js dist/video-ci/gsap.min.js
 
