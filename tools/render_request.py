@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -10,7 +11,8 @@ from typing import Any
 
 OUTPUT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$")
 CONCURRENCY_RE = re.compile(r"^([1-9][0-9]*|[1-9][0-9]?%|100%)$")
-ALLOWED_REQUEST_KEYS = {"spec_path", "output_name", "concurrency"}
+WORKERS_RE = re.compile(r"^(?:[1-9]|1[0-9]|2[0-4])$")
+ALLOWED_REQUEST_KEYS = {"spec_path", "output_name", "concurrency", "workers"}
 
 
 class RenderRequestError(ValueError):
