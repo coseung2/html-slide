@@ -123,9 +123,10 @@ body only when preliminary-vs-final data is itself the slide's subject.
 
 Require a meaningful `reason` for every motion, a valid target and a supported
 intent. Choose the semantic motion from the relationship being explained, not from
-an effect catalog. Remotion expression patterns are a second-stage choice governed
-by target compatibility, scene tone, density, intensity, recent repetition and
-pairwise conflicts; `pattern: "auto"` uses those deterministic rules. Read
+an effect catalog. Motion expression patterns are a cross-renderer second-stage
+choice governed by target compatibility, scene tone, density, intensity, recent
+repetition and pairwise conflicts; HTML and Remotion are both valid expression
+targets, and `pattern: "auto"` uses the same deterministic rules. Read
 `references/motion-semantics.md` before authoring data-driven or multi-beat motion.
 Do not animate every element or apply blanket fade-up to every slide. Different
 slides may share timing, but their motion grammar should follow

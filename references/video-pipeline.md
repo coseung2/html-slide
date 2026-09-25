@@ -86,17 +86,18 @@ The video renderer maintains 27 explicit patterns in `video/motion-patterns.json
 `line-split`, `highlight-sweep`, `strike-through`, `typewriter-code`,
 `number-counter`, `text-path`, and `oversized-crop-type`.
 
-The eight typography-focused additions are Remotion-native expression patterns. They
+The typography-focused additions are cross-renderer expression patterns. They
 reuse the existing semantic motion modules instead of introducing a second meaning
 layer: `focus` drives word/line/highlight/strike/typewriter/path/crop treatments,
-while `number-count` and `score-reveal` can drive `number-counter`. Their catalog
-entries report HTML as unsupported until the browser runtime gains equivalent
-pattern-specific rendering.
+while `number-count` and `score-reveal` can drive `number-counter`. HTML is not a
+second-class motion target: the same expression vocabulary can be implemented with
+CSS, SVG, Canvas and the Web Animations API while keeping the static final-frame
+contract intact.
 
 Choose a pattern only after selecting the semantic target and writing the reason.
 The pattern is an expression layer; it must not become the reason a target is
-animated. A deck can therefore remain valid HTML even when the Remotion renderer
-uses a richer visual expression.
+animated. Renderer metadata describes supported expression targets rather than
+assuming that a browser implementation is inherently less capable than Remotion.
 
 Each catalog entry declares compatible semantic modules and target block types plus
 scene intents, tones, nominal intensity, dense-scene safety, implementation

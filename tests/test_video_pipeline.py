@@ -81,6 +81,8 @@ class VideoPipelineTests(unittest.TestCase):
         self.assertIn("text-path", patterns)
         self.assertIn("oversized-crop-type", patterns)
         for pattern in patterns.values():
+            self.assertEqual(pattern["html"], "supported", pattern["id"])
+            self.assertEqual(pattern["remotion"], "supported", pattern["id"])
             self.assertTrue(pattern["targets"])
             self.assertTrue(pattern["semanticModules"])
             self.assertTrue(pattern["intents"])
