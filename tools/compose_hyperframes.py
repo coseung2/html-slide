@@ -177,6 +177,7 @@ def compile_hyperframes(
 html,body{width:1920px!important;height:1080px!important;overflow:hidden!important}
 [data-stage]{width:1920px!important;height:1080px!important;position:relative!important;transform:none!important;overflow:hidden!important}
 [data-slide]{position:absolute!important;inset:0!important;width:1920px!important;height:1080px!important;margin:0!important}
+.clip[style*="visibility: hidden"] *{visibility:hidden!important}
 .deck-shell,.deck-shell-progress,.deck-shell-overview,.deck-shell-sr{display:none!important}
 .hf-pattern-overlay{font-family:inherit;color:inherit}
 </style>
