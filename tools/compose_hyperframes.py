@@ -90,6 +90,12 @@ def compile_hyperframes(
     cue_seconds: float = DEFAULT_CUE_SECONDS,
 ) -> tuple[str, dict]:
     html, plan = build_deck(spec, registry, asset_root=asset_root, font=font)
+    presenter_runtime = (registry.root / "core" / "runtime.js").read_text(encoding="utf-8")
+    presenter_script = "<script>" + presenter_runtime + "</script>"
+    if presenter_script not in html:
+        raise ContractError("cannot isolate presenter runtime from generated HTML")
+    html = html.replace(presenter_script, "", 1)
+    html = _strip_browser_clock_transitions(html)
     scenes, duration = _timing(
         plan,
         fps=fps,
@@ -101,7 +107,7 @@ def compile_hyperframes(
     by_id = {scene["id"]: scene for scene in scenes}
 
     root_attrs = (
-        '<main data-stage data-composition-id="html-slide" data-start="0" '
+        '<main id="html-slide-composition" data-stage data-composition-id="html-slide" data-start="0" '
         f'data-duration="{duration:.6f}" data-fps="{fps}" '
         'data-width="1920" data-height="1080"'
     )
@@ -126,6 +132,8 @@ def compile_hyperframes(
             )
         else:
             attrs += ' class="clip"'
+        if not re.search(r'\\sid="[^"]+"', attrs):
+            attrs += f' id="hf-slide-{slide_id}"'
         attrs += (
             f' data-start="{scene["start"]:.6f}"'
             f' data-duration="{scene["duration"]:.6f}"'
@@ -144,8 +152,8 @@ html,body{width:1920px!important;height:1080px!important;overflow:hidden!importa
 .deck-shell,.deck-shell-progress,.deck-shell-overview,.deck-shell-sr{display:none!important}
 .hf-pattern-overlay{font-family:inherit;color:inherit}
 </style>
-<script>window.__deckEngine={hyperframes:true};document.documentElement.dataset.hfVideo="1";</script>
 """
+    html = html.replace("<html ", '<html data-hf-video="1" ', 1)
     html = html.replace("</head>", hf_css + "</head>", 1)
 
     hf_plan = {
