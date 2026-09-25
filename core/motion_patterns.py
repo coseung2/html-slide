@@ -55,7 +55,7 @@ def load_motion_patterns(path: str | Path = CATALOG) -> dict[str, dict[str, Any]
             raise MotionPatternError(f"{pattern_id}.label is required")
         if not isinstance(item.get("category"), str) or not item["category"]:
             raise MotionPatternError(f"{pattern_id}.category is required")
-        for renderer in ("html", "remotion"):
+        for renderer in ("html", "remotion", "hyperframes"):
             if item.get(renderer) not in RENDER_STATUS:
                 raise MotionPatternError(
                     f"{pattern_id}.{renderer} must be one of {sorted(RENDER_STATUS)}"
@@ -146,7 +146,7 @@ def rank_motion_patterns(
     intent: str,
     target: str,
     semantic_module: str,
-    renderer: str = "remotion",
+    renderer: str = "hyperframes",
     tones: Iterable[str] = (),
     intensity: str = "medium",
     density: str = "medium",
@@ -155,8 +155,8 @@ def rank_motion_patterns(
     recent: Iterable[str] = (),
     path: str | Path = CATALOG,
 ) -> list[dict[str, Any]]:
-    if renderer not in ("html", "remotion"):
-        raise MotionPatternError("renderer must be html or remotion")
+    if renderer not in ("html", "remotion", "hyperframes"):
+        raise MotionPatternError("renderer must be html, remotion or hyperframes")
     if intensity not in INTENSITY_ORDER:
         raise MotionPatternError("intensity must be low, medium or high")
     if density not in ("low", "medium", "high"):
