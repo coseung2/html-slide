@@ -170,6 +170,7 @@
     progress.firstElementChild.style.transform=`scaleX(${total>0?completed/total:1})`;
     status.textContent=`${index+1} / ${slides.length}. ${slides[index].dataset.title}. ${isLive()?phase+' / '+max():'정적 화면'}`;
     renderedIndex=index;
+    if(entered){requestAnimationFrame(()=>slides[index]?.classList.remove('deck-entering'));}
     try { history.replaceState(null,'',`#${index+1}${isLive()&&phase?'.'+phase:''}`); } catch (_) {}
     window.dispatchEvent(new CustomEvent('deck:state',{detail:state()}));
   }
