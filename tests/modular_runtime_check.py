@@ -41,6 +41,22 @@ class RuntimeChecks(unittest.TestCase):
         self.page.evaluate('__deckShell.setStatic(true)')
         self.assertEqual(self.page.locator('.statement').text_content(),'Motion pattern works')
 
+    def test_typewriter_restores_single_text_run_after_settle(self):
+        text='완전히 같은 굵기'
+        self.statement_pattern('typewriter-code',text=text)
+        chars=self.page.locator('.motion-char')
+        self.assertGreater(chars.count(),0)
+        weights=set(chars.evaluate_all("els=>els.map(el=>getComputedStyle(el).fontWeight)"))
+        self.assertEqual(len(weights),1)
+        self.page.evaluate('__deckNext()');self.page.wait_for_timeout(900)
+        self.assertEqual(self.page.locator('.motion-char').count(),0)
+        self.assertEqual(self.page.locator('.statement').text_content(),text)
+        self.page.evaluate('__deckPrev()')
+        self.assertGreater(self.page.locator('.motion-char').count(),0)
+        self.page.evaluate('__deckShell.setStatic(true)')
+        self.assertEqual(self.page.locator('.motion-char').count(),0)
+        self.assertEqual(self.page.locator('.statement').text_content(),text)
+
     def test_scramble_decode_restores_final_text(self):
         self.statement_pattern('scramble-decode',text='DECODE THIS')
         self.assertNotEqual(self.page.locator('.statement').text_content(),'DECODE THIS')
