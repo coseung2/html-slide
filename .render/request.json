@@ -1,0 +1,5 @@
+{
+  "spec_path": "deck.json",
+  "output_name": "hyperframes-smoke",
+  "workers": "2"
+}
