@@ -301,7 +301,7 @@ html.deck-video .hf-value-spacer{opacity:0}
 </style>
 """
     timing_json = json.dumps(timing, ensure_ascii=False, separators=(",", ":")).replace(
-        "</", "<\/"
+        "</", "<\\/"
     )
     runtime = HYPERFRAMES_RUNTIME.read_text(encoding="utf-8")
     if "</script" in runtime.lower():
