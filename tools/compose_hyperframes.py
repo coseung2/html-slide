@@ -35,9 +35,21 @@ def _sanitize_video_styles(source: str) -> str:
     """Remove browser-clock transitions and collapse browser font fallbacks to the embedded face."""
     def replace(match: re.Match[str]) -> str:
         body = _TRANSITION_RE.sub("", match.group("body"))
-        body = body.replace("'Pretendard Variable'", "'HTMLSlide Embedded'")
-        body = re.sub(r"(?<![-\\w'\"])Pretendard(?=\\s*,)", "'HTMLSlide Embedded'", body)
-        body = body.replace("'Noto Sans CJK KR'", "'HTMLSlide Embedded'")
+        body = re.sub(
+            r"(?i)(?:['\"])?Pretendard Variable(?:['\"])?",
+            "'HTMLSlide Embedded'",
+            body,
+        )
+        body = re.sub(
+            r"(?i)(?<![-\\w])(?:['\"])?Pretendard(?:['\"])?(?![-\\w])",
+            "'HTMLSlide Embedded'",
+            body,
+        )
+        body = re.sub(
+            r"(?i)(?:['\"])?Noto Sans CJK KR(?:['\"])?",
+            "'HTMLSlide Embedded'",
+            body,
+        )
         return f'<style{match.group("attrs")}>{body}</style>'
 
     return _STYLE_RE.sub(replace, source)
