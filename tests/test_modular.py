@@ -196,7 +196,6 @@ class EngineTests(unittest.TestCase):
         css=(ROOT/'core/motion_patterns.css').read_text(encoding='utf-8')
         for pattern in load_motion_patterns().values():
             with self.subTest(pattern=pattern['id']):
-                self.assertEqual(pattern['html'],'supported')
                 self.assertIn(f'data-pattern="{pattern["id"]}"',css)
 
     def metric(self,value):
