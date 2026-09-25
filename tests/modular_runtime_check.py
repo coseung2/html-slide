@@ -22,6 +22,57 @@ class RuntimeChecks(unittest.TestCase):
         spec={'schemaVersion':1,'title':'Runtime fixture','language':'en','theme':'tech','slides':[{'id':'sample','title':'Fixture','communication_goal':'Verify a complete metric','intent':'kpi','layout':'split-left','blocks':[{'id':'metric','module':'metric','data':{'label':'Synthetic value','value':value}}],'motion':[{'module':motion,'target':'metric','reason':'Verify numeric emphasis'}]}]}
         raw,_=build_deck(spec);self.page.set_content(raw,wait_until='load');self.page.evaluate('document.fonts.ready')
     def value(self):return self.page.locator('[data-number]').text_content()
+    def statement_pattern(self,pattern,text='Motion pattern works'):
+        spec={'schemaVersion':1,'title':'Pattern fixture','language':'en','theme':'tech','slides':[{
+            'id':'sample','title':'Fixture','communication_goal':'Verify an HTML motion expression','intent':'thesis',
+            'blocks':[{'id':'message','module':'statement','data':{'text':text}}],
+            'motion':[{'module':'focus','target':'message','reason':'Verify pattern expression','pattern':pattern}]
+        }]}
+        raw,plan=build_deck(spec);self.page.set_content(raw,wait_until='load');self.page.evaluate('document.fonts.ready')
+        return plan
+
+    def test_word_by_word_reversal_and_static(self):
+        self.statement_pattern('word-by-word')
+        words=self.page.locator('.motion-word');self.assertEqual(words.count(),3)
+        self.assertLess(float(words.first.evaluate('el=>getComputedStyle(el).opacity')),.05)
+        self.page.evaluate('__deckNext()');self.page.wait_for_timeout(760)
+        self.assertGreater(float(words.first.evaluate('el=>getComputedStyle(el).opacity')),.95)
+        self.page.evaluate('__deckPrev()');self.assertLess(float(words.first.evaluate('el=>getComputedStyle(el).opacity')),.05)
+        self.page.evaluate('__deckShell.setStatic(true)')
+        self.assertEqual(self.page.locator('.statement').text_content(),'Motion pattern works')
+
+    def test_scramble_decode_restores_final_text(self):
+        self.statement_pattern('scramble-decode',text='DECODE THIS')
+        self.assertNotEqual(self.page.locator('.statement').text_content(),'DECODE THIS')
+        self.page.evaluate('__deckNext()');self.page.wait_for_timeout(760)
+        self.assertEqual(self.page.locator('.statement').text_content(),'DECODE THIS')
+        self.page.evaluate('__deckPrev()')
+        self.assertNotEqual(self.page.locator('.statement').text_content(),'DECODE THIS')
+        self.page.evaluate('__deckShell.setStatic(true)')
+        self.assertEqual(self.page.locator('.statement').text_content(),'DECODE THIS')
+
+    def test_pattern_does_not_autoplay_on_slide_entry(self):
+        self.statement_pattern('kinetic-type')
+        block=self.page.locator('[data-pattern="kinetic-type"]')
+        self.assertEqual(block.get_attribute('data-motion-run'),'0')
+        self.page.wait_for_timeout(120)
+        self.assertEqual(self.page.evaluate('__deckState().phase'),0)
+        self.assertEqual(block.get_attribute('data-motion-state'),'pending')
+
+    def test_number_counter_supports_score_reveal(self):
+        spec={'schemaVersion':1,'title':'Score fixture','language':'en','theme':'tech','slides':[{
+            'id':'score','title':'Score','communication_goal':'Verify score counter expression','intent':'result',
+            'blocks':[{'id':'result','module':'score','data':{'home':'A','away':'B','homeScore':12,'awayScore':9}}],
+            'motion':[{'module':'score-reveal','target':'result','reason':'Reveal the result','pattern':'number-counter'}]
+        }]}
+        raw,_=build_deck(spec);self.page.set_content(raw,wait_until='load');self.page.evaluate('document.fonts.ready')
+        numbers=self.page.locator('.score-value [data-number]')
+        self.assertEqual(numbers.all_text_contents(),['0','0'])
+        self.page.evaluate('__deckNext()');self.page.wait_for_timeout(580)
+        self.assertEqual(numbers.all_text_contents(),['12','9'])
+        self.page.evaluate('__deckPrev()');self.assertEqual(numbers.all_text_contents(),['0','0'])
+        self.page.evaluate('__deckShell.setStatic(true)');self.assertEqual(numbers.all_text_contents(),['12','9'])
+
     def test_number_roll_reversal_and_static(self):
         self.deck();self.assertEqual(self.value(),'0');self.page.evaluate('__deckNext()');self.page.wait_for_timeout(580)
         self.assertEqual(self.value(),'12,345.25');self.page.evaluate('__deckPrev()');self.assertEqual(self.value(),'0')
