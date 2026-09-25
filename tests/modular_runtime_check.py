@@ -46,8 +46,16 @@ class RuntimeChecks(unittest.TestCase):
         self.statement_pattern('typewriter-code',text=text)
         chars=self.page.locator('.motion-char')
         self.assertGreater(chars.count(),0)
-        weights=set(chars.evaluate_all("els=>els.map(el=>getComputedStyle(el).fontWeight)"))
-        self.assertEqual(len(weights),1)
+        typography=chars.evaluate_all("""els=>els.map(el=>{const s=getComputedStyle(el);return {
+            family:s.fontFamily,weight:s.fontWeight,variation:s.fontVariationSettings,
+            features:s.fontFeatureSettings,spacing:s.letterSpacing,lineHeight:s.lineHeight
+        }})""")
+        self.assertEqual(len({tuple(sorted(row.items())) for row in typography}),1)
+        parent=self.page.locator('.statement').evaluate("""el=>{const s=getComputedStyle(el);return {
+            family:s.fontFamily,weight:s.fontWeight,variation:s.fontVariationSettings,
+            features:s.fontFeatureSettings,spacing:s.letterSpacing,lineHeight:s.lineHeight
+        }}""")
+        self.assertEqual(typography[0],parent)
         self.page.evaluate('__deckNext()');self.page.wait_for_timeout(900)
         self.assertEqual(self.page.locator('.motion-char').count(),0)
         self.assertEqual(self.page.locator('.statement').text_content(),text)
