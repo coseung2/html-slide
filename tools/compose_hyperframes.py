@@ -24,9 +24,9 @@ DEFAULT_CUE_SECONDS = 0.8
 
 _STAGE_RE = re.compile(r"<main data-stage\b")
 _SLIDE_RE = re.compile(r'<section data-slide="([^"]+)"([^>]*)>')
-_STYLE_RE = re.compile(r"<style(?P<attrs>[^>]*)>(?P<body>[\\s\\S]*?)</style>", re.IGNORECASE)
+_STYLE_RE = re.compile(r"<style(?P<attrs>[^>]*)>(?P<body>[\s\S]*?)</style>", re.IGNORECASE)
 _TRANSITION_RE = re.compile(
-    r"(?<![-\\w])transition(?:-[a-z-]+)?\\s*:[^;}]+;?",
+    r"(?<![-\w])transition(?:-[a-z-]+)?\s*:[^;}]+;?",
     re.IGNORECASE,
 )
 
@@ -35,18 +35,17 @@ def _sanitize_video_styles(source: str) -> str:
     """Remove browser-clock transitions and collapse browser font fallbacks to the embedded face."""
     def replace(match: re.Match[str]) -> str:
         body = _TRANSITION_RE.sub("", match.group("body"))
+        for alias in (
+            "'Pretendard Variable'",
+            '"Pretendard Variable"',
+            "Pretendard Variable",
+            "'Noto Sans CJK KR'",
+            '"Noto Sans CJK KR"',
+            "Noto Sans CJK KR",
+        ):
+            body = body.replace(alias, "'HTMLSlide Embedded'")
         body = re.sub(
-            r"(?i)(?:['\"])?Pretendard Variable(?:['\"])?",
-            "'HTMLSlide Embedded'",
-            body,
-        )
-        body = re.sub(
-            r"(?i)(?<![-\\w])(?:['\"])?Pretendard(?:['\"])?(?![-\\w])",
-            "'HTMLSlide Embedded'",
-            body,
-        )
-        body = re.sub(
-            r"(?i)(?:['\"])?Noto Sans CJK KR(?:['\"])?",
+            r"(?i)(?<![A-Za-z0-9_-])(?:['\"])?Pretendard(?:['\"])?(?![A-Za-z0-9_-])",
             "'HTMLSlide Embedded'",
             body,
         )
