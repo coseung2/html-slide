@@ -149,8 +149,17 @@ class HyperFramesCompositionTests(unittest.TestCase):
         self.assertIn('data-composition-src="./compositions/one.html"', index_html)
         self.assertEqual(
             set(fragments),
-            {"compositions/one.html", "compositions/two.html"},
+            {
+                "compositions/one.html",
+                "compositions/two.html",
+                "hyperframes-runtime.js",
+                "hyperframes-shared.css",
+            },
         )
+        self.assertIn('href="hyperframes-shared.css"', fragments["compositions/one.html"])
+        self.assertIn('src="hyperframes-runtime.js"', fragments["compositions/one.html"])
+        self.assertIn('id="root"', fragments["compositions/one.html"])
+        self.assertNotIn('data-start="0"', fragments["compositions/one.html"])
         self.assertIn('data-composition-id="html-slide-one"', fragments["compositions/one.html"])
         self.assertIn('data-slide="one"', fragments["compositions/one.html"])
         self.assertNotIn('data-slide="two"', fragments["compositions/one.html"])
@@ -158,6 +167,7 @@ class HyperFramesCompositionTests(unittest.TestCase):
             manifest["compositionFiles"],
             ["compositions/one.html", "compositions/two.html"],
         )
+        self.assertEqual(manifest["fontAsset"], "assets/PretendardVariable.woff2")
 
     def test_presenter_runtime_and_browser_clock_transitions_are_removed(self):
         html, _ = compile_hyperframes(self.spec, self.registry)
