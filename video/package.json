@@ -1,8 +1,10 @@
 {
-  "name": "html-slide-remotion",
+  "name": "html-slide-video",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "scripts": {
+    "hf:check": "hyperframes check",
+    "hf:render": "hyperframes render",
     "studio": "remotion studio src/index.ts",
     "render": "remotion render src/index.ts DeckVideo dist/video.mp4",
     "still": "remotion still src/index.ts DeckVideo dist/poster.png --frame=0",
@@ -10,6 +12,7 @@
   },
   "dependencies": {
     "@remotion/cli": "4.0.526",
+    "hyperframes": "0.8.41",
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "remotion": "4.0.526"
