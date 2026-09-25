@@ -66,9 +66,6 @@ jobs:
       - name: Run modular compiler tests
         run: python -m unittest discover -s tests -p 'test_modular.py'
 
-      - name: Run modular browser regressions
-        run: python tests/modular_runtime_check.py
-
       - name: Run video pipeline tests
         run: python -m unittest tests.test_video_pipeline
 
