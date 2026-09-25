@@ -11,6 +11,7 @@ from pathlib import Path
 from core import Registry, build_deck
 from core.composer import json_script
 from core.registry import ContractError
+from core.renderers import esc
 from core.validation import load_spec
 from tools.compose_hyperframes import (
     DEFAULT_BASE_SECONDS,
@@ -170,7 +171,7 @@ def compile_hyperframes_project(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1920,height=1080">
-<title>{spec['title']}</title>
+<title>{esc(spec['title'])}</title>
 <script src="./gsap.min.js"></script>
 <style>
 *{{box-sizing:border-box}}
