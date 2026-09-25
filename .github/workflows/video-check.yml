@@ -17,6 +17,8 @@ on:
       - "tools/video_pipeline.py"
       - "video/**"
       - "tests/test_hyperframes_pipeline.py"
+      - "tests/test_motion_patterns.py"
+      - "tests/test_render_request.py"
       - "tests/test_video_pipeline.py"
       - ".github/workflows/video-check.yml"
       - ".github/workflows/render-video.yml"
@@ -72,7 +74,7 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_modular.py'
 
       - name: Run HyperFrames pipeline tests
-        run: python -m unittest tests.test_hyperframes_pipeline
+        run: python -m unittest tests.test_hyperframes_pipeline tests.test_motion_patterns tests.test_render_request
 
       - name: Run legacy Remotion pipeline tests during migration
         run: python -m unittest tests.test_video_pipeline
