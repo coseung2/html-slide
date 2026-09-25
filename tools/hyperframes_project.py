@@ -8,6 +8,8 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from core import Registry, build_deck
 from core.composer import json_script
 from core.registry import ContractError
