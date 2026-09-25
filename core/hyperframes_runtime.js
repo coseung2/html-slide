@@ -1,13 +1,15 @@
 /* Deterministic HyperFrames motion runtime. HyperFrames owns the playhead; GSAP only describes state. */
 (() => {
   'use strict';
-  window.__mountHtmlSlideHyperframes = (rootId, planId) => {
+  window.__mountHtmlSlideHyperframes = (rootId, planInput) => {
   const gsap = window.gsap;
-  const planNode = document.getElementById(planId);
   const stage = document.getElementById(rootId);
-  if (!gsap || !planNode || !stage) return;
+  if (!gsap || !stage) return;
 
-  const plan = JSON.parse(planNode.textContent);
+  const plan = typeof planInput === 'string'
+    ? JSON.parse(document.getElementById(planInput)?.textContent || '{}')
+    : planInput;
+  if (!plan || !Array.isArray(plan.scenes)) return;
   const tl = gsap.timeline({paused:true});
   const ease = 'power3.out';
   const cut = 'power2.inOut';

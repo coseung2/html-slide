@@ -112,7 +112,6 @@ def compile_hyperframes_project(
         slide_id = scene["id"]
         composition_id = f"html-slide-{slide_id}"
         root_id = "root"
-        plan_id = "hf-plan"
         fragment_path = f"compositions/{slide_id}.html"
 
         local_scene = {
@@ -148,10 +147,9 @@ def compile_hyperframes_project(
   data-dataviz="{dataviz}"
 >
 {slide_markup}
-<script type="application/json" id="{plan_id}">{json_script(local_manifest)}</script>
 </div>
 <script src="hyperframes-runtime.js"></script>
-<script>window.__mountHtmlSlideHyperframes("{root_id}","{plan_id}")</script>
+<script>window.__mountHtmlSlideHyperframes("{root_id}",{json_script(local_manifest)})</script>
 </template>
 """
         fragments[fragment_path] = fragment
