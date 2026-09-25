@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render one validated html-slide deck to MP4 using the local Remotion runtime."""
+"""Render one validated html-slide deck to MP4 through HyperFrames."""
 from __future__ import annotations
 
 import argparse
@@ -13,27 +13,27 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from core import Registry
 from core.registry import ContractError
 from core.validation import load_spec
-from tools.compose_video import (
+from tools.compose_video import DEFAULT_VIDEO_FONT, build_hyperframes_composition
+from tools.video_pipeline import (
     DEFAULT_BASE_SECONDS,
     DEFAULT_FPS,
     DEFAULT_LEAD_SECONDS,
     DEFAULT_STEP_SECONDS,
     DEFAULT_TRANSITION_SECONDS,
-    compile_storyboard,
-)
-from tools.video_pipeline import (
+    ROOT,
     VideoPipelineError,
-    npm_executable,
-    remotion_executable,
+    hyperframes_executable,
     run_checked,
     sample_frames,
-    validate_storyboard,
-    write_storyboard,
+    validate_video_timing,
+    write_video_timing,
 )
 from tools.verify_video import verify_video_artifacts
 
-ROOT = Path(__file__).resolve().parents[1]
-VIDEO_DIR = ROOT / "video"
+
+def _frame_times(timing: dict) -> str:
+    fps = timing["fps"]
+    return ",".join(f"{frame / fps:.6f}" for frame in sample_frames(timing))
 
 
 def main(argv=None) -> int:
@@ -42,15 +42,15 @@ def main(argv=None) -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--work-dir", type=Path)
     parser.add_argument("--asset-root", type=Path)
+    parser.add_argument("--font", type=Path, default=DEFAULT_VIDEO_FONT)
     parser.add_argument("--fps", type=int, default=DEFAULT_FPS)
     parser.add_argument("--base-seconds", type=float, default=DEFAULT_BASE_SECONDS)
     parser.add_argument("--step-seconds", type=float, default=DEFAULT_STEP_SECONDS)
     parser.add_argument("--lead-seconds", type=float, default=DEFAULT_LEAD_SECONDS)
     parser.add_argument("--transition-seconds", type=float, default=DEFAULT_TRANSITION_SECONDS)
-    parser.add_argument("--concurrency", default="50%")
-    parser.add_argument("--log", choices=["error", "warn", "info", "verbose"], default="info")
-    parser.add_argument("--skip-typecheck", action="store_true")
-    parser.add_argument("--skip-browser-ensure", action="store_true")
+    parser.add_argument("--workers", type=int)
+    parser.add_argument("--quality", choices=["draft", "looks", "standard", "delivery", "high"], default="delivery")
+    parser.add_argument("--skip-lint", action="store_true")
     parser.add_argument("--skip-frame-qa", action="store_true")
     parser.add_argument("--keep-work", action="store_true")
     args = parser.parse_args(argv)
@@ -62,98 +62,101 @@ def main(argv=None) -> int:
         out = args.out.resolve()
         if out.suffix.lower() != ".mp4":
             raise VideoPipelineError("--out must end in .mp4")
-        if not VIDEO_DIR.joinpath("package.json").is_file():
-            raise VideoPipelineError(f"missing Remotion runtime: {VIDEO_DIR}")
+        if args.workers is not None and not 1 <= args.workers <= 24:
+            raise VideoPipelineError("--workers must be between 1 and 24")
 
-        work = (
-            args.work_dir.resolve()
-            if args.work_dir
-            else out.parent / f"{out.stem}-video-work"
-        )
+        work = args.work_dir.resolve() if args.work_dir else out.parent / f"{out.stem}-video-work"
         if work.exists():
             shutil.rmtree(work)
         work.mkdir(parents=True)
         out.parent.mkdir(parents=True, exist_ok=True)
 
         deck = load_spec(spec_path)
-        storyboard = compile_storyboard(
+        html, timing, _ = build_hyperframes_composition(
             deck,
             Registry(),
             asset_root=args.asset_root or spec_path.parent,
+            font=args.font,
             fps=args.fps,
             base_seconds=args.base_seconds,
             step_seconds=args.step_seconds,
             lead_seconds=args.lead_seconds,
             transition_seconds=args.transition_seconds,
         )
-        summary = validate_storyboard(storyboard)
-        storyboard_path = work / "storyboard.json"
-        write_storyboard(storyboard_path, storyboard)
+        summary = validate_video_timing(timing)
+        composition = work / "index.html"
+        composition.write_text(html, encoding="utf-8")
+        timing_path = work / "timing.json"
+        write_video_timing(timing_path, timing)
 
-        if not args.skip_typecheck:
+        hyperframes = str(hyperframes_executable(ROOT))
+        version = run_checked(
+            [hyperframes, "--version"],
+            cwd=work,
+            label="HyperFrames version",
+            capture_output=True,
+        ).stdout.strip()
+
+        if not args.skip_lint:
             run_checked(
-                [npm_executable(), "run", "typecheck"],
-                cwd=VIDEO_DIR,
-                label="Remotion typecheck",
+                [hyperframes, "lint", "."],
+                cwd=work,
+                label="HyperFrames lint",
             )
 
-        remotion = str(remotion_executable(VIDEO_DIR))
-        if not args.skip_browser_ensure:
-            run_checked(
-                [remotion, "browser", "ensure"],
-                cwd=VIDEO_DIR,
-                label="Remotion browser ensure",
-            )
-
-        run_checked(
-            [
-                remotion,
-                "render",
-                "src/index.ts",
-                "DeckVideo",
-                str(out),
-                f"--props={storyboard_path}",
-                "--codec=h264",
-                "--pixel-format=yuv420p",
-                f"--concurrency={args.concurrency}",
-                f"--log={args.log}",
-            ],
-            cwd=VIDEO_DIR,
-            label="Remotion render",
-        )
+        command = [
+            hyperframes,
+            "render",
+            "--composition",
+            "index.html",
+            "--output",
+            str(out),
+            "--format",
+            "mp4",
+            "--codec",
+            "h264",
+            "--fps",
+            str(args.fps),
+            "--quality",
+            args.quality,
+            "--strict",
+        ]
+        if args.workers is not None:
+            command += ["--workers", str(args.workers)]
+        run_checked(command, cwd=work, label="HyperFrames render")
         if not out.is_file() or out.stat().st_size == 0:
             raise VideoPipelineError(f"render completed without a non-empty MP4: {out}")
 
         frames_dir = None
         if not args.skip_frame_qa:
-            frames = sample_frames(storyboard)
             frames_dir = work / "frames"
-            frames_dir.mkdir(parents=True, exist_ok=True)
             run_checked(
                 [
-                    remotion,
-                    "render",
-                    "src/index.ts",
-                    "DeckVideo",
+                    hyperframes,
+                    "snapshot",
+                    ".",
+                    "--at",
+                    _frame_times(timing),
+                    "--output",
                     str(frames_dir),
-                    f"--props={storyboard_path}",
-                    f"--frames={','.join(str(frame) for frame in frames)}",
-                    "--sequence",
-                    "--image-format=png",
-                    "--image-sequence-pattern=frame-[frame].[ext]",
-                    f"--concurrency={args.concurrency}",
-                    f"--log={args.log}",
+                    "--no-end",
+                    "--describe",
+                    "false",
                 ],
-                cwd=VIDEO_DIR,
-                label="Remotion sampled-frame render",
+                cwd=work,
+                label="HyperFrames sampled-frame capture",
             )
 
         report = verify_video_artifacts(
-            storyboard,
+            timing,
             video=out,
             frames_dir=frames_dir,
-            video_dir=VIDEO_DIR,
         )
+        report["renderer"] = {
+            "name": "HyperFrames",
+            "version": version,
+            "composition": "canonical html-slide HTML",
+        }
         report_path = out.with_suffix(".qa.json")
         report_path.write_text(
             json.dumps(report, ensure_ascii=False, indent=2) + "\n",
@@ -162,9 +165,10 @@ def main(argv=None) -> int:
 
         print(
             f"Rendered {out}: {summary['scenes']} scenes, "
-            f"{summary['durationSeconds']:.2f}s @ {summary['fps']}fps"
+            f"{summary['durationSeconds']:.2f}s @ {summary['fps']}fps with HyperFrames {version}"
         )
-        print(f"Storyboard: {storyboard_path}")
+        print(f"Composition: {composition}")
+        print(f"Timing: {timing_path}")
         print(f"QA report: {report_path}")
         if not args.keep_work:
             shutil.rmtree(work, ignore_errors=True)

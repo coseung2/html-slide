@@ -112,7 +112,7 @@ def json_script(value) -> str:
 
 
 def build_deck(spec: dict, registry: Registry | None = None, *, asset_root: str | Path = '.', font: str | Path | None = None) -> tuple[str,dict]:
-    registry=registry or Registry(); plan=resolve_motion_patterns(spec,plan_deck(spec,registry),registry,renderer='html')
+    registry=registry or Registry(); plan=resolve_motion_patterns(spec,plan_deck(spec,registry),registry)
     asset_root=Path(asset_root).resolve()
     css=[(registry.root/'core/stage.css').read_text(encoding='utf-8'),(registry.root/'core/shell.css').read_text(encoding='utf-8')]
     used=set(); used_themes={spec['theme']}; slides=[]

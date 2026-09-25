@@ -1,6 +1,6 @@
 ---
 name: html-slide
-description: Build, revise and verify self-contained HTML presentation decks and matching Remotion videos by selecting compatible layout, content, visual, theme, typography, palette, data-visualization and semantic-motion modules from a registry. Use for Korean or English slides, sports reports, market briefings, lessons and presentation redesigns. Accept topics, source material, existing HTML or structured deck JSON; deliver final HTML, requested static PDF/PPTX exports, and MP4 when requested. Preserve target-bound emphasis, fixed-stage geometry and accessible static final frames.
+description: Build, revise and verify self-contained HTML presentation decks and matching HyperFrames-rendered videos by selecting compatible layout, content, visual, theme, typography, palette, data-visualization and semantic-motion modules from a registry. Use for Korean or English slides, sports reports, market briefings, lessons and presentation redesigns. Accept topics, source material, existing HTML or structured deck JSON; deliver final HTML, requested static PDF/PPTX exports, and MP4 when requested. Preserve target-bound emphasis, fixed-stage geometry and accessible static final frames.
 ---
 
 # HTML Slide Director: modular composition
@@ -65,19 +65,20 @@ lectures.
    PPTX is a static full-frame rendition, not editable text/chart objects.
 8. Deliver the actual HTML attachment, requested exports and an accurate verification
    summary. Report any font, factual-source, media or coverage limitations.
-9. When the user requests a Remotion video, keep the same validated deck JSON as the
-   content source of truth. Choose the semantic motion first. If the user did not
-   request a specific expression, use `pattern: "auto"` or inspect candidates with
-   `python tools/motion_patterns.py search --intent ... --target ... --semantic ...`
-   instead of guessing from the effect catalog. After `video/` dependencies are
-   installed, use `python tools/render_video.py deck.json --out dist/video.mp4` as
-   the canonical entrypoint. It must compile and validate the storyboard, typecheck
-   the runtime, ensure the Remotion browser, render H.264, sample semantic key frames
-   and verify the encoded output. Read `references/video-pipeline.md`; do not invent
-   a second content spec or add blanket motion absent from semantic motion declarations.
-   When an agent can push Git branches but cannot call `workflow_dispatch`, use the
-   documented disposable `render/**` transport branch; keep job input under `.render/`,
-   never merge that branch, and rely on the workflow cleanup after a successful render.
+9. When the user requests video, keep the validated deck JSON and the generated HTML as
+   the only content/visual sources of truth. Choose semantic motion first. If the user
+   did not request a specific expression, use `pattern: "auto"` or inspect candidates
+   with `python tools/motion_patterns.py search --intent ... --target ... --semantic ...`.
+   Install the repository-level Node dependencies, then use
+   `python tools/render_video.py deck.json --out dist/video.mp4`. The command builds
+   the same HTML used for presentation, adds only deterministic timing metadata,
+   adapts wall-clock presentation motion to finite seek-safe WAAPI, renders H.264
+   through HyperFrames, samples semantic key frames and verifies the encoded output.
+   Read `references/video-pipeline.md`; never create a second content renderer or a
+   video-only content spec. When an agent can push Git branches but cannot call
+   `workflow_dispatch`, use the documented disposable `render/**` transport branch;
+   keep job input under `.render/`, never merge that branch, and rely on workflow
+   cleanup after a successful render.
 
 Commands after `catalog` share the prefix `python tools/compose_deck.py`.
 
@@ -123,10 +124,11 @@ body only when preliminary-vs-final data is itself the slide's subject.
 
 Require a meaningful `reason` for every motion, a valid target and a supported
 intent. Choose the semantic motion from the relationship being explained, not from
-an effect catalog. Motion expression patterns are a cross-renderer second-stage
-choice governed by target compatibility, scene tone, density, intensity, recent
-repetition and pairwise conflicts; HTML and Remotion are both valid expression
-targets, and `pattern: "auto"` uses the same deterministic rules. Read
+an effect catalog. Motion expression patterns are a second-stage HTML expression choice governed by
+target compatibility, scene tone, density, intensity, recent repetition and pairwise
+conflicts. HTML is the canonical graphics renderer; HyperFrames seeks that same DOM
+for video instead of maintaining a second renderer. `pattern: "auto"` uses the same
+deterministic rules for presentation and video. Read
 `references/motion-semantics.md` before authoring data-driven or multi-beat motion.
 Do not animate every element or apply blanket fade-up to every slide. Different
 slides may share timing, but their motion grammar should follow
@@ -170,7 +172,7 @@ Read [architecture](references/modular-architecture.md) for boundaries,
 [visual quality](references/visual-quality.md) for strict evidence/continuity/repetition
 gates, and [authoring](references/module-authoring.md) before adding a module or style
 pack. Read [migration](references/migrating-v1.md) when working on an existing deck and
-[video pipeline](references/video-pipeline.md) when producing Remotion output.
+[video pipeline](references/video-pipeline.md) when producing HyperFrames video output.
 Preserve older accepted decks and compatibility tools. Treat this repository as the
 AI's reusable production skill, not as a history of completed user jobs. Generate
 user-specific specs, HTML, QA captures and exports in temporary or ignored locations,

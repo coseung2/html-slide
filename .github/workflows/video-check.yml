@@ -12,8 +12,8 @@ on:
       - "tools/render_request.py"
       - "tools/verify_video.py"
       - "tools/video_pipeline.py"
-      - "video/**"
       - "tests/test_video_pipeline.py"
+      - "package.json"
       - ".github/workflows/video-check.yml"
       - ".github/workflows/render-video.yml"
   push:
@@ -28,8 +28,8 @@ on:
       - "tools/render_request.py"
       - "tools/verify_video.py"
       - "tools/video_pipeline.py"
-      - "video/**"
       - "tests/test_video_pipeline.py"
+      - "package.json"
       - ".github/workflows/video-check.yml"
       - ".github/workflows/render-video.yml"
 
@@ -39,7 +39,7 @@ permissions:
 jobs:
   contract:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -54,11 +54,14 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
       - name: Install Python contracts
         run: python -m pip install -r requirements-modular.txt
 
-      - name: Install Remotion runtime
-        run: npm install --prefix video --no-audit --no-fund
+      - name: Install HyperFrames
+        run: npm install --no-audit --no-fund
 
       - name: Run modular compiler tests
         run: python -m unittest discover -s tests -p 'test_modular.py'
@@ -66,11 +69,29 @@ jobs:
       - name: Run video pipeline tests
         run: python -m unittest tests.test_video_pipeline
 
-      - name: Typecheck Remotion runtime
-        run: npm --prefix video run typecheck
+      - name: Build showcase HyperFrames composition
+        run: |
+          python tools/compose_video.py examples/modular-showcase.json \
+            --out dist/video-ci/index.html \
+            --timing-out dist/video-ci/timing.json
 
-      - name: Compile showcase storyboard
-        run: python tools/compose_video.py examples/modular-showcase.json --out dist/video-ci/storyboard.json
+      - name: Verify showcase timing
+        run: python tools/verify_video.py dist/video-ci/timing.json
 
-      - name: Verify showcase storyboard
-        run: python tools/verify_video.py dist/video-ci/storyboard.json
+      - name: Lint HyperFrames composition
+        run: ./node_modules/.bin/hyperframes lint dist/video-ci
+
+      - name: Check HyperFrames runtime
+        run: ./node_modules/.bin/hyperframes check dist/video-ci --samples 7 --no-contrast --frame-check --snapshots
+
+      - name: Upload HyperFrames QA snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hyperframes-video-check-${{ github.run_id }}
+          path: |
+            dist/video-ci/index.html
+            dist/video-ci/timing.json
+            dist/video-ci/snapshots/*.png
+          if-no-files-found: warn
+          retention-days: 7

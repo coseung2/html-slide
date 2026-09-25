@@ -1,44 +1,27 @@
 #!/usr/bin/env python3
-"""Shared contracts and helpers for html-slide video rendering."""
+"""Shared timing, HyperFrames HTML adaptation, and render helpers."""
 from __future__ import annotations
 
 import json
 import os
+import re
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
 
-from tools.motion_patterns import (
-    MotionPatternError,
-    motion_pattern_ids,
-    validate_pattern_use,
-)
-
 ROOT = Path(__file__).resolve().parents[1]
+HYPERFRAMES_RUNTIME = ROOT / "core" / "hyperframes_runtime.js"
+
+DEFAULT_FPS = 30
+DEFAULT_BASE_SECONDS = 4.0
+DEFAULT_STEP_SECONDS = 1.2
+DEFAULT_LEAD_SECONDS = 0.6
+DEFAULT_TRANSITION_SECONDS = 0.35
 
 
 class VideoPipelineError(ValueError):
-    """Raised when a storyboard or video-render environment violates the contract."""
-
-
-def read_storyboard(path: str | Path) -> dict[str, Any]:
-    source = Path(path)
-    try:
-        value = json.loads(source.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise VideoPipelineError(f"cannot read storyboard: {source}: {exc}") from exc
-    if not isinstance(value, dict):
-        raise VideoPipelineError("storyboard root must be an object")
-    return value
-
-
-def write_storyboard(path: str | Path, storyboard: dict[str, Any]) -> None:
-    target = Path(path)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(
-        json.dumps(storyboard, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    """Raised when video timing or the HyperFrames environment violates the contract."""
 
 
 def _int(value: Any, label: str, *, minimum: int | None = None) -> int:
@@ -49,52 +32,119 @@ def _int(value: Any, label: str, *, minimum: int | None = None) -> int:
     return value
 
 
-def validate_storyboard(storyboard: dict[str, Any]) -> dict[str, Any]:
-    """Validate deterministic timing, slot assignment, and motion target integrity."""
-    if storyboard.get("schemaVersion") != 1:
-        raise VideoPipelineError("storyboard schemaVersion must be 1")
-    if storyboard.get("source") != "html-slide":
-        raise VideoPipelineError("storyboard source must be html-slide")
+def compile_video_timing(
+    spec: dict[str, Any],
+    plan: dict[str, Any],
+    *,
+    fps: int = DEFAULT_FPS,
+    base_seconds: float = DEFAULT_BASE_SECONDS,
+    step_seconds: float = DEFAULT_STEP_SECONDS,
+    lead_seconds: float = DEFAULT_LEAD_SECONDS,
+    transition_seconds: float = DEFAULT_TRANSITION_SECONDS,
+) -> dict[str, Any]:
+    """Compile only execution timing; visual/content truth stays in the built HTML."""
+    if fps < 1 or fps > 120:
+        raise VideoPipelineError("fps must be between 1 and 120")
+    if base_seconds <= 0 or step_seconds < 0 or lead_seconds < 0 or transition_seconds < 0:
+        raise VideoPipelineError(
+            "video timing values must be non-negative and base_seconds must be positive"
+        )
+    if len(spec.get("slides", [])) != len(plan.get("slides", [])):
+        raise VideoPipelineError("spec/plan slide count mismatch")
 
-    fps = _int(storyboard.get("fps"), "fps", minimum=1)
-    width = _int(storyboard.get("width"), "width", minimum=1)
-    height = _int(storyboard.get("height"), "height", minimum=1)
-    duration = _int(storyboard.get("durationInFrames"), "durationInFrames", minimum=1)
+    scenes: list[dict[str, Any]] = []
+    cursor = 0
+    cue_gap = round(step_seconds * fps)
+    cue_lead = round(lead_seconds * fps)
+    for index, (source, planned) in enumerate(zip(spec["slides"], plan["slides"])):
+        steps = int(planned.get("steps", 0))
+        duration_frames = max(1, round((base_seconds + steps * step_seconds) * fps))
+        targets = [block["id"] for block in source["blocks"]]
+        cues: list[dict[str, Any]] = []
+        for motion in planned.get("motion", []):
+            start_step = int(motion.get("startStep", 1))
+            end_step = int(motion.get("endStep", start_step))
+            for step in range(start_step, end_step + 1):
+                at_frame = min(duration_frames - 1, cue_lead + (step - 1) * cue_gap)
+                cue = {
+                    "module": motion["module"],
+                    "target": motion["target"],
+                    "reason": motion["reason"],
+                    "step": step,
+                    "atFrame": at_frame,
+                    "durationFrames": max(
+                        1,
+                        min(round(0.8 * fps), duration_frames - at_frame),
+                    ),
+                }
+                for key in ("pattern", "patternSource", "patternReasons", "patternWarnings", "intensity"):
+                    if motion.get(key) is not None:
+                        cue[key] = motion[key]
+                cues.append(cue)
 
-    design = storyboard.get("design")
-    if not isinstance(design, dict):
-        raise VideoPipelineError("design must be an object")
-    palette = design.get("palette")
-    dataviz = design.get("dataviz")
-    if not isinstance(palette, dict) or not {"paper", "ink"}.issubset(palette):
-        raise VideoPipelineError("design.palette must include paper and ink")
-    if not isinstance(dataviz, dict) or "viz-1" not in dataviz:
-        raise VideoPipelineError("design.dataviz must include viz-1")
+        scenes.append(
+            {
+                "id": source["id"],
+                "index": index,
+                "targets": targets,
+                "steps": steps,
+                "startFrame": cursor,
+                "durationFrames": duration_frames,
+                "transitionFrames": 0 if index == 0 else min(
+                    duration_frames - 1, round(transition_seconds * fps)
+                ),
+                "cues": cues,
+            }
+        )
+        cursor += duration_frames
 
-    scenes = storyboard.get("scenes")
+    timing = {
+        "schemaVersion": 2,
+        "source": "html-slide-html",
+        "renderer": "hyperframes",
+        "fps": fps,
+        "width": 1920,
+        "height": 1080,
+        "durationInFrames": cursor,
+        "scenes": scenes,
+    }
+    validate_video_timing(timing)
+    return timing
+
+
+def validate_video_timing(timing: dict[str, Any]) -> dict[str, Any]:
+    if timing.get("schemaVersion") != 2:
+        raise VideoPipelineError("video timing schemaVersion must be 2")
+    if timing.get("source") != "html-slide-html":
+        raise VideoPipelineError("video timing source must be html-slide-html")
+    if timing.get("renderer") != "hyperframes":
+        raise VideoPipelineError("video timing renderer must be hyperframes")
+
+    fps = _int(timing.get("fps"), "fps", minimum=1)
+    width = _int(timing.get("width"), "width", minimum=1)
+    height = _int(timing.get("height"), "height", minimum=1)
+    duration = _int(timing.get("durationInFrames"), "durationInFrames", minimum=1)
+    scenes = timing.get("scenes")
     if not isinstance(scenes, list) or not scenes:
         raise VideoPipelineError("scenes must be a non-empty array")
 
-    try:
-        patterns = motion_pattern_ids()
-    except MotionPatternError as exc:
-        raise VideoPipelineError(f"invalid motion pattern catalog: {exc}") from exc
     expected_start = 0
     total_cues = 0
-    seen_scene_ids: set[str] = set()
-    for index, scene in enumerate(scenes):
+    seen_ids: set[str] = set()
+    for scene_index, scene in enumerate(scenes):
         if not isinstance(scene, dict):
-            raise VideoPipelineError(f"scene {index} must be an object")
+            raise VideoPipelineError(f"scene {scene_index} must be an object")
         scene_id = scene.get("id")
         if not isinstance(scene_id, str) or not scene_id:
-            raise VideoPipelineError(f"scene {index} has invalid id")
-        if scene_id in seen_scene_ids:
+            raise VideoPipelineError(f"scene {scene_index} has invalid id")
+        if scene_id in seen_ids:
             raise VideoPipelineError(f"duplicate scene id: {scene_id}")
-        seen_scene_ids.add(scene_id)
+        seen_ids.add(scene_id)
 
         start = _int(scene.get("startFrame"), f"{scene_id}.startFrame", minimum=0)
         frames = _int(scene.get("durationFrames"), f"{scene_id}.durationFrames", minimum=1)
         transition = _int(scene.get("transitionFrames"), f"{scene_id}.transitionFrames", minimum=0)
+        _int(scene.get("steps"), f"{scene_id}.steps", minimum=0)
         if start != expected_start:
             raise VideoPipelineError(
                 f"{scene_id}.startFrame must be contiguous: expected {expected_start}, got {start}"
@@ -102,64 +152,31 @@ def validate_storyboard(storyboard: dict[str, Any]) -> dict[str, Any]:
         if transition >= frames:
             raise VideoPipelineError(f"{scene_id}.transitionFrames must be shorter than the scene")
 
-        blocks = scene.get("blocks")
-        if not isinstance(blocks, list) or not blocks:
-            raise VideoPipelineError(f"{scene_id}.blocks must be a non-empty array")
-        block_ids: list[str] = []
-        block_modules: dict[str, str] = {}
-        for block in blocks:
-            if not isinstance(block, dict):
-                raise VideoPipelineError(f"{scene_id}: each block must be an object")
-            block_id = block.get("id")
-            if not isinstance(block_id, str) or not block_id:
-                raise VideoPipelineError(f"{scene_id}: block id must be a non-empty string")
-            block_ids.append(block_id)
-            module_id = block.get("module")
-            if not isinstance(module_id, str) or not module_id:
-                raise VideoPipelineError(f"{scene_id}.{block_id}: missing block module")
-            block_modules[block_id] = module_id
-        if len(block_ids) != len(set(block_ids)):
-            raise VideoPipelineError(f"{scene_id}: duplicate block id")
-
-        slots = scene.get("slots")
-        if not isinstance(slots, dict) or not slots:
-            raise VideoPipelineError(f"{scene_id}.slots must be a non-empty object")
-        assigned: list[str] = []
-        for slot_name, ids in slots.items():
-            if not isinstance(slot_name, str) or not slot_name:
-                raise VideoPipelineError(f"{scene_id}: invalid slot name")
-            if not isinstance(ids, list):
-                raise VideoPipelineError(f"{scene_id}.{slot_name}: slot value must be an array")
-            for block_id in ids:
-                if block_id not in block_ids:
-                    raise VideoPipelineError(
-                        f"{scene_id}.{slot_name}: unknown block target {block_id}"
-                    )
-                assigned.append(block_id)
-        if len(assigned) != len(set(assigned)):
-            raise VideoPipelineError(f"{scene_id}: a block may not occupy multiple slots")
-        if set(assigned) != set(block_ids):
-            missing = sorted(set(block_ids) - set(assigned))
-            raise VideoPipelineError(f"{scene_id}: unassigned blocks: {', '.join(missing)}")
+        targets = scene.get("targets")
+        if not isinstance(targets, list) or not targets or any(
+            not isinstance(item, str) or not item for item in targets
+        ):
+            raise VideoPipelineError(f"{scene_id}.targets must contain block ids")
+        if len(targets) != len(set(targets)):
+            raise VideoPipelineError(f"{scene_id}.targets contains duplicates")
 
         cues = scene.get("cues", [])
         if not isinstance(cues, list):
             raise VideoPipelineError(f"{scene_id}.cues must be an array")
-        selected_patterns: list[str] = []
-        seen_pattern_uses: set[tuple[str, str, str]] = set()
         for cue_index, cue in enumerate(cues):
             if not isinstance(cue, dict):
                 raise VideoPipelineError(f"{scene_id}.cues[{cue_index}] must be an object")
-            target = cue.get("target")
-            if target not in block_ids:
+            if cue.get("target") not in targets:
                 raise VideoPipelineError(
-                    f"{scene_id}.cues[{cue_index}]: unknown target {target}"
+                    f"{scene_id}.cues[{cue_index}]: unknown target {cue.get('target')}"
                 )
-            step = _int(cue.get("step"), f"{scene_id}.cues[{cue_index}].step", minimum=1)
+            if not isinstance(cue.get("module"), str) or not cue["module"]:
+                raise VideoPipelineError(f"{scene_id}.cues[{cue_index}]: missing module")
+            if not isinstance(cue.get("reason"), str) or not cue["reason"].strip():
+                raise VideoPipelineError(f"{scene_id}.cues[{cue_index}]: missing reason")
+            _int(cue.get("step"), f"{scene_id}.cues[{cue_index}].step", minimum=1)
             at_frame = _int(
-                cue.get("atFrame"),
-                f"{scene_id}.cues[{cue_index}].atFrame",
-                minimum=0,
+                cue.get("atFrame"), f"{scene_id}.cues[{cue_index}].atFrame", minimum=0
             )
             cue_frames = _int(
                 cue.get("durationFrames"),
@@ -167,41 +184,9 @@ def validate_storyboard(storyboard: dict[str, Any]) -> dict[str, Any]:
                 minimum=1,
             )
             if at_frame >= frames:
-                raise VideoPipelineError(
-                    f"{scene_id}.cues[{cue_index}].atFrame leaves the scene"
-                )
+                raise VideoPipelineError(f"{scene_id}.cues[{cue_index}].atFrame leaves the scene")
             if at_frame + cue_frames > frames:
-                raise VideoPipelineError(
-                    f"{scene_id}.cues[{cue_index}] extends beyond the scene"
-                )
-            if not isinstance(cue.get("module"), str) or not cue["module"]:
-                raise VideoPipelineError(f"{scene_id}.cues[{cue_index}]: missing module")
-            if not isinstance(cue.get("reason"), str) or not cue["reason"].strip():
-                raise VideoPipelineError(f"{scene_id}.cues[{cue_index}]: missing reason")
-            pattern = cue.get("pattern")
-            if pattern is not None:
-                if pattern not in patterns:
-                    raise VideoPipelineError(
-                        f"{scene_id}.cues[{cue_index}]: unknown motion pattern {pattern}"
-                    )
-                use_key = (target, cue["module"], pattern)
-                if use_key not in seen_pattern_uses:
-                    try:
-                        validate_pattern_use(
-                            pattern,
-                            target=block_modules[target],
-                            semantic_module=cue["module"],
-                            renderer="remotion",
-                            selected=selected_patterns,
-                        )
-                    except MotionPatternError as exc:
-                        raise VideoPipelineError(
-                            f"{scene_id}.cues[{cue_index}]: {exc}"
-                        ) from exc
-                    selected_patterns.append(pattern)
-                    seen_pattern_uses.add(use_key)
-            if step < 1:
-                raise VideoPipelineError(f"{scene_id}.cues[{cue_index}]: invalid step")
+                raise VideoPipelineError(f"{scene_id}.cues[{cue_index}] extends beyond the scene")
         total_cues += len(cues)
         expected_start += frames
 
@@ -209,7 +194,6 @@ def validate_storyboard(storyboard: dict[str, Any]) -> dict[str, Any]:
         raise VideoPipelineError(
             f"durationInFrames mismatch: expected {expected_start}, got {duration}"
         )
-
     return {
         "scenes": len(scenes),
         "cues": total_cues,
@@ -221,11 +205,11 @@ def validate_storyboard(storyboard: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def sample_frames(storyboard: dict[str, Any]) -> list[int]:
-    """Return representative global frames around scene and semantic-motion boundaries."""
-    validate_storyboard(storyboard)
+def sample_frames(timing: dict[str, Any]) -> list[int]:
+    """Representative global frames around scene and semantic-motion boundaries."""
+    validate_video_timing(timing)
     frames: set[int] = set()
-    for scene in storyboard["scenes"]:
+    for scene in timing["scenes"]:
         start = scene["startFrame"]
         duration = scene["durationFrames"]
         last_local = duration - 1
@@ -241,18 +225,136 @@ def sample_frames(storyboard: dict[str, Any]) -> list[int]:
     return sorted(frames)
 
 
+def _seconds(frames: int, fps: int) -> str:
+    return f"{frames / fps:.6f}".rstrip("0").rstrip(".")
+
+
+def instrument_hyperframes_html(html: str, timing: dict[str, Any]) -> str:
+    """Adapt the already-built HTML into one HyperFrames composition without re-rendering it."""
+    summary = validate_video_timing(timing)
+    if "data-composition-id=" in html:
+        raise VideoPipelineError("built deck unexpectedly already declares a HyperFrames composition")
+
+    html = html.replace(
+        "<html ",
+        '<html class="deck-video" ',
+        1,
+    )
+    html = html.replace('data-mode="static"', 'data-mode="live"', 1)
+    duration = _seconds(timing["durationInFrames"], timing["fps"])
+    root_attrs = (
+        'id="html-slide-video" data-composition-id="html-slide-video" '
+        f'data-start="0" data-duration="{duration}" '
+        f'data-width="{summary["width"]}" data-height="{summary["height"]}" '
+        f'data-fps="{summary["fps"]}" data-no-timeline '
+    )
+    html = html.replace("<main data-stage", f"<main {root_attrs}data-stage", 1)
+
+    for scene in timing["scenes"]:
+        scene_id = re.escape(scene["id"])
+        pattern = re.compile(rf'<section\s+data-slide="{scene_id}"[^>]*>')
+        match = pattern.search(html)
+        if not match:
+            raise VideoPipelineError(f"built HTML is missing slide {scene['id']}")
+        tag = match.group(0)
+        if ' id="' in tag:
+            raise VideoPipelineError(f"slide {scene['id']} unexpectedly already has an id")
+        start = _seconds(scene["startFrame"], timing["fps"])
+        scene_duration = _seconds(scene["durationFrames"], timing["fps"])
+        tag = tag.replace(
+            f'data-slide="{scene["id"]}"',
+            (
+                f'id="hf-slide-{scene["index"]}" class="clip" '
+                f'data-start="{start}" data-duration="{scene_duration}" '
+                f'data-track-index="0" data-slide="{scene["id"]}"'
+            ),
+            1,
+        )
+        # Composer already emits one layout class; merge it rather than creating a second class attr.
+        tag = tag.replace(' class="layout-', ' data-layout-class="layout-', 1)
+        layout_match = re.search(r'data-layout-class="([^"]+)"', tag)
+        if layout_match:
+            layout_class = layout_match.group(1)
+            tag = tag.replace(
+                f'data-layout-class="{layout_class}"',
+                f'class="clip {layout_class}"',
+                1,
+            )
+            tag = tag.replace('class="clip" ', "", 1)
+        html = html[: match.start()] + tag + html[match.end() :]
+
+    video_css = """
+<style id="html-slide-hyperframes">
+html.deck-video,html.deck-video body{width:1920px;height:1080px;overflow:hidden!important}
+html.deck-video [data-stage]{width:1920px!important;height:1080px!important;position:relative!important;left:0!important;top:0!important;transform:none!important}
+html.deck-video [data-slide]{position:absolute!important;inset:0!important;width:1920px!important;height:1080px!important;pointer-events:none!important}
+html.deck-video .deck-shell,html.deck-video .deck-shell-progress,html.deck-video .deck-shell-overview,html.deck-video .deck-shell-sr{display:none!important}
+html.deck-video *,html.deck-video *::before,html.deck-video *::after{transition:none!important}
+html.deck-video [data-motion-run="1"],html.deck-video [data-motion-run="1"] *,html.deck-video [data-motion-run="1"]::before,html.deck-video [data-motion-run="1"]::after{animation-play-state:paused!important;animation-fill-mode:both!important;animation-iteration-count:1!important}
+html.deck-video [data-motion-run="1"] [data-pattern-primary],html.deck-video [data-motion-run="1"]::before,html.deck-video [data-motion-run="1"]::after,html.deck-video [data-motion-run="1"] .motion-text-path,html.deck-video [data-motion-run="1"] .motion-text-path path{animation-delay:var(--hf-start,0s)!important}
+html.deck-video [data-pattern="particle-warp"][data-motion-run="1"] .motion-particle{animation-delay:calc(var(--hf-start,0s) + var(--i)*14ms)!important}
+html.deck-video [data-pattern="swiss-grid"][data-motion-run="1"]::after{animation-delay:calc(var(--hf-start,0s) + 110ms)!important}
+html.deck-video .hf-final-text{position:relative;z-index:1}
+html.deck-video .hf-motion-overlay,html.deck-video .hf-value-frame{position:absolute;inset:0;z-index:2;pointer-events:none;font:inherit;font-variation-settings:inherit;font-feature-settings:inherit;font-kerning:inherit;letter-spacing:inherit;line-height:inherit;color:inherit;white-space:pre-wrap}
+html.deck-video .hf-value-host{position:relative!important;display:inline-block}
+html.deck-video .hf-value-spacer{opacity:0}
+</style>
+"""
+    timing_json = json.dumps(timing, ensure_ascii=False, separators=(",", ":")).replace(
+        "</", "<\\/"
+    )
+    runtime = HYPERFRAMES_RUNTIME.read_text(encoding="utf-8")
+    if "</script" in runtime.lower():
+        raise VideoPipelineError("unsafe script closing sequence in HyperFrames adapter")
+    html = html.replace("</head>", video_css + "</head>", 1)
+    html = html.replace(
+        "</body>",
+        (
+            f'<script type="application/json" id="hf-video-timing">{timing_json}</script>'
+            f"<script>{runtime}</script></body>"
+        ),
+        1,
+    )
+    return html
+
+
+def read_video_timing(path: str | Path) -> dict[str, Any]:
+    source = Path(path)
+    try:
+        value = json.loads(source.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise VideoPipelineError(f"cannot read video timing: {source}: {exc}") from exc
+    if not isinstance(value, dict):
+        raise VideoPipelineError("video timing root must be an object")
+    return value
+
+
+def write_video_timing(path: str | Path, timing: dict[str, Any]) -> None:
+    validate_video_timing(timing)
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(timing, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def npm_executable() -> str:
     return "npm.cmd" if os.name == "nt" else "npm"
 
 
-def remotion_executable(video_dir: str | Path) -> Path:
-    root = Path(video_dir)
-    name = "remotion.cmd" if os.name == "nt" else "remotion"
-    binary = root / "node_modules" / ".bin" / name
+def hyperframes_executable(root: str | Path = ROOT) -> Path:
+    base = Path(root)
+    name = "hyperframes.cmd" if os.name == "nt" else "hyperframes"
+    binary = base / "node_modules" / ".bin" / name
     if not binary.is_file():
         raise VideoPipelineError(
-            f"Remotion is not installed in {root}. Run 'npm install' in video/ first."
+            f"HyperFrames is not installed in {base}. Run 'npm install' at the repository root first."
         )
+    return binary
+
+
+def ffprobe_executable() -> str:
+    binary = shutil.which("ffprobe")
+    if not binary:
+        raise VideoPipelineError("ffprobe is required; install FFmpeg before rendering video")
     return binary
 
 
@@ -261,6 +363,7 @@ def run_checked(
     *,
     cwd: str | Path,
     label: str,
+    capture_output: bool = False,
 ) -> subprocess.CompletedProcess[str]:
     try:
         return subprocess.run(
@@ -268,8 +371,13 @@ def run_checked(
             cwd=Path(cwd),
             check=True,
             text=True,
+            capture_output=capture_output,
         )
     except FileNotFoundError as exc:
         raise VideoPipelineError(f"{label}: command not found: {command[0]}") from exc
     except subprocess.CalledProcessError as exc:
-        raise VideoPipelineError(f"{label} failed with exit code {exc.returncode}") from exc
+        detail = ""
+        if capture_output:
+            detail = (exc.stderr or exc.stdout or "").strip()
+        suffix = f": {detail}" if detail else ""
+        raise VideoPipelineError(f"{label} failed with exit code {exc.returncode}{suffix}") from exc

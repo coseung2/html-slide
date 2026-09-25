@@ -31,7 +31,8 @@ history.
 ## Quick start
 
 Python 3.10+ and `jsonschema` are required for composition. Browser QA additionally
-requires Playwright and Chromium. Node.js and PptxGenJS are needed only for PPTX export.
+requires Playwright and Chromium. Node.js 22+ is used for PptxGenJS and the pinned
+HyperFrames CLI; local video rendering also requires FFmpeg.
 
 ```sh
 python -m pip install -r requirements-modular.txt
@@ -45,6 +46,8 @@ python tools/compose_deck.py plan dist/work/deck.json --out dist/work/plan.json
 python tools/compose_deck.py build dist/work/deck.json --out dist/work/deck.html
 python tools/verify_modular.py dist/work/deck.html --out dist/work/qa
 python tools/export_modular.py dist/work/deck.html --out dist/work/export
+python tools/compose_video.py dist/work/deck.json --out dist/work/video/index.html --timing-out dist/work/video/timing.json
+python tools/render_video.py dist/work/deck.json --out dist/work/video.mp4
 ```
 
 `--font /absolute/path/font.woff2` embeds an explicitly supplied authorized font.
@@ -59,7 +62,7 @@ service: AI reasoning happens outside the deterministic compiler.
 
 | Directory | Responsibility |
 |---|---|
-| `core/` | Registry, strict contracts, slot solver, composer, safe rendering, stage and navigation |
+| `core/` | Registry, strict contracts, slot solver, composer, safe rendering, stage/navigation and HyperFrames seek adapter |
 | `modules/layouts/` | Spatial skeletons and capacity/type-constrained slots |
 | `modules/content/` | Schema-checked information blocks |
 | `modules/visuals/` | Reviewed local images and logos |

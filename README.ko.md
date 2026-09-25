@@ -42,30 +42,30 @@ python tools/compose_deck.py build dist/work/deck.json --out dist/work/deck.html
 python tools/verify_modular.py dist/work/deck.html --out dist/work/qa
 python tools/export_modular.py dist/work/deck.html --out dist/work/export
 
-# 같은 deck JSON을 Remotion 영상으로 렌더 + QA
-cd video && npm install && cd ..
+# 같은 deck JSON / HTML을 HyperFrames 영상으로 렌더 + QA
+npm install
 python tools/render_video.py dist/work/deck.json --out dist/work/video.mp4
 ```
 
 Python 3.10 이상이 필요합니다. HTML 생성에는 jsonschema, 브라우저 검사에는 Playwright와 Chromium,
-PPTX 출력에는 Node.js와 PptxGenJS가 추가로 필요합니다. 기존 Chromium은 `CHROME_PATH`로 지정할 수 있습니다.
-Remotion 출력은 별도 `video/` 런타임을 사용하며, HTML과 동일한 deck JSON에서 deterministic storyboard를 생성합니다.
-영상 전용으로 내용을 다시 작성하지 않고, 검증된 semantic motion만 시간축 cue로 변환합니다.
-planner가 정한 slot 배치와 palette/dataviz 토큰도 storyboard에 보존하며, 이미지/로고는 검증된 raster data URI로 자체 포함합니다.
-현재 Remotion runtime은 metric, ranking, timeline/process, bar/line chart, score, image/logo 등 유지 중인 모듈을 네이티브 렌더링합니다.
-영상 런타임은 저장소의 Pretendard WOFF2를 직접 번들링하므로 GitHub runner에 한글 폰트가 없어도 동일한 글꼴로 렌더링합니다.
-`render_video.py`는 storyboard 생성, 계약 검증, TypeScript typecheck, Remotion browser 확보, H.264 렌더,
-semantic cue 기준 핵심 프레임 PNG 생성, Remotion 내장 ffprobe 기반 codec/해상도/fps/duration 검증과 QA JSON 출력을 한 번에 수행합니다.
+PPTX 출력과 영상 렌더에는 Node.js 22+가 필요하며 HyperFrames 영상 렌더에는 FFmpeg도 필요합니다.
+영상은 별도 React renderer를 두지 않습니다. 같은 deck JSON으로 검증된 HTML을 만든 뒤,
+슬라이드와 semantic cue의 시간 정보만 HyperFrames attribute/WAAPI로 붙여 그 DOM을 그대로 캡처합니다.
+따라서 layout, typography, palette, dataviz, 이미지, 모션의 최종 화면은 HTML 한 구현만 유지합니다.
+저장소의 Pretendard WOFF2를 영상 HTML에 임베드해 runner의 시스템 한글 폰트에 의존하지 않습니다.
+`render_video.py`는 HyperFrames lint, H.264 렌더, semantic cue 기준 PNG snapshot,
+시스템 ffprobe 기반 codec/해상도/fps/duration 검증과 QA JSON 출력을 한 번에 수행합니다.
 
 ## GitHub Actions 영상 렌더
 
-영상 파이프라인 변경은 `.github/workflows/video-check.yml`에서 모든 브랜치와 PR을 대상으로 계약 테스트와 typecheck를 수행합니다.
-전체 MP4 렌더는 비용과 시간을 아끼기 위해 자동으로 실행하지 않고, `Render Remotion video` workflow를 수동 실행합니다.
-기본 입력은 저장소 안의 deck JSON 경로, artifact 이름, Remotion concurrency이며, 성공하면 MP4, `*.qa.json`, storyboard와 핵심 프레임 PNG를 7일 동안 artifact로 보관합니다.
+영상 파이프라인 변경은 `.github/workflows/video-check.yml`에서 compiler/runtime 테스트와
+HyperFrames lint/check/snapshot을 수행합니다. 전체 MP4는 자동으로 매 push마다 만들지 않고,
+`Render HyperFrames video` workflow 또는 disposable `render/**` branch로 실행합니다.
+입력은 deck JSON 경로, artifact 이름, HyperFrames worker 수이며 성공하면 MP4, `*.qa.json`,
+렌더에 사용된 HTML/timing과 핵심 프레임 PNG를 단기 artifact로 보관합니다.
 
-사용자별 deck JSON, 영상, QA 프레임을 이 저장소 이력에 커밋하지 않는 원칙은 그대로 유지합니다.
-따라서 Actions 수동 렌더는 저장소에 의도적으로 유지되는 예제/회귀 spec이나 명시적으로 공개하기로 한 입력에 사용하고,
-일반 사용자 작업은 입력 파일과 자산을 제공할 수 있는 실행 환경에서 같은 `render_video.py`를 실행합니다.
+사용자별 deck JSON, 영상, QA 프레임을 저장소 이력에 커밋하지 않는 원칙은 그대로 유지합니다.
+일반 사용자 작업은 같은 `render_video.py`를 작업용/임시 위치에서 실행하고 결과물만 전달합니다.
 
 테마는 모서리와 경계 같은 **디자인 문법**을, 레이아웃은 화면 골격과 슬롯을, 정보 모듈은 데이터 표현을 맡습니다.
 폰트 체계, 메인 색상, 차트 색상은 각각 `styles/typography`, `styles/palettes`, `styles/dataviz`의
@@ -122,9 +122,10 @@ python tests/modular_runtime_check.py
 python tools/compose_deck.py build examples/modular-showcase.json --out examples/modular-showcase.html
 python tools/verify_modular.py examples/modular-showcase.html --out dist/qa
 python -m unittest tests.test_video_pipeline
-cd video && npm run typecheck && cd ..
-python tools/compose_video.py examples/modular-showcase.json --out dist/video-ci/storyboard.json
-python tools/verify_video.py dist/video-ci/storyboard.json
+python tools/compose_video.py examples/modular-showcase.json --out dist/video-ci/index.html --timing-out dist/video-ci/timing.json
+./node_modules/.bin/hyperframes lint dist/video-ci
+./node_modules/.bin/hyperframes check dist/video-ci --samples 7 --no-contrast --frame-check --snapshots
+python tools/verify_video.py dist/video-ci/timing.json
 ```
 
 화면 경계, 텍스트 넘침, 블록 겹침, 이미지 로딩, 강조 대상 결합, 네 가지 화면 크기,
