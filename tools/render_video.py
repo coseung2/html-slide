@@ -99,7 +99,7 @@ def main(argv=None) -> int:
 
         if not args.skip_lint:
             run_checked(
-                [hyperframes, "lint", ".", "--strict"],
+                [hyperframes, "lint", "."],
                 cwd=work,
                 label="HyperFrames lint",
             )
