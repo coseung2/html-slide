@@ -24,6 +24,20 @@ DEFAULT_CUE_SECONDS = 0.8
 
 _STAGE_RE = re.compile(r"<main data-stage\b")
 _SLIDE_RE = re.compile(r'<section data-slide="([^"]+)"([^>]*)>')
+_STYLE_RE = re.compile(r"<style(?P<attrs>[^>]*)>(?P<body>[\\s\\S]*?)</style>", re.IGNORECASE)
+_TRANSITION_RE = re.compile(
+    r"(?<![-\\w])transition(?:-[a-z-]+)?\\s*:[^;}]+;?",
+    re.IGNORECASE,
+)
+
+
+def _strip_browser_clock_transitions(source: str) -> str:
+    """Remove CSS transitions from video HTML because GSAP owns the seekable playhead."""
+    def replace(match: re.Match[str]) -> str:
+        body = _TRANSITION_RE.sub("", match.group("body"))
+        return f'<style{match.group("attrs")}>{body}</style>'
+
+    return _STYLE_RE.sub(replace, source)
 
 
 def _timing(
