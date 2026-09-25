@@ -129,7 +129,7 @@ def compile_hyperframes_project(
 <script src="../gsap.min.js"></script>
 <style>
 {styles}
-.hf-slide-root{{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--paper);color:var(--ink);font-family:var(--font-body,'HTMLSlide Embedded',system-ui,sans-serif);font-weight:var(--body-weight,500);word-break:keep-all;overflow-wrap:break-word}}
+.hf-slide-root{{position:relative;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:var(--font-body,'HTMLSlide Embedded',system-ui,sans-serif);font-weight:var(--body-weight,500);word-break:keep-all;overflow-wrap:break-word}}
 .hf-slide-root [data-slide]{{position:absolute!important;inset:0!important;width:1920px!important;height:1080px!important;visibility:visible!important;pointer-events:none!important;margin:0!important}}
 .deck-shell,.deck-shell-progress,.deck-shell-overview,.deck-shell-sr{{display:none!important}}
 .hf-pattern-overlay{{font-family:inherit;color:inherit}}
