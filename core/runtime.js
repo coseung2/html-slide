@@ -133,7 +133,7 @@
         const first=Number(block.dataset.startStep),last=Number(block.dataset.endStep);
         const done=!isLive() || phase>=last;
         const was=block.dataset.motionState,nextState=done?'done':'pending';
-        block.dataset.motionRun=(isLive()&&active&&!entered&&was&&was!==nextState)?'1':'0';
+        block.dataset.motionRun=(isLive()&&active&&!entered&&was==='pending'&&nextState==='done')?'1':'0';
         block.dataset.motionState=nextState;
         block.querySelectorAll('[data-sequence-item]').forEach((item,j)=>{
           item.dataset.sequenceState=(!isLive() || phase>=first+j)?'done':'pending';
