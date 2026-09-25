@@ -75,7 +75,7 @@ class HyperFramesCompositionTests(unittest.TestCase):
         self.assertIn('data-height="1080"', html)
         self.assertNotIn('data-no-timeline', html)
         self.assertIn('<script src="./gsap.min.js"></script>', html)
-        self.assertIn("window.__timelines['html-slide'] = tl", html)
+        self.assertIn("window.__timelines[stage.dataset.compositionId] = tl", html)
         self.assertEqual(manifest["renderer"], "hyperframes")
         self.assertEqual(manifest["fps"], 30)
 
