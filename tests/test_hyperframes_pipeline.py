@@ -142,7 +142,10 @@ class HyperFramesCompositionTests(unittest.TestCase):
         self.assertNotIn("/* One state owner.", html)
         self.assertNotIn("performance.now()", html)
         self.assertNotIn("requestAnimationFrame", html)
-        self.assertNotRegex(html, r"(?i)transition(?:-[a-z-]+)?\\s*:")
+        self.assertNotRegex(html, r"(?i)transition(?:-[a-z-]+)?\s*:")
+        self.assertNotIn("Pretendard Variable", html)
+        self.assertNotRegex(html, r"(?i)(?<![A-Za-z0-9_-])Pretendard(?![A-Za-z0-9_-])")
+        self.assertNotIn("Noto Sans CJK KR", html)
         self.assertIn('data-hf-video="1"', html)
         self.assertIn('id="hf-slide-one"', html)
 
