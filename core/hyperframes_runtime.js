@@ -244,12 +244,12 @@
     } else if (id === 'scramble-decode') {
       const source=rememberText(p);
       const state={progress:0};
-      setPending(tl,p,scene.start,{opacity:.55,filter:'blur(.55px)',letterSpacing:'.035em'});
+      setPending(tl,p,scene.start,{opacity:.55,filter:'blur(.55px)',x:-4});
       tl.to(state,{progress:1,duration,ease,onUpdate:()=>{
         const chars=segment(source), keep=Math.floor(chars.length*clamp(state.progress));
         p.textContent=chars.map((char,index)=>/\s/.test(char)||index<keep?char:scrambleGlyphs[(index*13+3)%scrambleGlyphs.length]).join('');
       },onComplete:()=>{p.textContent=source;}},at);
-      tl.to(p,{opacity:1,filter:'blur(0px)',letterSpacing:'0em',duration,ease},at);
+      tl.to(p,{opacity:1,filter:'blur(0px)',x:0,duration,ease},at);
     } else if (id === 'variable-font') {
       setPending(tl,p,scene.start,{opacity:.2,scaleX:.9,fontWeight:320,fontVariationSettings:'"wght" 320, "wdth" 78'});
       tweenFinal(tl,p,at,duration,{opacity:1,scaleX:1,fontWeight:800,fontVariationSettings:'"wght" 800, "wdth" 100'});
