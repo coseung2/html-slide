@@ -44,6 +44,10 @@ on:
       - ".github/workflows/video-check.yml"
       - ".github/workflows/render-video.yml"
 
+concurrency:
+  group: video-contract-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
