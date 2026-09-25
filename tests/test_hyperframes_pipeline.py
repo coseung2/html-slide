@@ -1,0 +1,94 @@
+"""Contracts for HyperFrames composition compilation."""
+from __future__ import annotations
+
+import unittest
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from core import Registry
+from tools.compose_hyperframes import compile_hyperframes
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class HyperFramesCompositionTests(unittest.TestCase):
+    def setUp(self):
+        self.registry = Registry(ROOT)
+        self.spec = {
+            "schemaVersion": 1,
+            "title": "HyperFrames test",
+            "language": "ko",
+            "theme": "tech",
+            "slides": [
+                {
+                    "id": "one",
+                    "title": "첫 장",
+                    "communication_goal": "첫 메시지를 설명한다",
+                    "intent": "thesis",
+                    "blocks": [
+                        {
+                            "id": "message",
+                            "module": "statement",
+                            "data": {"text": "첫 메시지"},
+                        }
+                    ],
+                    "motion": [
+                        {
+                            "module": "focus",
+                            "target": "message",
+                            "reason": "첫 메시지를 강조한다",
+                            "pattern": "kinetic-type",
+                        }
+                    ],
+                },
+                {
+                    "id": "two",
+                    "title": "둘째 장",
+                    "communication_goal": "둘째 메시지를 설명한다",
+                    "intent": "conclusion",
+                    "blocks": [
+                        {
+                            "id": "message-two",
+                            "module": "statement",
+                            "data": {"text": "둘째 메시지"},
+                        }
+                    ],
+                },
+            ],
+        }
+
+    def test_composition_root_has_hyperframes_contract(self):
+        html, manifest = compile_hyperframes(self.spec, self.registry)
+        self.assertIn('data-composition-id="html-slide"', html)
+        self.assertIn('data-start="0"', html)
+        self.assertIn('data-width="1920"', html)
+        self.assertIn('data-height="1080"', html)
+        self.assertIn('data-no-timeline', html)
+        self.assertEqual(manifest["renderer"], "hyperframes")
+        self.assertEqual(manifest["fps"], 30)
+
+    def test_slides_are_timed_clips(self):
+        html, manifest = compile_hyperframes(
+            self.spec,
+            self.registry,
+            base_seconds=4.0,
+            step_seconds=1.2,
+        )
+        self.assertIn('data-slide="one"', html)
+        self.assertIn('data-track-index="0"', html)
+        self.assertEqual(manifest["scenes"][0]["start"], 0.0)
+        self.assertAlmostEqual(manifest["scenes"][0]["duration"], 5.2)
+        self.assertAlmostEqual(manifest["scenes"][1]["start"], 5.2)
+        self.assertAlmostEqual(manifest["durationSeconds"], 9.2)
+
+    def test_presenter_runtime_is_disabled_for_video_composition(self):
+        html, _ = compile_hyperframes(self.spec, self.registry)
+        sentinel = 'window.__deckEngine={hyperframes:true}'
+        self.assertIn(sentinel, html)
+        self.assertLess(html.index(sentinel), html.index("/* One state owner."))
+
+
+if __name__ == "__main__":
+    unittest.main()
