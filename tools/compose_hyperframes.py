@@ -31,10 +31,13 @@ _TRANSITION_RE = re.compile(
 )
 
 
-def _strip_browser_clock_transitions(source: str) -> str:
-    """Remove CSS transitions from video HTML because GSAP owns the seekable playhead."""
+def _sanitize_video_styles(source: str) -> str:
+    """Remove browser-clock transitions and collapse browser font fallbacks to the embedded face."""
     def replace(match: re.Match[str]) -> str:
         body = _TRANSITION_RE.sub("", match.group("body"))
+        body = body.replace("'Pretendard Variable'", "'HTMLSlide Embedded'")
+        body = re.sub(r"(?<![-\\w'\"])Pretendard(?=\\s*,)", "'HTMLSlide Embedded'", body)
+        body = body.replace("'Noto Sans CJK KR'", "'HTMLSlide Embedded'")
         return f'<style{match.group("attrs")}>{body}</style>'
 
     return _STYLE_RE.sub(replace, source)
@@ -109,7 +112,7 @@ def compile_hyperframes(
     if presenter_script not in html:
         raise ContractError("cannot isolate presenter runtime from generated HTML")
     html = html.replace(presenter_script, "", 1)
-    html = _strip_browser_clock_transitions(html)
+    html = _sanitize_video_styles(html)
     scenes, duration = _timing(
         plan,
         fps=fps,
