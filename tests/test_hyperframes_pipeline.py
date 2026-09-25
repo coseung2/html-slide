@@ -65,7 +65,9 @@ class HyperFramesCompositionTests(unittest.TestCase):
         self.assertIn('data-start="0"', html)
         self.assertIn('data-width="1920"', html)
         self.assertIn('data-height="1080"', html)
-        self.assertIn('data-no-timeline', html)
+        self.assertNotIn('data-no-timeline', html)
+        self.assertIn('<script src="./gsap.min.js"></script>', html)
+        self.assertIn("window.__timelines['html-slide'] = tl", html)
         self.assertEqual(manifest["renderer"], "hyperframes")
         self.assertEqual(manifest["fps"], 30)
 
@@ -82,6 +84,21 @@ class HyperFramesCompositionTests(unittest.TestCase):
         self.assertAlmostEqual(manifest["scenes"][0]["duration"], 5.2)
         self.assertAlmostEqual(manifest["scenes"][1]["start"], 5.2)
         self.assertAlmostEqual(manifest["durationSeconds"], 9.2)
+
+    def test_semantic_motion_becomes_seekable_cue(self):
+        html, manifest = compile_hyperframes(
+            self.spec,
+            self.registry,
+            lead_seconds=0.6,
+            cue_seconds=0.8,
+        )
+        cue = manifest["scenes"][0]["cues"][0]
+        self.assertEqual(cue["module"], "focus")
+        self.assertEqual(cue["target"], "message")
+        self.assertEqual(cue["pattern"], "kinetic-type")
+        self.assertAlmostEqual(cue["at"], 0.6)
+        self.assertAlmostEqual(cue["duration"], 0.8)
+        self.assertIn('id="hf-plan"', html)
 
     def test_presenter_runtime_is_disabled_for_video_composition(self):
         html, _ = compile_hyperframes(self.spec, self.registry)
