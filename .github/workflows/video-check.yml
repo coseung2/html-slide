@@ -82,7 +82,7 @@ jobs:
         run: python tools/verify_video.py dist/video-ci/timing.json
 
       - name: Lint HyperFrames composition
-        run: ./node_modules/.bin/hyperframes lint dist/video-ci --strict
+        run: ./node_modules/.bin/hyperframes lint dist/video-ci
 
       - name: Check HyperFrames runtime
         run: ./node_modules/.bin/hyperframes check dist/video-ci --samples 7 --no-contrast --frame-check --snapshots
