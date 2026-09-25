@@ -11,6 +11,7 @@
   let staticMode = params.get('mode') === 'static' || (params.get('mode') !== 'live' && document.body.dataset.mode === 'static');
   let index = 0, phase = 0, previousFocus = null;
   const jobs = new Map();
+  let renderedIndex = -1;
   const isLive = () => !reduce.matches && !staticMode;
   const max = (i = index) => Number(slides[i].dataset.steps || 0);
   const format = n => new Intl.NumberFormat('en-US', {maximumFractionDigits: 4}).format(n);
@@ -39,8 +40,89 @@
     }
     jobs.set(el,requestAnimationFrame(frame));
   }
+  const segment = text => {
+    try { return [...new Intl.Segmenter(document.documentElement.lang || 'en',{granularity:'grapheme'}).segment(text)].map(x=>x.segment); }
+    catch (_) { return Array.from(text); }
+  };
+  const primarySelectors={
+    'statement':'.statement','quote':'blockquote','comparison-text':'.comparison-copy',
+    'metric':'.metric-value','score':'.score-value','image':'img','logo':'img',
+    'ranking':'.ranking','bullet-list':'.module-list','timeline':'.module-timeline',
+    'process':'.process','bar-chart':'.bar-chart','line-chart':'.line-chart'
+  };
+  function patternPrimary(block) {
+    const selector=primarySelectors[block.dataset.module];
+    return (selector && block.querySelector(selector)) || block;
+  }
+  function wrapWords(primary) {
+    if (primary.dataset.patternReady) return;
+    const parts=primary.textContent.split(/(\s+)/);let n=0;primary.replaceChildren();
+    parts.forEach(part=>{
+      if(!part)return;
+      if(/^\s+$/.test(part)){primary.append(document.createTextNode(part));return;}
+      const span=document.createElement('span');span.className='motion-word';span.style.setProperty('--i',n++);span.textContent=part;primary.append(span);
+    });
+    primary.dataset.patternReady='word';
+  }
+  function wrapChars(primary) {
+    if (primary.dataset.patternReady) return;
+    const chars=segment(primary.textContent);primary.replaceChildren();
+    chars.forEach((ch,i)=>{const span=document.createElement('span');span.className='motion-char';span.style.setProperty('--i',i);span.textContent=ch;primary.append(span);});
+    primary.dataset.patternReady='char';
+  }
+  function addParticles(block) {
+    if(block.querySelector('.motion-particles'))return;
+    const layer=document.createElement('span');layer.className='motion-particles';layer.setAttribute('aria-hidden','true');
+    for(let i=0;i<18;i++){
+      const dot=document.createElement('span');dot.className='motion-particle';dot.style.setProperty('--i',i);
+      const angle=(i*137.5)*Math.PI/180, radius=90+(i%6)*34;
+      dot.style.setProperty('--dx',`${Math.cos(angle)*radius}px`);dot.style.setProperty('--dy',`${Math.sin(angle)*radius}px`);layer.append(dot);
+    }
+    block.append(layer);
+  }
+  function addTextPath(block, primary) {
+    if(block.querySelector('.motion-text-path'))return;
+    const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.classList.add('motion-text-path');svg.setAttribute('viewBox','0 0 1000 260');svg.setAttribute('aria-hidden','true');
+    const path=document.createElementNS(ns,'path'),id=`motion-path-${block.id}`;path.setAttribute('id',id);path.setAttribute('d','M60 190 C260 30 730 20 940 170');svg.append(path);
+    const text=document.createElementNS(ns,'text'),tp=document.createElementNS(ns,'textPath');tp.setAttribute('href',`#${id}`);tp.setAttribute('startOffset','5%');tp.textContent=primary.textContent.trim();text.append(tp);svg.append(text);block.append(svg);
+  }
+  function preparePatterns() {
+    document.querySelectorAll('[data-pattern]').forEach(block=>{
+      const primary=patternPrimary(block);primary.setAttribute('data-pattern-primary','');
+      const pattern=block.dataset.pattern;
+      if(['line-split','highlight-sweep','strike-through'].includes(pattern)) primary.dataset.motionText=primary.textContent;
+      if(pattern==='word-by-word')wrapWords(primary);
+      else if(pattern==='typewriter-code')wrapChars(primary);
+      else if(pattern==='scramble-decode' && primary.dataset.finalText==null)primary.dataset.finalText=primary.textContent;
+      else if(pattern==='particle-warp')addParticles(block);
+      else if(pattern==='text-path')addTextPath(block,primary);
+    });
+  }
+  const scrambleGlyphs=segment('░▒▓#%&0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ가나다라마바사아자차카타파하');
+  function restoreScramble(block){
+    const primary=patternPrimary(block);if(primary.dataset.finalText!=null)primary.textContent=primary.dataset.finalText;
+  }
+  function seedScramble(block){
+    const primary=patternPrimary(block),final=primary.dataset.finalText;if(final==null)return;
+    primary.textContent=segment(final).map((ch,i)=>/\s/.test(ch)?ch:scrambleGlyphs[(i*7+3)%scrambleGlyphs.length]).join('');
+  }
+  function runScramble(block){
+    const primary=patternPrimary(block),final=primary.dataset.finalText;if(final==null)return;
+    const chars=segment(final),start=performance.now(),duration=680;
+    function frame(now){
+      const t=Math.min(1,(now-start)/duration),fixed=Math.floor(chars.length*Math.pow(t,.72));
+      primary.textContent=chars.map((ch,i)=>/\s/.test(ch)||i<fixed?ch:scrambleGlyphs[(i*13+Math.floor(now/42))%scrambleGlyphs.length]).join('');
+      if(t<1)jobs.set(block,requestAnimationFrame(frame));else{primary.textContent=final;jobs.delete(block);}
+    }
+    jobs.set(block,requestAnimationFrame(frame));
+  }
+  function numericElements(block){return [...block.querySelectorAll('[data-number]')];}
+  function setNumbersStart(block){numericElements(block).forEach(el=>el.textContent='0');}
+  function restoreNumbers(block){numericElements(block).forEach(el=>el.textContent=format(Number(el.dataset.number)));}
+  function runPatternCount(block){numericElements(block).forEach(el=>{el.textContent='0';count(el,Number(el.dataset.number));});}
   function state() { return {slide:index,phase,steps:isLive()?max():0,slideCount:slides.length,reducedMotion:reduce.matches,staticMode:!isLive()}; }
   function render(animate = false) {
+    const entered=index!==renderedIndex;
     cancelJobs(); root.classList.toggle('deck-live',isLive());
     slides.forEach((slide,i) => {
       const active = i===index; slide.classList.toggle('is-active',active); slide.inert = !active;
@@ -50,15 +132,30 @@
       slide.querySelectorAll('[data-motion]').forEach(block=>{
         const first=Number(block.dataset.startStep),last=Number(block.dataset.endStep);
         const done=!isLive() || phase>=last;
-        const was=block.dataset.motionState;
-        block.dataset.motionState=done?'done':'pending';
+        const was=block.dataset.motionState,nextState=done?'done':'pending';
+        block.dataset.motionRun=(isLive()&&active&&!entered&&was&&was!==nextState)?'1':'0';
+        block.dataset.motionState=nextState;
         block.querySelectorAll('[data-sequence-item]').forEach((item,j)=>{
           item.dataset.sequenceState=(!isLive() || phase>=first+j)?'done':'pending';
         });
-        (block.dataset.motion==='number-count' ? block.querySelectorAll('[data-number]') : []).forEach(el=>{
-          const n=Number(el.dataset.number); el.textContent=format(done?n:0);
-          if (block.dataset.motion==='number-count' && active && done && isLive() && animate && was==='pending') count(el,n);
-        });
+        const pattern=block.dataset.pattern;
+        if(pattern==='scramble-decode'){
+          if(!isLive())restoreScramble(block);
+          else if(!done)seedScramble(block);
+          else if(active&&animate&&was==='pending')runScramble(block);
+          else restoreScramble(block);
+        }
+        if(pattern==='number-counter'){
+          if(!isLive())restoreNumbers(block);
+          else if(!done)setNumbersStart(block);
+          else if(active&&animate&&was==='pending')runPatternCount(block);
+          else restoreNumbers(block);
+        } else if(block.dataset.motion==='number-count') {
+          numericElements(block).forEach(el=>{
+            const n=Number(el.dataset.number);el.textContent=format(done?n:0);
+            if(active&&done&&isLive()&&animate&&was==='pending')count(el,n);
+          });
+        }
       });
     });
     document.body.dataset.theme=slides[index].dataset.theme;
@@ -72,6 +169,7 @@
     const completed=units.slice(0,index).reduce((a,b)=>a+b,0)+(isLive()?phase:0);
     progress.firstElementChild.style.transform=`scaleX(${total>0?completed/total:1})`;
     status.textContent=`${index+1} / ${slides.length}. ${slides[index].dataset.title}. ${isLive()?phase+' / '+max():'정적 화면'}`;
+    renderedIndex=index;
     try { history.replaceState(null,'',`#${index+1}${isLive()&&phase?'.'+phase:''}`); } catch (_) {}
     window.dispatchEvent(new CustomEvent('deck:state',{detail:state()}));
   }
@@ -147,5 +245,5 @@
   // Preserve the public adapter shape used by legacy exporters and test harnesses.
   window.deck={stage,slides,goto,next:forward,prev:back,state,render,measure:fit,reflow:fit,start:()=>0,phases:i=>isLive()?max(i):0,
     get slide(){return index;},get phase(){return phase;},get reduce(){return reduce.matches;}};
-  root.classList.add('deck-ready');fit();if(!applyHash())render();
+  preparePatterns();root.classList.add('deck-ready');fit();if(!applyHash())render();
 })();

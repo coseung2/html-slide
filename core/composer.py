@@ -8,6 +8,7 @@ from .registry import Registry, ContractError
 from .validation import validate_deck
 from .quality import evaluate_deck_quality, enforce_deck_quality
 from .renderers import esc, render_block
+from .motion_patterns import resolve_motion_patterns
 
 STYLE_FAMILIES={'typography':'typography','palette':'palettes','dataviz':'dataviz'}
 
@@ -111,7 +112,7 @@ def json_script(value) -> str:
 
 
 def build_deck(spec: dict, registry: Registry | None = None, *, asset_root: str | Path = '.', font: str | Path | None = None) -> tuple[str,dict]:
-    registry=registry or Registry(); plan=plan_deck(spec,registry)
+    registry=registry or Registry(); plan=resolve_motion_patterns(spec,plan_deck(spec,registry),registry,renderer='html')
     asset_root=Path(asset_root).resolve()
     css=[(registry.root/'core/stage.css').read_text(encoding='utf-8'),(registry.root/'core/shell.css').read_text(encoding='utf-8')]
     used=set(); used_themes={spec['theme']}; slides=[]
@@ -127,6 +128,10 @@ def build_deck(spec: dict, registry: Registry | None = None, *, asset_root: str 
             if effect:
                 used.add(('motion',effect['module']))
                 attributes=f' data-motion="{effect["module"]}" data-start-step="{effect["startStep"]}" data-end-step="{effect["endStep"]}" data-step="{effect["endStep"]}"'
+                if effect.get('pattern'):
+                    attributes+=f' data-pattern="{esc(effect["pattern"])}"'
+                if effect.get('intensity'):
+                    attributes+=f' data-intensity="{esc(effect["intensity"])}"'
                 fragment=fragment.replace('<article ', '<article'+attributes+' ',1)
                 if effect['module']=='focus':
                     ring=f'<span class="focus-ring" data-hl data-target="#{dom_id}" data-step="{effect["endStep"]}" aria-hidden="true"></span>'
@@ -150,6 +155,7 @@ def build_deck(spec: dict, registry: Registry | None = None, *, asset_root: str 
     for key,family in STYLE_FAMILIES.items():
         entry=registry.get(family,plan['styles'][key]['id'])
         css.append(registry.resource(entry,'style.css'))
+    css.append((registry.root/'core/motion_patterns.css').read_text(encoding='utf-8'))
     if font is not None:
         import base64
         path=Path(font)

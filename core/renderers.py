@@ -59,7 +59,7 @@ def render_block(registry, block, asset_root: Path, dom_id: str) -> str:
             body+=f'<tr data-sequence-item><th scope="row"><span class="rank-index">{i+1:02d}</span>{esc(row["label"])}</th><td>{fmt(row["value"])}</td></tr>'
         body+='</tbody></table>'
     elif kind=='score':
-        body=f'<div class="score-teams"><span>{esc(data["home"])}</span><span>{esc(data["away"])}</span></div><div class="score-value"><span>{data["homeScore"]}</span><span aria-hidden="true">:</span><span>{data["awayScore"]}</span></div>'
+        body=f'<div class="score-teams"><span>{esc(data["home"])}</span><span>{esc(data["away"])}</span></div><div class="score-value"><span data-number="{data["homeScore"]}">{data["homeScore"]}</span><span aria-hidden="true">:</span><span data-number="{data["awayScore"]}">{data["awayScore"]}</span></div>'
         if data.get('detail'): body+=f'<p class="module-detail">{esc(data["detail"])}</p>'
     elif kind=='bar-chart':
         vals=[finite(x['value']) for x in data['items']]; maximum=max(vals) or 1
