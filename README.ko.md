@@ -122,9 +122,10 @@ python tests/modular_runtime_check.py
 python tools/compose_deck.py build examples/modular-showcase.json --out examples/modular-showcase.html
 python tools/verify_modular.py examples/modular-showcase.html --out dist/qa
 python -m unittest tests.test_video_pipeline
-cd video && npm run typecheck && cd ..
-python tools/compose_video.py examples/modular-showcase.json --out dist/video-ci/storyboard.json
-python tools/verify_video.py dist/video-ci/storyboard.json
+python tools/compose_video.py examples/modular-showcase.json --out dist/video-ci/index.html --timing-out dist/video-ci/timing.json
+./node_modules/.bin/hyperframes lint dist/video-ci --strict
+./node_modules/.bin/hyperframes check dist/video-ci --samples 7 --no-contrast --frame-check --snapshots
+python tools/verify_video.py dist/video-ci/timing.json
 ```
 
 화면 경계, 텍스트 넘침, 블록 겹침, 이미지 로딩, 강조 대상 결합, 네 가지 화면 크기,
