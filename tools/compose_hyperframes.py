@@ -12,27 +12,67 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from core import Registry, build_deck
+from core.composer import json_script
 from core.registry import ContractError
 from core.validation import load_spec
 
 DEFAULT_FPS = 30
 DEFAULT_BASE_SECONDS = 4.0
 DEFAULT_STEP_SECONDS = 1.2
+DEFAULT_LEAD_SECONDS = 0.6
+DEFAULT_CUE_SECONDS = 0.8
 
 _STAGE_RE = re.compile(r"<main data-stage\b")
 _SLIDE_RE = re.compile(r'<section data-slide="([^"]+)"([^>]*)>')
 
 
-def _timing(plan: dict, *, fps: int, base_seconds: float, step_seconds: float) -> tuple[list[dict], float]:
+def _timing(
+    plan: dict,
+    *,
+    fps: int,
+    base_seconds: float,
+    step_seconds: float,
+    lead_seconds: float,
+    cue_seconds: float,
+) -> tuple[list[dict], float]:
     if fps < 1 or fps > 120:
         raise ContractError("fps must be between 1 and 120")
-    if base_seconds <= 0 or step_seconds < 0:
-        raise ContractError("base_seconds must be positive and step_seconds non-negative")
+    if base_seconds <= 0 or step_seconds < 0 or lead_seconds < 0 or cue_seconds <= 0:
+        raise ContractError(
+            "base_seconds and cue_seconds must be positive; step_seconds and lead_seconds non-negative"
+        )
     cursor = 0.0
     scenes = []
     for slide in plan["slides"]:
         duration = base_seconds + int(slide.get("steps", 0)) * step_seconds
-        scenes.append({"id": slide["id"], "start": cursor, "duration": duration})
+        cues = []
+        for motion in slide.get("motion", []):
+            start_step = int(motion.get("startStep", 1))
+            end_step = int(motion.get("endStep", start_step))
+            for step in range(start_step, end_step + 1):
+                at = min(duration - 0.001, lead_seconds + (step - 1) * step_seconds)
+                cue_duration = max(0.001, min(cue_seconds, duration - at))
+                cue = {
+                    "module": motion["module"],
+                    "target": motion["target"],
+                    "reason": motion["reason"],
+                    "step": step,
+                    "at": at,
+                    "duration": cue_duration,
+                }
+                if motion.get("pattern"):
+                    cue["pattern"] = motion["pattern"]
+                if motion["module"] == "sequence-step":
+                    cue["itemIndex"] = step - start_step
+                cues.append(cue)
+        scenes.append(
+            {
+                "id": slide["id"],
+                "start": cursor,
+                "duration": duration,
+                "cues": cues,
+            }
+        )
         cursor += duration
     return scenes, cursor
 
@@ -46,17 +86,24 @@ def compile_hyperframes(
     fps: int = DEFAULT_FPS,
     base_seconds: float = DEFAULT_BASE_SECONDS,
     step_seconds: float = DEFAULT_STEP_SECONDS,
+    lead_seconds: float = DEFAULT_LEAD_SECONDS,
+    cue_seconds: float = DEFAULT_CUE_SECONDS,
 ) -> tuple[str, dict]:
     html, plan = build_deck(spec, registry, asset_root=asset_root, font=font)
     scenes, duration = _timing(
-        plan, fps=fps, base_seconds=base_seconds, step_seconds=step_seconds
+        plan,
+        fps=fps,
+        base_seconds=base_seconds,
+        step_seconds=step_seconds,
+        lead_seconds=lead_seconds,
+        cue_seconds=cue_seconds,
     )
     by_id = {scene["id"]: scene for scene in scenes}
 
     root_attrs = (
         '<main data-stage data-composition-id="html-slide" data-start="0" '
         f'data-duration="{duration:.6f}" data-fps="{fps}" '
-        'data-width="1920" data-height="1080" data-no-timeline'
+        'data-width="1920" data-height="1080"'
     )
     html = _STAGE_RE.sub(root_attrs, html, count=1)
 
@@ -72,7 +119,11 @@ def compile_hyperframes(
             classes = class_match.group(1).split()
             if "clip" not in classes:
                 classes.append("clip")
-            attrs = attrs[: class_match.start()] + f'class="{" ".join(classes)}"' + attrs[class_match.end() :]
+            attrs = (
+                attrs[: class_match.start()]
+                + f'class="{" ".join(classes)}"'
+                + attrs[class_match.end() :]
+            )
         else:
             attrs += ' class="clip"'
         attrs += (
@@ -85,17 +136,19 @@ def compile_hyperframes(
     html = _SLIDE_RE.sub(slide_repl, html)
 
     hf_css = """
+<script src="./gsap.min.js"></script>
 <style id="hyperframes-video-overrides">
 html,body{width:1920px!important;height:1080px!important;overflow:hidden!important}
 [data-stage]{width:1920px!important;height:1080px!important;position:relative!important;transform:none!important;overflow:hidden!important}
 [data-slide]{position:absolute!important;inset:0!important;width:1920px!important;height:1080px!important;margin:0!important}
 .deck-shell,.deck-shell-progress,.deck-shell-overview,.deck-shell-sr{display:none!important}
+.hf-pattern-overlay{font-family:inherit;color:inherit}
 </style>
 <script>window.__deckEngine={hyperframes:true};document.documentElement.dataset.hfVideo="1";</script>
 """
     html = html.replace("</head>", hf_css + "</head>", 1)
 
-    manifest = {
+    hf_plan = {
         "schemaVersion": 1,
         "source": "html-slide",
         "renderer": "hyperframes",
@@ -105,7 +158,18 @@ html,body{width:1920px!important;height:1080px!important;overflow:hidden!importa
         "durationSeconds": duration,
         "scenes": scenes,
     }
-    return html, manifest
+    runtime = (registry.root / "core" / "hyperframes_runtime.js").read_text(encoding="utf-8")
+    if "</script" in runtime.lower():
+        raise ContractError("unsafe script closing sequence in HyperFrames runtime")
+    payload = (
+        '<script type="application/json" id="hf-plan">'
+        + json_script(hf_plan)
+        + "</script><script>"
+        + runtime
+        + "</script>"
+    )
+    html = html.replace("</body>", payload + "</body>", 1)
+    return html, hf_plan
 
 
 def main(argv=None) -> int:
@@ -118,6 +182,8 @@ def main(argv=None) -> int:
     parser.add_argument("--fps", type=int, default=DEFAULT_FPS)
     parser.add_argument("--base-seconds", type=float, default=DEFAULT_BASE_SECONDS)
     parser.add_argument("--step-seconds", type=float, default=DEFAULT_STEP_SECONDS)
+    parser.add_argument("--lead-seconds", type=float, default=DEFAULT_LEAD_SECONDS)
+    parser.add_argument("--cue-seconds", type=float, default=DEFAULT_CUE_SECONDS)
     args = parser.parse_args(argv)
     try:
         spec = load_spec(args.spec)
@@ -129,6 +195,8 @@ def main(argv=None) -> int:
             fps=args.fps,
             base_seconds=args.base_seconds,
             step_seconds=args.step_seconds,
+            lead_seconds=args.lead_seconds,
+            cue_seconds=args.cue_seconds,
         )
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(composition, encoding="utf-8")
