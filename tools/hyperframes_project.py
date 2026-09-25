@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
 import sys
 from pathlib import Path
 
@@ -40,7 +41,7 @@ def _shared_styles(html: str) -> str:
     styles = "\n".join(match.group("body") for match in _STYLE_RE.finditer(html))
     styles = re.sub(
         r"\bbody(?=\[data-(?:typography|palette|dataviz)=)",
-        ".hf-slide-root",
+        "#root",
         styles,
     )
     return styles
@@ -53,20 +54,12 @@ def _slide_markup(html: str, slide_id: str) -> str:
     )
     if not match:
         raise ContractError(f"cannot locate generated slide markup: {slide_id}")
+    attrs = re.sub(r'\sdata-start="[^"]*"', "", match.group("attrs"))
+    attrs = re.sub(r'\sid="[^"]*"', "", attrs)
     return (
-        f'<section data-slide="{slide_id}"{match.group("attrs")}>'
+        f'<section id="slide-{slide_id}" data-slide="{slide_id}"{attrs}>'
         f'{match.group("body")}</section>'
     )
-
-
-def _fragment_runtime(registry: Registry, *, root_id: str, plan_id: str) -> str:
-    runtime = (registry.root / "core" / "hyperframes_runtime.js").read_text(encoding="utf-8")
-    runtime = runtime.replace("__HF_ROOT_ID__", root_id).replace("__HF_PLAN_ID__", plan_id)
-    if "__HF_" in runtime:
-        raise ContractError("unresolved HyperFrames runtime placeholder")
-    if "</script" in runtime.lower():
-        raise ContractError("unsafe script closing sequence in HyperFrames runtime")
-    return runtime
 
 
 def compile_hyperframes_project(
@@ -82,7 +75,10 @@ def compile_hyperframes_project(
     cue_seconds: float = DEFAULT_CUE_SECONDS,
 ) -> tuple[str, dict[str, str], dict]:
     """Return (index_html, fragment_files, manifest)."""
-    deck_html, plan = build_deck(spec, registry, asset_root=asset_root, font=font)
+    font_path = Path(font or (registry.root / "assets" / "fonts" / "PretendardVariable.woff2")).resolve()
+    if font_path.suffix.lower() != ".woff2" or not font_path.is_file() or font_path.read_bytes()[:4] != b"wOF2":
+        raise ContractError("HyperFrames video requires a valid local WOFF2 font")
+    deck_html, plan = build_deck(spec, registry, asset_root=asset_root, font=None)
     deck_html = _sanitize_video_styles(_remove_presenter_runtime(deck_html, registry))
     styles = _shared_styles(deck_html)
     scenes, duration = _timing(
@@ -97,14 +93,26 @@ def compile_hyperframes_project(
     typography = plan["styles"]["typography"]["id"]
     palette = plan["styles"]["palette"]["id"]
     dataviz = plan["styles"]["dataviz"]["id"]
-    fragments: dict[str, str] = {}
+    runtime = (registry.root / "core" / "hyperframes_runtime.js").read_text(encoding="utf-8")
+    shared_css = """@font-face{font-family:'HTMLSlide Embedded';src:url('./assets/PretendardVariable.woff2') format('woff2');font-weight:100 900;font-display:block}
+#root{--font-custom:'HTMLSlide Embedded'}
+""" + styles + """
+#root{position:relative;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:var(--font-body,'HTMLSlide Embedded',system-ui,sans-serif);font-weight:var(--body-weight,500);word-break:keep-all;overflow-wrap:break-word}
+#root [data-slide]{position:absolute!important;inset:0!important;width:1920px!important;height:1080px!important;visibility:visible!important;pointer-events:none!important;margin:0!important}
+.deck-shell,.deck-shell-progress,.deck-shell-overview,.deck-shell-sr{display:none!important}
+.hf-pattern-overlay{font-family:inherit;color:inherit}
+"""
+    fragments: dict[str, str] = {
+        "hyperframes-runtime.js": runtime,
+        "hyperframes-shared.css": shared_css,
+    }
     hosts: list[str] = []
 
     for scene, planned in zip(scenes, plan["slides"]):
         slide_id = scene["id"]
         composition_id = f"html-slide-{slide_id}"
-        root_id = f"hf-root-{slide_id}"
-        plan_id = f"hf-plan-{slide_id}"
+        root_id = "root"
+        plan_id = "hf-plan"
         fragment_path = f"compositions/{slide_id}.html"
 
         local_scene = {
@@ -121,22 +129,14 @@ def compile_hyperframes_project(
             "durationSeconds": scene["duration"],
             "scenes": [local_scene],
         }
-        runtime = _fragment_runtime(registry, root_id=root_id, plan_id=plan_id)
         slide_markup = _slide_markup(deck_html, slide_id)
         theme = planned.get("theme", spec["theme"])
 
         fragment = f"""<template>
-<script src="../gsap.min.js"></script>
-<style>
-{styles}
-.hf-slide-root{{position:relative;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:var(--font-body,'HTMLSlide Embedded',system-ui,sans-serif);font-weight:var(--body-weight,500);word-break:keep-all;overflow-wrap:break-word}}
-.hf-slide-root [data-slide]{{position:absolute!important;inset:0!important;width:1920px!important;height:1080px!important;visibility:visible!important;pointer-events:none!important;margin:0!important}}
-.deck-shell,.deck-shell-progress,.deck-shell-overview,.deck-shell-sr{{display:none!important}}
-.hf-pattern-overlay{{font-family:inherit;color:inherit}}
-</style>
+<script src="gsap.min.js"></script>
+<link rel="stylesheet" href="hyperframes-shared.css">
 <div
   id="{root_id}"
-  class="hf-slide-root"
   data-hf-slide-root
   data-composition-id="{composition_id}"
   data-duration="{scene['duration']:.6f}"
@@ -150,7 +150,8 @@ def compile_hyperframes_project(
 {slide_markup}
 <script type="application/json" id="{plan_id}">{json_script(local_manifest)}</script>
 </div>
-<script>{runtime}</script>
+<script src="hyperframes-runtime.js"></script>
+<script>window.__mountHtmlSlideHyperframes("{root_id}","{plan_id}")</script>
 </template>
 """
         fragments[fragment_path] = fragment
@@ -206,7 +207,8 @@ html,body{{margin:0;width:1920px;height:1080px;overflow:hidden;background:#111}}
         "height": 1080,
         "durationSeconds": duration,
         "scenes": scenes,
-        "compositionFiles": sorted(fragments),
+        "compositionFiles": sorted(path for path in fragments if path.startswith("compositions/")),
+        "fontAsset": "assets/PretendardVariable.woff2",
     }
     return index_html, fragments, manifest
 
@@ -243,6 +245,12 @@ def main(argv=None) -> int:
             target = root / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(fragment, encoding="utf-8")
+        font_asset = root / manifest["fontAsset"]
+        font_asset.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(
+            Path(args.font or (Registry().root / "assets" / "fonts" / "PretendardVariable.woff2")).resolve(),
+            font_asset,
+        )
         (root / "video.manifest.json").write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",

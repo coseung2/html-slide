@@ -126,6 +126,9 @@ def main(argv=None) -> int:
             target = work / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(fragment, encoding="utf-8")
+        font_asset = work / manifest["fontAsset"]
+        font_asset.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(font, font_asset)
         manifest_path.write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
