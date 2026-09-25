@@ -248,8 +248,8 @@
       },onComplete:()=>{p.textContent=source;}},at);
       tl.to(p,{opacity:1,filter:'blur(0px)',letterSpacing:'0em',duration,ease},at);
     } else if (id === 'variable-font') {
-      setPending(tl,p,scene.start,{opacity:.2,scaleX:.9,letterSpacing:'.055em',fontWeight:320,fontVariationSettings:'"wght" 320, "wdth" 78'});
-      tweenFinal(tl,p,at,duration,{opacity:1,scaleX:1,letterSpacing:'0em',fontWeight:800,fontVariationSettings:'"wght" 800, "wdth" 100'});
+      setPending(tl,p,scene.start,{opacity:.2,scaleX:.9,fontWeight:320,fontVariationSettings:'"wght" 320, "wdth" 78'});
+      tweenFinal(tl,p,at,duration,{opacity:1,scaleX:1,fontWeight:800,fontVariationSettings:'"wght" 800, "wdth" 100'});
     } else if (id === 'swiss-grid') {
       setPending(tl,p,scene.start,{opacity:.15,x:26,y:22});
       tweenFinal(tl,p,at,duration,{opacity:1,x:0,y:0});
