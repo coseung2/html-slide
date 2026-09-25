@@ -31,7 +31,7 @@ history.
 ## Quick start
 
 Python 3.10+ and `jsonschema` are required for composition. Browser QA additionally
-requires Playwright and Chromium. Node.js and PptxGenJS are needed only for PPTX export.
+requires Playwright and Chromium. Node.js and PptxGenJS are needed for PPTX export; HyperFrames/GSAP dependencies under `video/` are needed for MP4 output.
 
 ```sh
 python -m pip install -r requirements-modular.txt
@@ -45,6 +45,10 @@ python tools/compose_deck.py plan dist/work/deck.json --out dist/work/plan.json
 python tools/compose_deck.py build dist/work/deck.json --out dist/work/deck.html
 python tools/verify_modular.py dist/work/deck.html --out dist/work/qa
 python tools/export_modular.py dist/work/deck.html --out dist/work/export
+
+# optional MP4 from the same validated deck JSON and HTML renderer
+cd video && npm install && cd ..
+python tools/render_video.py dist/work/deck.json --out dist/work/video.mp4
 ```
 
 `--font /absolute/path/font.woff2` embeds an explicitly supplied authorized font.
@@ -69,7 +73,7 @@ service: AI reasoning happens outside the deterministic compiler.
 | `styles/palettes/` | Semantic main colors for paper, ink, surfaces, accents and status |
 | `styles/dataviz/` | Chart-series colors independent from the main accent |
 | `presets/` | Editable example combinations, not mandatory templates |
-| `tools/` | Discovery, planning, building, browser QA and export |
+| `tools/` | Discovery, planning, building, browser QA, HyperFrames video rendering and export |
 
 The current catalog includes 10 layouts, 11 content blocks, 2 visual blocks,
 5 motion effects, 7 themes, 7 typography packs, 8 main palettes, 5 data-visualization
@@ -106,7 +110,7 @@ committed as per-job history.
 Use arrows or the stage halves to move, **S** for static/live, **O** for overview,
 **F** for fullscreen, and Home/End for endpoints. Sources appear in overview.
 Every slide remains complete with JavaScript disabled or reduced motion enabled.
-PDF and PPTX use the exact same final-frame PNGs; PPTX is intentionally not editable.
+PDF and PPTX use the exact same final-frame PNGs; PPTX is intentionally not editable. MP4 output reuses the canonical HTML renderer through isolated HyperFrames slide compositions.
 
 ## Verification
 
