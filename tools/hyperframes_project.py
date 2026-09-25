@@ -2,12 +2,16 @@
 """Build a HyperFrames project with one isolated sub-composition per html-slide scene."""
 from __future__ import annotations
 
+import argparse
+import json
 import re
+import sys
 from pathlib import Path
 
 from core import Registry, build_deck
 from core.composer import json_script
 from core.registry import ContractError
+from core.validation import load_spec
 from tools.compose_hyperframes import (
     DEFAULT_BASE_SECONDS,
     DEFAULT_CUE_SECONDS,
@@ -202,3 +206,53 @@ html,body{{margin:0;width:1920px;height:1080px;overflow:hidden;background:#111}}
         "compositionFiles": sorted(fragments),
     }
     return index_html, fragments, manifest
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("spec", type=Path)
+    parser.add_argument("--out-dir", type=Path, required=True)
+    parser.add_argument("--asset-root", type=Path)
+    parser.add_argument("--font", type=Path)
+    parser.add_argument("--fps", type=int, default=DEFAULT_FPS)
+    parser.add_argument("--base-seconds", type=float, default=DEFAULT_BASE_SECONDS)
+    parser.add_argument("--step-seconds", type=float, default=DEFAULT_STEP_SECONDS)
+    parser.add_argument("--lead-seconds", type=float, default=DEFAULT_LEAD_SECONDS)
+    parser.add_argument("--cue-seconds", type=float, default=DEFAULT_CUE_SECONDS)
+    args = parser.parse_args(argv)
+    try:
+        spec = load_spec(args.spec)
+        index_html, fragments, manifest = compile_hyperframes_project(
+            spec,
+            Registry(),
+            asset_root=args.asset_root or args.spec.parent,
+            font=args.font,
+            fps=args.fps,
+            base_seconds=args.base_seconds,
+            step_seconds=args.step_seconds,
+            lead_seconds=args.lead_seconds,
+            cue_seconds=args.cue_seconds,
+        )
+        root = args.out_dir
+        root.mkdir(parents=True, exist_ok=True)
+        (root / "index.html").write_text(index_html, encoding="utf-8")
+        for relative, fragment in fragments.items():
+            target = root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(fragment, encoding="utf-8")
+        (root / "video.manifest.json").write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(
+            f"Built HyperFrames project {root}: "
+            f"{len(manifest['scenes'])} scenes, {manifest['durationSeconds']:.2f}s"
+        )
+        return 0
+    except (ContractError, OSError, ValueError) as exc:
+        print(f"HYPERFRAMES PROJECT FAIL: {exc}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
