@@ -7,16 +7,47 @@
       "category": "type",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus", "number-count", "score-reveal"],
-      "targets": ["statement", "quote", "comparison-text", "metric", "score"],
-      "intents": ["thesis", "quote", "kpi", "change", "comparison", "result", "conclusion"],
-      "tones": ["energetic", "sports", "technical", "editorial"],
+      "semanticModules": [
+        "focus",
+        "number-count",
+        "score-reveal"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text",
+        "metric",
+        "score"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "kpi",
+        "change",
+        "comparison",
+        "result",
+        "conclusion"
+      ],
+      "tones": [
+        "energetic",
+        "sports",
+        "technical",
+        "editorial"
+      ],
       "intensity": "high",
       "denseSafe": true,
       "complexity": "light",
-      "tags": ["headline", "word", "impact", "beat"],
-      "conflicts": ["extruded-type"],
-      "description": "Scale, translate and settle the target with rhythmic typographic emphasis."
+      "tags": [
+        "headline",
+        "word",
+        "impact",
+        "beat"
+      ],
+      "conflicts": [
+        "extruded-type"
+      ],
+      "description": "Scale, translate and settle the target with rhythmic typographic emphasis.",
+      "hyperframes": "supported"
     },
     {
       "id": "flat-shape",
@@ -24,16 +55,46 @@
       "category": "object",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus"],
-      "targets": ["statement", "quote", "comparison-text", "metric", "image", "logo"],
-      "intents": ["thesis", "overview", "explanation", "scene", "identity", "conclusion"],
-      "tones": ["playful", "classroom", "energetic", "minimal"],
+      "semanticModules": [
+        "focus"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text",
+        "metric",
+        "image",
+        "logo"
+      ],
+      "intents": [
+        "thesis",
+        "overview",
+        "explanation",
+        "scene",
+        "identity",
+        "conclusion"
+      ],
+      "tones": [
+        "playful",
+        "classroom",
+        "energetic",
+        "minimal"
+      ],
       "intensity": "medium",
       "denseSafe": false,
       "complexity": "medium",
-      "tags": ["shape", "geometry", "education", "brand"],
-      "conflicts": ["liquid-morph", "street-collage"],
-      "description": "Geometric shapes travel around the target and resolve into the final composition."
+      "tags": [
+        "shape",
+        "geometry",
+        "education",
+        "brand"
+      ],
+      "conflicts": [
+        "liquid-morph",
+        "street-collage"
+      ],
+      "description": "Geometric shapes travel around the target and resolve into the final composition.",
+      "hyperframes": "supported"
     },
     {
       "id": "info-motion",
@@ -41,16 +102,54 @@
       "category": "data",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["number-count", "chart-grow", "score-reveal", "sequence-step"],
-      "targets": ["metric", "bar-chart", "line-chart", "score", "ranking", "timeline", "process", "bullet-list"],
-      "intents": ["kpi", "change", "comparison", "ranking", "distribution", "trend", "result", "sequence", "timeline", "process"],
-      "tones": ["data", "technical", "sports", "editorial", "minimal"],
+      "semanticModules": [
+        "number-count",
+        "chart-grow",
+        "score-reveal",
+        "sequence-step"
+      ],
+      "targets": [
+        "metric",
+        "bar-chart",
+        "line-chart",
+        "score",
+        "ranking",
+        "timeline",
+        "process",
+        "bullet-list"
+      ],
+      "intents": [
+        "kpi",
+        "change",
+        "comparison",
+        "ranking",
+        "distribution",
+        "trend",
+        "result",
+        "sequence",
+        "timeline",
+        "process"
+      ],
+      "tones": [
+        "data",
+        "technical",
+        "sports",
+        "editorial",
+        "minimal"
+      ],
       "intensity": "medium",
       "denseSafe": true,
       "complexity": "light",
-      "tags": ["data", "chart", "number", "stat", "ranking"],
+      "tags": [
+        "data",
+        "chart",
+        "number",
+        "stat",
+        "ranking"
+      ],
       "conflicts": [],
-      "description": "Data-oriented reveal that pairs semantic count or chart growth with restrained emphasis."
+      "description": "Data-oriented reveal that pairs semantic count or chart growth with restrained emphasis.",
+      "hyperframes": "supported"
     },
     {
       "id": "ui-motion",
@@ -58,16 +157,47 @@
       "category": "interface",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus", "sequence-step"],
-      "targets": ["statement", "comparison-text", "image", "logo", "bullet-list", "process"],
-      "intents": ["overview", "explanation", "process", "sequence", "scene", "evidence", "identity"],
-      "tones": ["technical", "minimal", "premium", "data"],
+      "semanticModules": [
+        "focus",
+        "sequence-step"
+      ],
+      "targets": [
+        "statement",
+        "comparison-text",
+        "image",
+        "logo",
+        "bullet-list",
+        "process"
+      ],
+      "intents": [
+        "overview",
+        "explanation",
+        "process",
+        "sequence",
+        "scene",
+        "evidence",
+        "identity"
+      ],
+      "tones": [
+        "technical",
+        "minimal",
+        "premium",
+        "data"
+      ],
       "intensity": "medium",
       "denseSafe": true,
       "complexity": "light",
-      "tags": ["interface", "app", "panel", "product"],
-      "conflicts": ["street-collage"],
-      "description": "Panel-like target slides and settles with interface-style focus treatment."
+      "tags": [
+        "interface",
+        "app",
+        "panel",
+        "product"
+      ],
+      "conflicts": [
+        "street-collage"
+      ],
+      "description": "Panel-like target slides and settles with interface-style focus treatment.",
+      "hyperframes": "supported"
     },
     {
       "id": "card-stack-3d",
@@ -75,16 +205,49 @@
       "category": "depth",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus", "sequence-step"],
-      "targets": ["statement", "comparison-text", "image", "logo", "ranking", "bullet-list"],
-      "intents": ["overview", "comparison", "ranking", "scene", "evidence", "identity"],
-      "tones": ["premium", "technical", "cinematic", "sports"],
+      "semanticModules": [
+        "focus",
+        "sequence-step"
+      ],
+      "targets": [
+        "statement",
+        "comparison-text",
+        "image",
+        "logo",
+        "ranking",
+        "bullet-list"
+      ],
+      "intents": [
+        "overview",
+        "comparison",
+        "ranking",
+        "scene",
+        "evidence",
+        "identity"
+      ],
+      "tones": [
+        "premium",
+        "technical",
+        "cinematic",
+        "sports"
+      ],
       "intensity": "high",
       "denseSafe": false,
       "complexity": "heavy",
-      "tags": ["depth", "stack", "cards", "perspective"],
-      "conflicts": ["particle-warp", "isometric-build", "environment-type", "extruded-type"],
-      "description": "Layered cards create depth before resolving to the target plane."
+      "tags": [
+        "depth",
+        "stack",
+        "cards",
+        "perspective"
+      ],
+      "conflicts": [
+        "particle-warp",
+        "isometric-build",
+        "environment-type",
+        "extruded-type"
+      ],
+      "description": "Layered cards create depth before resolving to the target plane.",
+      "hyperframes": "supported"
     },
     {
       "id": "particle-warp",
@@ -92,16 +255,46 @@
       "category": "object",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus"],
-      "targets": ["statement", "quote", "image", "logo"],
-      "intents": ["thesis", "quote", "scene", "identity", "conclusion"],
-      "tones": ["cinematic", "technical", "premium", "energetic"],
+      "semanticModules": [
+        "focus"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "image",
+        "logo"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "scene",
+        "identity",
+        "conclusion"
+      ],
+      "tones": [
+        "cinematic",
+        "technical",
+        "premium",
+        "energetic"
+      ],
       "intensity": "high",
       "denseSafe": false,
       "complexity": "heavy",
-      "tags": ["particle", "warp", "energy", "reveal"],
-      "conflicts": ["card-stack-3d", "glitch", "liquid-morph", "street-collage", "extruded-type"],
-      "description": "Deterministic particles converge toward the target and disperse."
+      "tags": [
+        "particle",
+        "warp",
+        "energy",
+        "reveal"
+      ],
+      "conflicts": [
+        "card-stack-3d",
+        "glitch",
+        "liquid-morph",
+        "street-collage",
+        "extruded-type"
+      ],
+      "description": "Deterministic particles converge toward the target and disperse.",
+      "hyperframes": "supported"
     },
     {
       "id": "glitch",
@@ -109,16 +302,51 @@
       "category": "type",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus", "number-count", "score-reveal"],
-      "targets": ["statement", "quote", "comparison-text", "metric", "score", "image", "logo"],
-      "intents": ["thesis", "kpi", "change", "result", "scene", "identity", "conclusion"],
-      "tones": ["technical", "energetic", "sports", "cinematic"],
+      "semanticModules": [
+        "focus",
+        "number-count",
+        "score-reveal"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text",
+        "metric",
+        "score",
+        "image",
+        "logo"
+      ],
+      "intents": [
+        "thesis",
+        "kpi",
+        "change",
+        "result",
+        "scene",
+        "identity",
+        "conclusion"
+      ],
+      "tones": [
+        "technical",
+        "energetic",
+        "sports",
+        "cinematic"
+      ],
       "intensity": "high",
       "denseSafe": true,
       "complexity": "medium",
-      "tags": ["digital", "cyber", "impact", "rgb"],
-      "conflicts": ["particle-warp", "liquid-morph", "street-collage"],
-      "description": "Short RGB displacement and jitter burst around the semantic beat."
+      "tags": [
+        "digital",
+        "cyber",
+        "impact",
+        "rgb"
+      ],
+      "conflicts": [
+        "particle-warp",
+        "liquid-morph",
+        "street-collage"
+      ],
+      "description": "Short RGB displacement and jitter burst around the semantic beat.",
+      "hyperframes": "supported"
     },
     {
       "id": "liquid-morph",
@@ -126,16 +354,45 @@
       "category": "object",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus"],
-      "targets": ["statement", "quote", "image", "logo"],
-      "intents": ["thesis", "quote", "scene", "identity", "conclusion"],
-      "tones": ["playful", "premium", "cinematic", "classroom"],
+      "semanticModules": [
+        "focus"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "image",
+        "logo"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "scene",
+        "identity",
+        "conclusion"
+      ],
+      "tones": [
+        "playful",
+        "premium",
+        "cinematic",
+        "classroom"
+      ],
       "intensity": "medium",
       "denseSafe": false,
       "complexity": "heavy",
-      "tags": ["blob", "organic", "fluid", "soft"],
-      "conflicts": ["flat-shape", "particle-warp", "glitch", "swiss-grid"],
-      "description": "Soft blob forms morph behind the target during the cue."
+      "tags": [
+        "blob",
+        "organic",
+        "fluid",
+        "soft"
+      ],
+      "conflicts": [
+        "flat-shape",
+        "particle-warp",
+        "glitch",
+        "swiss-grid"
+      ],
+      "description": "Soft blob forms morph behind the target during the cue.",
+      "hyperframes": "supported"
     },
     {
       "id": "isometric-build",
@@ -143,16 +400,48 @@
       "category": "depth",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus", "sequence-step"],
-      "targets": ["image", "logo", "comparison-text", "process", "ranking"],
-      "intents": ["explanation", "process", "sequence", "ranking", "scene", "evidence", "identity"],
-      "tones": ["technical", "data", "premium", "classroom"],
+      "semanticModules": [
+        "focus",
+        "sequence-step"
+      ],
+      "targets": [
+        "image",
+        "logo",
+        "comparison-text",
+        "process",
+        "ranking"
+      ],
+      "intents": [
+        "explanation",
+        "process",
+        "sequence",
+        "ranking",
+        "scene",
+        "evidence",
+        "identity"
+      ],
+      "tones": [
+        "technical",
+        "data",
+        "premium",
+        "classroom"
+      ],
       "intensity": "medium",
       "denseSafe": false,
       "complexity": "heavy",
-      "tags": ["isometric", "build", "diagram", "depth"],
-      "conflicts": ["card-stack-3d", "environment-type", "extruded-type"],
-      "description": "Target rotates from an isometric plane into its final readable state."
+      "tags": [
+        "isometric",
+        "build",
+        "diagram",
+        "depth"
+      ],
+      "conflicts": [
+        "card-stack-3d",
+        "environment-type",
+        "extruded-type"
+      ],
+      "description": "Target rotates from an isometric plane into its final readable state.",
+      "hyperframes": "supported"
     },
     {
       "id": "paper-cut",
@@ -160,16 +449,45 @@
       "category": "editorial",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus"],
-      "targets": ["statement", "quote", "comparison-text", "image", "logo"],
-      "intents": ["thesis", "quote", "comparison", "scene", "evidence", "conclusion"],
-      "tones": ["editorial", "documentary", "classroom", "playful"],
+      "semanticModules": [
+        "focus"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text",
+        "image",
+        "logo"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "comparison",
+        "scene",
+        "evidence",
+        "conclusion"
+      ],
+      "tones": [
+        "editorial",
+        "documentary",
+        "classroom",
+        "playful"
+      ],
       "intensity": "medium",
       "denseSafe": false,
       "complexity": "medium",
-      "tags": ["paper", "archive", "history", "editorial"],
-      "conflicts": ["street-collage", "swiss-grid"],
-      "description": "Layered paper-like slabs assemble behind the target."
+      "tags": [
+        "paper",
+        "archive",
+        "history",
+        "editorial"
+      ],
+      "conflicts": [
+        "street-collage",
+        "swiss-grid"
+      ],
+      "description": "Layered paper-like slabs assemble behind the target.",
+      "hyperframes": "supported"
     },
     {
       "id": "type-mask",
@@ -177,16 +495,45 @@
       "category": "type",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus", "number-count", "score-reveal"],
-      "targets": ["statement", "quote", "comparison-text", "metric", "score"],
-      "intents": ["thesis", "quote", "kpi", "change", "comparison", "result", "conclusion"],
-      "tones": ["editorial", "minimal", "premium", "sports"],
+      "semanticModules": [
+        "focus",
+        "number-count",
+        "score-reveal"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text",
+        "metric",
+        "score"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "kpi",
+        "change",
+        "comparison",
+        "result",
+        "conclusion"
+      ],
+      "tones": [
+        "editorial",
+        "minimal",
+        "premium",
+        "sports"
+      ],
       "intensity": "medium",
       "denseSafe": true,
       "complexity": "light",
-      "tags": ["mask", "reveal", "headline", "clean"],
+      "tags": [
+        "mask",
+        "reveal",
+        "headline",
+        "clean"
+      ],
       "conflicts": [],
-      "description": "Target content is revealed through a directional clipping mask."
+      "description": "Target content is revealed through a directional clipping mask.",
+      "hyperframes": "supported"
     },
     {
       "id": "environment-type",
@@ -194,16 +541,44 @@
       "category": "depth",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus"],
-      "targets": ["statement", "quote", "image", "logo"],
-      "intents": ["thesis", "quote", "scene", "identity", "conclusion"],
-      "tones": ["cinematic", "premium", "documentary", "sports"],
+      "semanticModules": [
+        "focus"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "image",
+        "logo"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "scene",
+        "identity",
+        "conclusion"
+      ],
+      "tones": [
+        "cinematic",
+        "premium",
+        "documentary",
+        "sports"
+      ],
       "intensity": "high",
       "denseSafe": false,
       "complexity": "heavy",
-      "tags": ["spatial", "perspective", "cinematic", "depth"],
-      "conflicts": ["card-stack-3d", "isometric-build", "extruded-type"],
-      "description": "Perspective and depth motion make the target feel embedded in a spatial scene."
+      "tags": [
+        "spatial",
+        "perspective",
+        "cinematic",
+        "depth"
+      ],
+      "conflicts": [
+        "card-stack-3d",
+        "isometric-build",
+        "extruded-type"
+      ],
+      "description": "Perspective and depth motion make the target feel embedded in a spatial scene.",
+      "hyperframes": "supported"
     },
     {
       "id": "occlusion",
@@ -211,16 +586,46 @@
       "category": "depth",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus", "score-reveal"],
-      "targets": ["statement", "quote", "comparison-text", "score", "image", "logo"],
-      "intents": ["thesis", "quote", "comparison", "result", "scene", "evidence", "identity", "conclusion"],
-      "tones": ["cinematic", "sports", "editorial", "premium"],
+      "semanticModules": [
+        "focus",
+        "score-reveal"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text",
+        "score",
+        "image",
+        "logo"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "comparison",
+        "result",
+        "scene",
+        "evidence",
+        "identity",
+        "conclusion"
+      ],
+      "tones": [
+        "cinematic",
+        "sports",
+        "editorial",
+        "premium"
+      ],
       "intensity": "medium",
       "denseSafe": true,
       "complexity": "medium",
-      "tags": ["depth", "foreground", "wipe", "reveal"],
+      "tags": [
+        "depth",
+        "foreground",
+        "wipe",
+        "reveal"
+      ],
       "conflicts": [],
-      "description": "A foreground occluder crosses the target to create a depth-aware reveal."
+      "description": "A foreground occluder crosses the target to create a depth-aware reveal.",
+      "hyperframes": "supported"
     },
     {
       "id": "scramble-decode",
@@ -228,16 +633,39 @@
       "category": "type",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus"],
-      "targets": ["statement", "quote", "comparison-text"],
-      "intents": ["thesis", "quote", "comparison", "conclusion"],
-      "tones": ["technical", "cinematic", "energetic"],
+      "semanticModules": [
+        "focus"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "comparison",
+        "conclusion"
+      ],
+      "tones": [
+        "technical",
+        "cinematic",
+        "energetic"
+      ],
       "intensity": "high",
       "denseSafe": true,
       "complexity": "medium",
-      "tags": ["decode", "cyber", "code", "text"],
-      "conflicts": ["variable-font"],
-      "description": "Target resolves from a coded/noisy visual state into the accepted final frame."
+      "tags": [
+        "decode",
+        "cyber",
+        "code",
+        "text"
+      ],
+      "conflicts": [
+        "variable-font"
+      ],
+      "description": "Target resolves from a coded/noisy visual state into the accepted final frame.",
+      "hyperframes": "supported"
     },
     {
       "id": "variable-font",
@@ -245,16 +673,45 @@
       "category": "type",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus", "number-count"],
-      "targets": ["statement", "quote", "comparison-text", "metric"],
-      "intents": ["thesis", "quote", "kpi", "change", "comparison", "conclusion"],
-      "tones": ["editorial", "minimal", "premium", "technical"],
+      "semanticModules": [
+        "focus",
+        "number-count"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text",
+        "metric"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "kpi",
+        "change",
+        "comparison",
+        "conclusion"
+      ],
+      "tones": [
+        "editorial",
+        "minimal",
+        "premium",
+        "technical"
+      ],
       "intensity": "low",
       "denseSafe": true,
       "complexity": "light",
-      "tags": ["font", "weight", "width", "subtle"],
-      "conflicts": ["scramble-decode", "extruded-type"],
-      "description": "Weight and width axes animate toward the final typographic state."
+      "tags": [
+        "font",
+        "weight",
+        "width",
+        "subtle"
+      ],
+      "conflicts": [
+        "scramble-decode",
+        "extruded-type"
+      ],
+      "description": "Weight and width axes animate toward the final typographic state.",
+      "hyperframes": "supported"
     },
     {
       "id": "swiss-grid",
@@ -262,16 +719,54 @@
       "category": "editorial",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus", "number-count", "chart-grow"],
-      "targets": ["statement", "quote", "comparison-text", "metric", "bar-chart", "line-chart", "image", "logo"],
-      "intents": ["thesis", "quote", "kpi", "comparison", "distribution", "trend", "scene", "evidence", "conclusion"],
-      "tones": ["editorial", "minimal", "data", "premium"],
+      "semanticModules": [
+        "focus",
+        "number-count",
+        "chart-grow"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text",
+        "metric",
+        "bar-chart",
+        "line-chart",
+        "image",
+        "logo"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "kpi",
+        "comparison",
+        "distribution",
+        "trend",
+        "scene",
+        "evidence",
+        "conclusion"
+      ],
+      "tones": [
+        "editorial",
+        "minimal",
+        "data",
+        "premium"
+      ],
       "intensity": "low",
       "denseSafe": true,
       "complexity": "medium",
-      "tags": ["grid", "editorial", "layout", "data"],
-      "conflicts": ["liquid-morph", "paper-cut", "street-collage"],
-      "description": "Grid guides and modular offsets resolve into a disciplined final layout."
+      "tags": [
+        "grid",
+        "editorial",
+        "layout",
+        "data"
+      ],
+      "conflicts": [
+        "liquid-morph",
+        "paper-cut",
+        "street-collage"
+      ],
+      "description": "Grid guides and modular offsets resolve into a disciplined final layout.",
+      "hyperframes": "supported"
     },
     {
       "id": "extruded-type",
@@ -279,16 +774,50 @@
       "category": "depth",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus", "number-count", "score-reveal"],
-      "targets": ["statement", "quote", "comparison-text", "metric", "score"],
-      "intents": ["thesis", "quote", "kpi", "result", "conclusion"],
-      "tones": ["sports", "energetic", "cinematic", "premium"],
+      "semanticModules": [
+        "focus",
+        "number-count",
+        "score-reveal"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text",
+        "metric",
+        "score"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "kpi",
+        "result",
+        "conclusion"
+      ],
+      "tones": [
+        "sports",
+        "energetic",
+        "cinematic",
+        "premium"
+      ],
       "intensity": "high",
       "denseSafe": false,
       "complexity": "heavy",
-      "tags": ["3d", "type", "depth", "impact"],
-      "conflicts": ["kinetic-type", "card-stack-3d", "particle-warp", "isometric-build", "environment-type", "variable-font"],
-      "description": "Layered shadows create a temporary extruded text/depth treatment."
+      "tags": [
+        "3d",
+        "type",
+        "depth",
+        "impact"
+      ],
+      "conflicts": [
+        "kinetic-type",
+        "card-stack-3d",
+        "particle-warp",
+        "isometric-build",
+        "environment-type",
+        "variable-font"
+      ],
+      "description": "Layered shadows create a temporary extruded text/depth treatment.",
+      "hyperframes": "supported"
     },
     {
       "id": "street-collage",
@@ -296,16 +825,49 @@
       "category": "editorial",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus"],
-      "targets": ["statement", "quote", "comparison-text", "image", "logo"],
-      "intents": ["thesis", "quote", "scene", "evidence", "identity", "conclusion"],
-      "tones": ["energetic", "editorial", "sports", "playful"],
+      "semanticModules": [
+        "focus"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text",
+        "image",
+        "logo"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "scene",
+        "evidence",
+        "identity",
+        "conclusion"
+      ],
+      "tones": [
+        "energetic",
+        "editorial",
+        "sports",
+        "playful"
+      ],
       "intensity": "high",
       "denseSafe": false,
       "complexity": "heavy",
-      "tags": ["collage", "tape", "street", "youth"],
-      "conflicts": ["flat-shape", "particle-warp", "glitch", "paper-cut", "swiss-grid", "ui-motion"],
-      "description": "Rotated strips and tape-like layers assemble around the target."
+      "tags": [
+        "collage",
+        "tape",
+        "street",
+        "youth"
+      ],
+      "conflicts": [
+        "flat-shape",
+        "particle-warp",
+        "glitch",
+        "paper-cut",
+        "swiss-grid",
+        "ui-motion"
+      ],
+      "description": "Rotated strips and tape-like layers assemble around the target.",
+      "hyperframes": "supported"
     },
     {
       "id": "path-drawing",
@@ -313,16 +875,53 @@
       "category": "line",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus", "chart-grow", "sequence-step"],
-      "targets": ["statement", "quote", "comparison-text", "metric", "image", "logo", "line-chart", "timeline", "process"],
-      "intents": ["thesis", "quote", "kpi", "trend", "sequence", "timeline", "process", "scene", "evidence", "conclusion"],
-      "tones": ["technical", "editorial", "classroom", "minimal", "data"],
+      "semanticModules": [
+        "focus",
+        "chart-grow",
+        "sequence-step"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text",
+        "metric",
+        "image",
+        "logo",
+        "line-chart",
+        "timeline",
+        "process"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "kpi",
+        "trend",
+        "sequence",
+        "timeline",
+        "process",
+        "scene",
+        "evidence",
+        "conclusion"
+      ],
+      "tones": [
+        "technical",
+        "editorial",
+        "classroom",
+        "minimal",
+        "data"
+      ],
       "intensity": "low",
       "denseSafe": true,
       "complexity": "light",
-      "tags": ["line", "trace", "diagram", "route"],
+      "tags": [
+        "line",
+        "trace",
+        "diagram",
+        "route"
+      ],
       "conflicts": [],
-      "description": "An SVG path traces around the target and resolves into the final state."
+      "description": "An SVG path traces around the target and resolves into the final state.",
+      "hyperframes": "supported"
     },
     {
       "id": "word-by-word",
@@ -330,16 +929,39 @@
       "category": "type",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus"],
-      "targets": ["statement", "quote", "comparison-text"],
-      "intents": ["thesis", "quote", "explanation", "comparison", "conclusion"],
-      "tones": ["classroom", "editorial", "technical", "minimal"],
+      "semanticModules": [
+        "focus"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "explanation",
+        "comparison",
+        "conclusion"
+      ],
+      "tones": [
+        "classroom",
+        "editorial",
+        "technical",
+        "minimal"
+      ],
       "intensity": "medium",
       "denseSafe": true,
       "complexity": "light",
-      "tags": ["words", "reveal", "lecture", "headline"],
+      "tags": [
+        "words",
+        "reveal",
+        "lecture",
+        "headline"
+      ],
       "conflicts": [],
-      "description": "Reveal individual words in reading order while preserving the final text layout."
+      "description": "Reveal individual words in reading order while preserving the final text layout.",
+      "hyperframes": "supported"
     },
     {
       "id": "line-split",
@@ -347,16 +969,39 @@
       "category": "type",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus"],
-      "targets": ["statement", "quote", "comparison-text"],
-      "intents": ["thesis", "quote", "comparison", "result", "conclusion"],
-      "tones": ["editorial", "minimal", "sports", "premium"],
+      "semanticModules": [
+        "focus"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "comparison",
+        "result",
+        "conclusion"
+      ],
+      "tones": [
+        "editorial",
+        "minimal",
+        "sports",
+        "premium"
+      ],
       "intensity": "medium",
       "denseSafe": true,
       "complexity": "light",
-      "tags": ["line", "split", "reveal", "headline"],
+      "tags": [
+        "line",
+        "split",
+        "reveal",
+        "headline"
+      ],
       "conflicts": [],
-      "description": "Split the target into opposing clipped bands that resolve into the final readable block."
+      "description": "Split the target into opposing clipped bands that resolve into the final readable block.",
+      "hyperframes": "supported"
     },
     {
       "id": "highlight-sweep",
@@ -364,16 +1009,45 @@
       "category": "type",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus", "number-count", "score-reveal"],
-      "targets": ["statement", "quote", "comparison-text", "metric", "score"],
-      "intents": ["thesis", "quote", "kpi", "change", "comparison", "result", "conclusion"],
-      "tones": ["classroom", "editorial", "minimal", "technical"],
+      "semanticModules": [
+        "focus",
+        "number-count",
+        "score-reveal"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text",
+        "metric",
+        "score"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "kpi",
+        "change",
+        "comparison",
+        "result",
+        "conclusion"
+      ],
+      "tones": [
+        "classroom",
+        "editorial",
+        "minimal",
+        "technical"
+      ],
       "intensity": "low",
       "denseSafe": true,
       "complexity": "light",
-      "tags": ["highlight", "marker", "sweep", "emphasis"],
+      "tags": [
+        "highlight",
+        "marker",
+        "sweep",
+        "emphasis"
+      ],
       "conflicts": [],
-      "description": "Sweep a restrained accent marker across the target during the semantic cue."
+      "description": "Sweep a restrained accent marker across the target during the semantic cue.",
+      "hyperframes": "supported"
     },
     {
       "id": "strike-through",
@@ -381,16 +1055,39 @@
       "category": "type",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus"],
-      "targets": ["statement", "quote", "comparison-text"],
-      "intents": ["change", "comparison", "result", "conclusion", "thesis"],
-      "tones": ["editorial", "technical", "energetic", "classroom"],
+      "semanticModules": [
+        "focus"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text"
+      ],
+      "intents": [
+        "change",
+        "comparison",
+        "result",
+        "conclusion",
+        "thesis"
+      ],
+      "tones": [
+        "editorial",
+        "technical",
+        "energetic",
+        "classroom"
+      ],
       "intensity": "medium",
       "denseSafe": true,
       "complexity": "light",
-      "tags": ["strike", "correction", "contrast", "rewrite"],
+      "tags": [
+        "strike",
+        "correction",
+        "contrast",
+        "rewrite"
+      ],
       "conflicts": [],
-      "description": "Draw a temporary strike line across the target to emphasize rejection, correction or contrast."
+      "description": "Draw a temporary strike line across the target to emphasize rejection, correction or contrast.",
+      "hyperframes": "supported"
     },
     {
       "id": "typewriter-code",
@@ -398,16 +1095,38 @@
       "category": "type",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus"],
-      "targets": ["statement", "comparison-text"],
-      "intents": ["thesis", "explanation", "process", "evidence", "conclusion"],
-      "tones": ["technical", "classroom", "minimal", "editorial"],
+      "semanticModules": [
+        "focus"
+      ],
+      "targets": [
+        "statement",
+        "comparison-text"
+      ],
+      "intents": [
+        "thesis",
+        "explanation",
+        "process",
+        "evidence",
+        "conclusion"
+      ],
+      "tones": [
+        "technical",
+        "classroom",
+        "minimal",
+        "editorial"
+      ],
       "intensity": "medium",
       "denseSafe": true,
       "complexity": "light",
-      "tags": ["typewriter", "code", "terminal", "typing"],
+      "tags": [
+        "typewriter",
+        "code",
+        "terminal",
+        "typing"
+      ],
       "conflicts": [],
-      "description": "Reveal text character by character with a restrained terminal-style cursor."
+      "description": "Reveal text character by character with a restrained terminal-style cursor.",
+      "hyperframes": "supported"
     },
     {
       "id": "number-counter",
@@ -415,16 +1134,38 @@
       "category": "type",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["number-count", "score-reveal"],
-      "targets": ["metric", "score"],
-      "intents": ["kpi", "change", "comparison", "result"],
-      "tones": ["data", "sports", "technical", "minimal"],
+      "semanticModules": [
+        "number-count",
+        "score-reveal"
+      ],
+      "targets": [
+        "metric",
+        "score"
+      ],
+      "intents": [
+        "kpi",
+        "change",
+        "comparison",
+        "result"
+      ],
+      "tones": [
+        "data",
+        "sports",
+        "technical",
+        "minimal"
+      ],
       "intensity": "medium",
       "denseSafe": true,
       "complexity": "light",
-      "tags": ["number", "counter", "odometer", "stat"],
+      "tags": [
+        "number",
+        "counter",
+        "odometer",
+        "stat"
+      ],
       "conflicts": [],
-      "description": "Add compact vertical counter motion to numeric targets while the semantic value resolves."
+      "description": "Add compact vertical counter motion to numeric targets while the semantic value resolves.",
+      "hyperframes": "supported"
     },
     {
       "id": "text-path",
@@ -432,16 +1173,38 @@
       "category": "type",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus"],
-      "targets": ["statement", "quote", "comparison-text"],
-      "intents": ["thesis", "quote", "scene", "conclusion"],
-      "tones": ["editorial", "cinematic", "classroom", "premium"],
+      "semanticModules": [
+        "focus"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text"
+      ],
+      "intents": [
+        "thesis",
+        "quote",
+        "scene",
+        "conclusion"
+      ],
+      "tones": [
+        "editorial",
+        "cinematic",
+        "classroom",
+        "premium"
+      ],
       "intensity": "medium",
       "denseSafe": false,
       "complexity": "medium",
-      "tags": ["path", "curve", "text", "route"],
+      "tags": [
+        "path",
+        "curve",
+        "text",
+        "route"
+      ],
       "conflicts": [],
-      "description": "Trace a temporary curved text echo around the target before returning to the final frame."
+      "description": "Trace a temporary curved text echo around the target before returning to the final frame.",
+      "hyperframes": "supported"
     },
     {
       "id": "oversized-crop-type",
@@ -449,16 +1212,43 @@
       "category": "type",
       "html": "supported",
       "remotion": "supported",
-      "semanticModules": ["focus", "number-count", "score-reveal"],
-      "targets": ["statement", "quote", "comparison-text", "metric", "score"],
-      "intents": ["thesis", "kpi", "result", "conclusion", "scene"],
-      "tones": ["sports", "energetic", "editorial", "premium"],
+      "semanticModules": [
+        "focus",
+        "number-count",
+        "score-reveal"
+      ],
+      "targets": [
+        "statement",
+        "quote",
+        "comparison-text",
+        "metric",
+        "score"
+      ],
+      "intents": [
+        "thesis",
+        "kpi",
+        "result",
+        "conclusion",
+        "scene"
+      ],
+      "tones": [
+        "sports",
+        "energetic",
+        "editorial",
+        "premium"
+      ],
       "intensity": "high",
       "denseSafe": false,
       "complexity": "medium",
-      "tags": ["oversized", "crop", "impact", "headline"],
+      "tags": [
+        "oversized",
+        "crop",
+        "impact",
+        "headline"
+      ],
       "conflicts": [],
-      "description": "Start with oversized cropped typography and settle into the accepted readable composition."
+      "description": "Start with oversized cropped typography and settle into the accepted readable composition.",
+      "hyperframes": "supported"
     }
   ]
 }
