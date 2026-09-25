@@ -20,8 +20,8 @@ from tools.compose_hyperframes import (
     DEFAULT_FPS,
     DEFAULT_LEAD_SECONDS,
     DEFAULT_STEP_SECONDS,
-    compile_hyperframes,
 )
+from tools.hyperframes_project import compile_hyperframes_project
 from tools.hyperframes_pipeline import (
     HyperFramesPipelineError,
     gsap_browser_file,
@@ -107,7 +107,7 @@ def main(argv=None) -> int:
         if not font.is_file():
             raise HyperFramesPipelineError(f"missing video font: {font}")
 
-        composition, manifest = compile_hyperframes(
+        composition, fragments, manifest = compile_hyperframes_project(
             deck,
             Registry(),
             asset_root=args.asset_root or spec_path.parent,
@@ -122,6 +122,10 @@ def main(argv=None) -> int:
         composition_path = work / "index.html"
         manifest_path = work / "video.manifest.json"
         composition_path.write_text(composition, encoding="utf-8")
+        for relative, fragment in fragments.items():
+            target = work / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(fragment, encoding="utf-8")
         manifest_path.write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
