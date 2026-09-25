@@ -70,7 +70,7 @@ def main(argv=None) -> int:
     parser.add_argument("--workers", type=int)
     parser.add_argument(
         "--concurrency",
-        help="Deprecated Remotion compatibility alias; percentages are mapped to HyperFrames workers.",
+        help="Deprecated compatibility alias; percentages are mapped to HyperFrames workers.",
     )
     parser.add_argument(
         "--quality",

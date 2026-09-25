@@ -13,14 +13,10 @@ on:
       - "tools/render_video.py"
       - "tools/render_request.py"
       - "tools/verify_hyperframes.py"
-      - "tools/compose_video.py"
-      - "tools/verify_video.py"
-      - "tools/video_pipeline.py"
       - "video/**"
       - "tests/test_hyperframes_pipeline.py"
       - "tests/test_motion_patterns.py"
       - "tests/test_render_request.py"
-      - "tests/test_video_pipeline.py"
       - ".github/workflows/video-check.yml"
       - ".github/workflows/render-video.yml"
   push:
@@ -35,12 +31,10 @@ on:
       - "tools/render_video.py"
       - "tools/render_request.py"
       - "tools/verify_hyperframes.py"
-      - "tools/compose_video.py"
-      - "tools/verify_video.py"
-      - "tools/video_pipeline.py"
       - "video/**"
       - "tests/test_hyperframes_pipeline.py"
-      - "tests/test_video_pipeline.py"
+      - "tests/test_motion_patterns.py"
+      - "tests/test_render_request.py"
       - ".github/workflows/video-check.yml"
       - ".github/workflows/render-video.yml"
 
@@ -80,12 +74,6 @@ jobs:
 
       - name: Run HyperFrames pipeline tests
         run: python -m unittest tests.test_hyperframes_pipeline tests.test_motion_patterns tests.test_render_request
-
-      - name: Run legacy Remotion pipeline tests during migration
-        run: python -m unittest tests.test_video_pipeline
-
-      - name: Typecheck legacy Remotion runtime during migration
-        run: npm --prefix video run typecheck
 
       - name: Compile showcase HyperFrames composition
         run: |
