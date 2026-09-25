@@ -1,4 +1,4 @@
-"""Validate GitHub Actions Remotion render requests."""
+"""Validate GitHub Actions HyperFrames render requests."""
 from __future__ import annotations
 
 import argparse
@@ -31,6 +31,20 @@ def _validate_concurrency(value: str) -> str:
             "concurrency must be a positive integer or a percentage from 1% to 100%"
         )
     return value
+
+
+def _validate_workers(value: str) -> str:
+    if not WORKERS_RE.fullmatch(value):
+        raise RenderRequestError("workers must be an integer from 1 to 24")
+    return value
+
+
+def _workers_from_concurrency(value: str) -> str:
+    checked = _validate_concurrency(value)
+    if checked.endswith("%"):
+        fraction = int(checked[:-1]) / 100
+        return str(max(1, min(24, round((os.cpu_count() or 2) * fraction))))
+    return str(max(1, min(24, int(checked))))
 
 
 def _resolve_spec(root: Path, spec_path: str) -> Path:
@@ -67,13 +81,17 @@ def _resolve(
     spec_path: str,
     output_name: str,
     concurrency: str,
+    workers: str | None = None,
 ) -> dict[str, str]:
     spec_real = _resolve_spec(root, spec_path)
+    checked_concurrency = _validate_concurrency(concurrency)
+    render_workers = _validate_workers(workers) if workers else _workers_from_concurrency(checked_concurrency)
     return {
         "spec_real": str(spec_real),
         "asset_root": str(spec_real.parent),
         "output_name": _validate_output_name(output_name),
-        "render_concurrency": _validate_concurrency(concurrency),
+        "render_concurrency": checked_concurrency,
+        "render_workers": render_workers,
     }
 
 
@@ -83,12 +101,14 @@ def resolve_manual_request(
     spec_path: str,
     output_name: str,
     concurrency: str,
+    workers: str | None = None,
 ) -> dict[str, str]:
     return _resolve(
         root,
         spec_path=spec_path,
         output_name=output_name,
         concurrency=concurrency,
+        workers=workers,
     )
 
 
@@ -102,6 +122,7 @@ def resolve_push_request(
         "spec_path": "deck.json",
         "output_name": _default_output_name(ref_name),
         "concurrency": "50%",
+        "workers": "",
     }
     request_path = (root / request_name).resolve()
     if request_path.exists():
@@ -118,20 +139,23 @@ def resolve_push_request(
             )
         values.update(payload)
 
-    for key in ALLOWED_REQUEST_KEYS:
+    for key in ("spec_path", "output_name", "concurrency"):
         if not isinstance(values[key], str) or not values[key]:
             raise RenderRequestError(f"{key} must be a non-empty string")
+    if not isinstance(values.get("workers", ""), str):
+        raise RenderRequestError("workers must be a string when provided")
 
     return _resolve(
         root,
         spec_path=values["spec_path"],
         output_name=values["output_name"],
         concurrency=values["concurrency"],
+        workers=values.get("workers") or None,
     )
 
 
 def emit_github_outputs(values: dict[str, str]) -> None:
-    for key in ("spec_real", "asset_root", "output_name", "render_concurrency"):
+    for key in ("spec_real", "asset_root", "output_name", "render_concurrency", "render_workers"):
         print(f"{key}={values[key]}")
 
 
@@ -143,7 +167,8 @@ def build_parser() -> argparse.ArgumentParser:
     manual.add_argument("--root", type=Path, required=True)
     manual.add_argument("--spec-path", required=True)
     manual.add_argument("--output-name", required=True)
-    manual.add_argument("--concurrency", required=True)
+    manual.add_argument("--concurrency", default="50%")
+    manual.add_argument("--workers")
 
     push = subparsers.add_parser("push")
     push.add_argument("--root", type=Path, required=True)
@@ -162,6 +187,7 @@ def main(argv: list[str] | None = None) -> int:
                 spec_path=args.spec_path,
                 output_name=args.output_name,
                 concurrency=args.concurrency,
+                workers=args.workers,
             )
         else:
             values = resolve_push_request(
