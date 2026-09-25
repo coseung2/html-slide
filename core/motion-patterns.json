@@ -6,7 +6,6 @@
       "label": "Kinetic Type",
       "category": "type",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus",
         "number-count",
@@ -54,7 +53,6 @@
       "label": "Flat Shape Motion",
       "category": "object",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus"
       ],
@@ -101,7 +99,6 @@
       "label": "Info Motion",
       "category": "data",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "number-count",
         "chart-grow",
@@ -156,7 +153,6 @@
       "label": "UI Motion",
       "category": "interface",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus",
         "sequence-step"
@@ -204,7 +200,6 @@
       "label": "3D Card Stack",
       "category": "depth",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus",
         "sequence-step"
@@ -254,7 +249,6 @@
       "label": "Particle Warp",
       "category": "object",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus"
       ],
@@ -301,7 +295,6 @@
       "label": "Glitch",
       "category": "type",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus",
         "number-count",
@@ -353,7 +346,6 @@
       "label": "Liquid Morph",
       "category": "object",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus"
       ],
@@ -399,7 +391,6 @@
       "label": "Isometric Build",
       "category": "depth",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus",
         "sequence-step"
@@ -448,7 +439,6 @@
       "label": "Paper Cut",
       "category": "editorial",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus"
       ],
@@ -494,7 +484,6 @@
       "label": "Type Mask",
       "category": "type",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus",
         "number-count",
@@ -540,7 +529,6 @@
       "label": "Environment Type",
       "category": "depth",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus"
       ],
@@ -585,7 +573,6 @@
       "label": "Occlusion",
       "category": "depth",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus",
         "score-reveal"
@@ -632,7 +619,6 @@
       "label": "Scramble Decode",
       "category": "type",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus"
       ],
@@ -672,7 +658,6 @@
       "label": "Variable Font",
       "category": "type",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus",
         "number-count"
@@ -718,7 +703,6 @@
       "label": "Swiss Grid",
       "category": "editorial",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus",
         "number-count",
@@ -773,7 +757,6 @@
       "label": "Extruded Type",
       "category": "depth",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus",
         "number-count",
@@ -824,7 +807,6 @@
       "label": "Street Collage",
       "category": "editorial",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus"
       ],
@@ -874,7 +856,6 @@
       "label": "Path Drawing",
       "category": "line",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus",
         "chart-grow",
@@ -928,7 +909,6 @@
       "label": "Word by Word",
       "category": "type",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus"
       ],
@@ -968,7 +948,6 @@
       "label": "Line Split",
       "category": "type",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus"
       ],
@@ -1008,7 +987,6 @@
       "label": "Highlight Sweep",
       "category": "type",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus",
         "number-count",
@@ -1054,7 +1032,6 @@
       "label": "Strike Through",
       "category": "type",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus"
       ],
@@ -1094,7 +1071,6 @@
       "label": "Typewriter Code",
       "category": "type",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus"
       ],
@@ -1133,7 +1109,6 @@
       "label": "Number Counter",
       "category": "type",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "number-count",
         "score-reveal"
@@ -1172,7 +1147,6 @@
       "label": "Text Path",
       "category": "type",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus"
       ],
@@ -1211,7 +1185,6 @@
       "label": "Oversized Crop Type",
       "category": "type",
       "html": "supported",
-      "remotion": "supported",
       "semanticModules": [
         "focus",
         "number-count",
