@@ -100,11 +100,14 @@ class HyperFramesCompositionTests(unittest.TestCase):
         self.assertAlmostEqual(cue["duration"], 0.8)
         self.assertIn('id="hf-plan"', html)
 
-    def test_presenter_runtime_is_disabled_for_video_composition(self):
+    def test_presenter_runtime_and_browser_clock_transitions_are_removed(self):
         html, _ = compile_hyperframes(self.spec, self.registry)
-        sentinel = 'window.__deckEngine={hyperframes:true}'
-        self.assertIn(sentinel, html)
-        self.assertLess(html.index(sentinel), html.index("/* One state owner."))
+        self.assertNotIn("/* One state owner.", html)
+        self.assertNotIn("performance.now()", html)
+        self.assertNotIn("requestAnimationFrame", html)
+        self.assertNotRegex(html, r"(?i)transition(?:-[a-z-]+)?\\s*:")
+        self.assertIn('data-hf-video="1"', html)
+        self.assertIn('id="hf-slide-one"', html)
 
 
 if __name__ == "__main__":
