@@ -11,7 +11,6 @@
   const ease = 'power3.out';
   const cut = 'power2.inOut';
   const clamp = value => Math.max(0, Math.min(1, value));
-  const escId = value => (window.CSS && CSS.escape ? CSS.escape(value) : value.replace(/[^a-zA-Z0-9_-]/g, '\\$&'));
   const format = value => new Intl.NumberFormat('en-US',{maximumFractionDigits:4}).format(value);
   const primarySelectors = {
     'statement':'.statement','quote':'blockquote','comparison-text':'.comparison-copy',
@@ -344,8 +343,6 @@
   }
 
   plan.scenes.forEach(scene => {
-    const slide = document.querySelector(`[data-slide="${escId(scene.id)}"]`);
-    if (!slide) return;
     scene.cues.forEach(cue => {
       const block = document.getElementById(`s-${scene.id}--${cue.target}`);
       if (!block) return;
