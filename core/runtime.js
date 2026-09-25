@@ -125,7 +125,7 @@
     const entered=index!==renderedIndex;
     cancelJobs(); root.classList.toggle('deck-live',isLive());
     slides.forEach((slide,i) => {
-      const active = i===index; slide.classList.toggle('is-active',active); slide.inert = !active;
+      const active = i===index; slide.classList.toggle('deck-entering',active&&entered); slide.classList.toggle('is-active',active); slide.inert = !active;
       slide.setAttribute('aria-hidden',String(!active));
       [...slide.classList].filter(c=>c.startsWith('deck-step-')).forEach(c=>slide.classList.remove(c));
       if (active) slide.classList.add('deck-step-'+phase);
