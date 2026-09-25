@@ -117,6 +117,8 @@ class HyperFramesCompositionTests(unittest.TestCase):
         self.assertEqual(times[0], 0.0)
         self.assertLess(times[-1], manifest["durationSeconds"])
         self.assertIn(0.6, times)
+        self.assertIn(2.6, times)
+        self.assertIn(7.2, times)
 
     def test_manifest_rejects_cue_overflow(self):
         _, manifest = compile_hyperframes(self.spec, self.registry)
