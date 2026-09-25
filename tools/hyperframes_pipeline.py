@@ -132,6 +132,7 @@ def sample_times(manifest: dict[str, Any]) -> list[float]:
         duration = float(scene["duration"])
         last = max(start, start + duration - frame)
         times.add(start)
+        times.add(min(last, start + duration / 2))
         for cue in scene.get("cues", []):
             cue_start = start + float(cue["at"])
             cue_end = min(last, cue_start + float(cue["duration"]))
