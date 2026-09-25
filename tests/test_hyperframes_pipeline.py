@@ -147,6 +147,7 @@ class HyperFramesCompositionTests(unittest.TestCase):
         self.assertNotRegex(html, r"(?i)(?<![A-Za-z0-9_-])Pretendard(?![A-Za-z0-9_-])")
         self.assertNotIn("Noto Sans CJK KR", html)
         self.assertIn('data-hf-video="1"', html)
+        self.assertIn('.clip[style*="visibility: hidden"] *{visibility:hidden!important}', html)
         self.assertIn('id="hf-slide-one"', html)
 
 
