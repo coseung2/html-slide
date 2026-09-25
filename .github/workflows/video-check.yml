@@ -91,4 +91,6 @@ jobs:
           cp video/node_modules/gsap/dist/gsap.min.js dist/video-ci/gsap.min.js
 
       - name: Check showcase HyperFrames composition
-        run: video/node_modules/.bin/hyperframes check dist/video-ci --json
+        run: |
+          AT="$(python -c 'import json; from pathlib import Path; from tools.hyperframes_pipeline import sample_times; manifest=json.loads(Path("dist/video-ci/video.manifest.json").read_text(encoding="utf-8")); print(",".join(f"{value:.6f}" for value in sample_times(manifest)))')"
+          video/node_modules/.bin/hyperframes check dist/video-ci --json --at "$AT"
