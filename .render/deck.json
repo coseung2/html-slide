@@ -1,0 +1,402 @@
+{
+  "schemaVersion": 1,
+  "title": "모듈 조합형 슬라이드 엔진",
+  "language": "ko",
+  "theme": "tech",
+  "topic": "modular slide architecture",
+  "style": {
+    "typography": "auto",
+    "palette": "auto",
+    "dataviz": "auto",
+    "signals": {"domain": "technology", "audience": "professional", "tone": ["modern", "clear"], "density": "medium"}
+  },
+  "slides": [
+    {
+      "id": "opening",
+      "title": "모듈 조합형 슬라이드",
+      "communication_goal": "모듈 조합형 슬라이드",
+      "intent": "overview",
+      "summary": "주제가 바뀌면, 필요한 화면 구성도 달라집니다.",
+      "layout": "hero",
+      "blocks": [
+        {
+          "id": "building-blocks",
+          "module": "process",
+          "data": {
+            "items": [
+              "전달 목적",
+              "화면 골격",
+              "정보 표현",
+              "아트디렉션",
+              "선택적 모션",
+              "최종 검증"
+            ]
+          }
+        }
+      ],
+      "theme": "tech"
+    },
+    {
+      "id": "comparison",
+      "title": "완성된 틀에서 필요한 조합으로",
+      "communication_goal": "완성된 틀에서 필요한 조합으로",
+      "intent": "comparison",
+      "summary": "",
+      "layout": "comparison",
+      "blocks": [
+        {
+          "id": "before",
+          "module": "comparison-text",
+          "data": {
+            "label": "템플릿 중심",
+            "text": "정해진 화면에 내용을 맞추는 방식. 구조가 반복되고 정보가 많아지면 틀을 벗어납니다."
+          },
+          "slot": "left"
+        },
+        {
+          "id": "after",
+          "module": "comparison-text",
+          "data": {
+            "label": "모듈 중심",
+            "text": "전달 목적에 맞는 골격과 정보 표현을 선택하는 방식. 디자인 문법, 폰트, 색상, 모션을 독립적으로 조합합니다."
+          },
+          "slot": "right"
+        }
+      ],
+      "theme": "editorial"
+    },
+    {
+      "id": "planning",
+      "title": "화면 선택의 순서",
+      "communication_goal": "화면 선택의 순서",
+      "intent": "process",
+      "summary": "이름이 아니라 사용 목적과 제약조건으로 선택합니다.",
+      "blocks": [
+        {
+          "id": "pipeline",
+          "module": "process",
+          "data": {
+            "items": [
+              "목적 정하기",
+              "후보 검색",
+              "제약 검사",
+              "슬롯 배치",
+              "스타일 선택",
+              "화면 검증"
+            ]
+          }
+        }
+      ],
+      "theme": "tech",
+      "motion": [
+        {
+          "module": "sequence-step",
+          "target": "pipeline",
+          "reason": "조합기의 처리 순서를 한 단계씩 설명합니다."
+        }
+      ]
+    },
+    {
+      "id": "catalog",
+      "title": "독립적으로 교체하는 구성 요소",
+      "communication_goal": "독립적으로 교체하는 구성 요소",
+      "intent": "kpi",
+      "summary": "목록과 역할은 모듈 레지스트리에서 검색합니다.",
+      "blocks": [
+        {
+          "id": "layouts",
+          "module": "metric",
+          "data": {
+            "label": "레이아웃",
+            "value": 10,
+            "unit": "종",
+            "detail": "내용을 담는 화면의 골격"
+          }
+        },
+        {
+          "id": "content",
+          "module": "metric",
+          "data": {
+            "label": "정보 모듈",
+            "value": 11,
+            "unit": "종",
+            "detail": "숫자, 순위, 인용, 차트 등의 표현"
+          }
+        },
+        {
+          "id": "themes",
+          "module": "metric",
+          "data": {
+            "label": "스타일 팩",
+            "value": 20,
+            "unit": "종",
+            "detail": "타이포 7, 메인 색상 8, 차트 색상 5"
+          }
+        },
+        {
+          "id": "motion",
+          "module": "metric",
+          "data": {
+            "label": "의미 기반 모션",
+            "value": 5,
+            "unit": "종",
+            "detail": "필요한 대상에만 선택적으로 적용"
+          }
+        }
+      ],
+      "theme": "financial-report"
+    },
+    {
+      "id": "standings",
+      "title": "순위 정보의 화면 구성",
+      "communication_goal": "순위 정보의 화면 구성",
+      "intent": "ranking",
+      "summary": "구성 검증용 가상 데이터입니다. 실제 경기 결과가 아닙니다.",
+      "blocks": [
+        {
+          "id": "table",
+          "module": "ranking",
+          "data": {
+            "label": "예시 팀",
+            "valueLabel": "예시 점수",
+            "items": [
+              {
+                "label": "팀 가",
+                "value": 18
+              },
+              {
+                "label": "팀 나",
+                "value": 16
+              },
+              {
+                "label": "팀 다",
+                "value": 15
+              },
+              {
+                "label": "팀 라",
+                "value": 13
+              },
+              {
+                "label": "팀 마",
+                "value": 12
+              },
+              {
+                "label": "팀 바",
+                "value": 10
+              }
+            ]
+          }
+        }
+      ],
+      "theme": "sports-broadcast"
+    },
+    {
+      "id": "match",
+      "title": "결과만 강조하는 모션",
+      "communication_goal": "결과만 강조하는 모션",
+      "intent": "result",
+      "summary": "가상 경기 결과로 점수 공개 동작을 확인합니다.",
+      "layout": "split-right",
+      "blocks": [
+        {
+          "id": "result",
+          "module": "score",
+          "data": {
+            "home": "예시 팀 가",
+            "away": "예시 팀 나",
+            "homeScore": 3,
+            "awayScore": 2,
+            "detail": "모션은 결과가 핵심인 장면에만 적용합니다."
+          }
+        }
+      ],
+      "theme": "sports-broadcast",
+      "motion": [
+        {
+          "module": "score-reveal",
+          "target": "result",
+          "reason": "이 장면의 핵심인 최종 점수를 강조합니다."
+        }
+      ]
+    },
+    {
+      "id": "bars",
+      "title": "같은 기준으로 나란히 비교",
+      "communication_goal": "같은 기준으로 나란히 비교",
+      "intent": "comparison",
+      "summary": "축과 값은 그대로 두고 비교 대상만 강조합니다.",
+      "layout": "split-left",
+      "blocks": [
+        {
+          "id": "chart",
+          "module": "bar-chart",
+          "data": {
+            "label": "가상 비교 데이터",
+            "items": [
+              {
+                "label": "구성 가",
+                "value": 24
+              },
+              {
+                "label": "구성 나",
+                "value": 42
+              },
+              {
+                "label": "구성 다",
+                "value": 68
+              },
+              {
+                "label": "구성 라",
+                "value": 84
+              }
+            ]
+          }
+        }
+      ],
+      "theme": "financial-report",
+      "motion": [
+        {
+          "module": "chart-grow",
+          "target": "chart",
+          "reason": "상대적인 크기의 차이를 설명합니다."
+        }
+      ]
+    },
+    {
+      "id": "trend",
+      "title": "변화의 방향을 읽는 화면",
+      "communication_goal": "변화의 방향을 읽는 화면",
+      "intent": "trend",
+      "summary": "구조 설명을 위한 예시 데이터이며, 실제 시장 지표가 아닙니다.",
+      "layout": "split-right",
+      "blocks": [
+        {
+          "id": "trend",
+          "module": "line-chart",
+          "data": {
+            "label": "가상 추세 데이터",
+            "items": [
+              {
+                "label": "1주",
+                "value": 30
+              },
+              {
+                "label": "2주",
+                "value": 36
+              },
+              {
+                "label": "3주",
+                "value": 33
+              },
+              {
+                "label": "4주",
+                "value": 45
+              },
+              {
+                "label": "5주",
+                "value": 42
+              },
+              {
+                "label": "6주",
+                "value": 54
+              }
+            ]
+          }
+        }
+      ],
+      "theme": "financial-report"
+    },
+    {
+      "id": "lesson",
+      "title": "학생 탐구의 다섯 단계",
+      "communication_goal": "학생 탐구의 다섯 단계",
+      "intent": "sequence",
+      "summary": "순서가 필요한 내용은 타임라인으로 표현합니다.",
+      "blocks": [
+        {
+          "id": "ladder",
+          "module": "timeline",
+          "data": {
+            "items": [
+              "경험 떠올리기",
+              "현황 살펴보기",
+              "원인 질문하기",
+              "대안 비교하기",
+              "의견 정리하기"
+            ]
+          }
+        }
+      ],
+      "theme": "education",
+      "motion": [
+        {
+          "module": "sequence-step",
+          "target": "ladder",
+          "reason": "탐구의 진행 순서를 단계별로 설명합니다."
+        }
+      ]
+    },
+    {
+      "id": "motion-rule",
+      "title": "모션보다 먼저 완성되는 의미",
+      "communication_goal": "모션보다 먼저 완성되는 의미",
+      "intent": "quote",
+      "summary": "",
+      "blocks": [
+        {
+          "id": "principle",
+          "module": "quote",
+          "data": {
+            "text": "정적 화면만으로도 메시지가 완성되어야 합니다. 모션은 그 의미를 설명하는 수단입니다.",
+            "author": "공통 제작 원칙"
+          }
+        }
+      ],
+      "theme": "editorial"
+    },
+    {
+      "id": "media",
+      "title": "시각 자료와 레이아웃의 분리",
+      "communication_goal": "시각 자료와 레이아웃의 분리",
+      "intent": "scene",
+      "summary": "사진과 도표는 전용 슬롯에 배치합니다. 이 이미지는 배치 검증용 합성 도형입니다.",
+      "blocks": [
+        {
+          "id": "visual",
+          "module": "image",
+          "data": {
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA+gAAAMgBAMAAABCNlUOAAAAMFBMVEXN/2CA4tHsyHisxO0gNUoQITYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD+tD9cAAAFrUlEQVR42u3dwXGCQBiA0aDkbgmUQAmUkAtVpgUONuCMFTh2gAWgpABkx1kiIPveVQXZL38uupLVX6RmZwlER3RER3RER3RER3RER3RER3RER3RER3REFx3RER3RER3RER3RER3RER3RER3RER3REV10REd0REd0REd0REd0REd0REd0REd0REd00REd0REd0REd0REd0REd0REd0REd0REd0dOWv/CcZivXWoUe/d3IVX7/mHRER3TRER3RER3RER3RER3RER3RER3RER3RER3RRUd0REd0REd0REd0REd0REd0REd0REd0RBcd0REd0REd0REd0REd0REd0REd0REd0RE9cXn0K/flsu/8fp5lfaplr7I7mnRER3RER3REFx3RER3RER3RER3RER3RER3RER3RER3RET1t8d97v59SWJ+uMemIjuiIjuiIjuiIjuiIjuiIjuiIjuiiIzqiIzqiIzqiIzqiIzqiIzqiIzqiIzqii47oiI7oiI7oiI7oiI7oiI7oiE6M+F+B3pfTz34/r359qunH6I4mHdERHdERHdERHdERHdFFR3REZ1vcazXMvVYRHdERHdERHdERHdERHdERHdEZyi1BeH2qtx26MemIjuiIjuiIjuiIjuiiIzqiIzqfyqdsYfayITqiIzqiIzqiIzqiIzqiIzqiIzqii47oiI7oiI7oiI7oiI7oiI7oiI7oiI7oiC46oiM6oiM6oiM6oiM6oiM6oiM6oiM6oiO66IiO6IiO6IiO6IiO6IiO6IiO6IiO6IiO6KIjOqIjOqIjOqIjOqIjOqIjOqIjOqIjOqIjuuiIjuiIjuiIjuiIjuiIjuiIjuiIjuiIjuiiIzqiIzqiIzqiIzqiIzqiIzqiIzqiIzqii47oiI7oiI7oiI7oiI7oiI7oiI7oiM6YrLYGJh3RER3RER3RER3RER3RER3RER3RER3REV10REd0REd0REd0REd0REd0REd0REd0REd00REd0REd0REd0REd0REd0REd0REd0REd0UVHdERHdERHdERndfIXnnPayLXuy9Cjl62McWHSER3RRUd0REd0REd0REd0REd0REd0REd0REd0RBcd0REd0REd0REd0REd0REd0REd0REd0RFddERHdERHdERHdERHdERHdERHdERHdERH9MTl8X8uxbLv/HGd4yzZYdmr7G8mHdERHdERHdFFR3RER3RER3RER3RER3RER3RER3RER3RET1v8994flxTWp29NOqIjOqIjOqIjOqIjOqIjOqIjOqIjuuiIjuiIjuiIjuiIjuiIjuiIjuiIjuiIjuiiIzqiIzqiIzqiIzqiIzqiIzqiEyP+V6B3xfSzP65rX5/sMP0Y/c2kIzqiIzqiIzqiIzqiI7roiI7obIt7rYa51yqiIzqiIzqiIzqiIzqiIzqiIzpDy+5lG7Giz+/+Yy/biNakIzqiIzqiIzqiIzqii47oiI7ofCp72cLsZUN0REd0REd0REd0REd0REd0RGdolXvZnlvkJm5v3Mv23Bw3cTPp/r0jOqIjOqIjOqIjOqIjOqIjOhPZyxZmLxuiIzqiIzqiIzqiIzqiIzqiIzpDuSUImn0v24jWpCM6oiM6oiO66IiO6IiO6IiO6KyIT9nC7GVDdERHdERHdERHdERHdERHdERHdEQXHdERHdERHdERHdERHdERHdERHdERHdERXXRER3RER3RER3RER3RER3RER3RER3RER3TRER3RER3RER3RER3RER3RER3RER3RER3RRUd0REd0REd0REd0REd0ROd9stoamHRER3RER3RER3RER3RER3RER3RER3RER3TRER3RER3RER3RER3RER3RER3RER3RER3RRUd0REd0REd0REd0REd0REd0REd0REd0RBcd0REd0REd0REd0REd0REd0REd0REd0RE9aX/59T0zqd+D2gAAAABJRU5ErkJggg==",
+            "alt": "이미지 배치 검증용으로 만든 네 영역의 합성 도형",
+            "fit": "contain"
+          }
+        }
+      ],
+      "theme": "documentary"
+    },
+    {
+      "id": "close",
+      "title": "판단은 AI, 제약 검사는 엔진",
+      "communication_goal": "판단은 AI, 제약 검사는 엔진",
+      "intent": "conclusion",
+      "summary": "선택 이유와 조합 결과는 설계 보고서에 함께 남습니다.",
+      "layout": "split-right",
+      "blocks": [
+        {
+          "id": "final",
+          "module": "statement",
+          "data": {
+            "text": "AI가 전달 목적을 정하고, 조합기가 호환 가능한 구성을 찾습니다. 화면 검증을 통과한 HTML이 최종 산출물입니다."
+          }
+        }
+      ],
+      "theme": "tech",
+      "motion": [
+        {
+          "module": "focus",
+          "target": "final",
+          "reason": "역할 분담을 설명하는 핵심 문장만 강조합니다."
+        }
+      ]
+    }
+  ]
+}
