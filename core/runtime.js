@@ -54,9 +54,25 @@
     const selector=primarySelectors[block.dataset.module];
     return (selector && block.querySelector(selector)) || block;
   }
+  function splitSource(primary) {
+    if(primary.dataset.patternText==null)primary.dataset.patternText=primary.textContent;
+    return primary.dataset.patternText;
+  }
+  function restoreSplit(primary) {
+    if(primary.dataset.patternText==null)return;
+    primary.textContent=primary.dataset.patternText;delete primary.dataset.patternReady;
+  }
+  function settleSplit(block,primary,delay) {
+    const start=performance.now();
+    function frame(now) {
+      if(now-start<delay){jobs.set(block,requestAnimationFrame(frame));return;}
+      restoreSplit(primary);jobs.delete(block);
+    }
+    jobs.set(block,requestAnimationFrame(frame));
+  }
   function wrapWords(primary) {
     if (primary.dataset.patternReady) return;
-    const parts=primary.textContent.split(/(\s+)/);let n=0;primary.replaceChildren();
+    const parts=splitSource(primary).split(/(\s+)/);let n=0;primary.replaceChildren();
     parts.forEach(part=>{
       if(!part)return;
       if(/^\s+$/.test(part)){primary.append(document.createTextNode(part));return;}
@@ -66,7 +82,7 @@
   }
   function wrapChars(primary) {
     if (primary.dataset.patternReady) return;
-    const chars=segment(primary.textContent);primary.replaceChildren();
+    const chars=segment(splitSource(primary));primary.replaceChildren();
     chars.forEach((ch,i)=>{const span=document.createElement('span');span.className='motion-char';span.style.setProperty('--i',i);span.textContent=ch;primary.append(span);});
     primary.dataset.patternReady='char';
   }
@@ -139,6 +155,17 @@
           item.dataset.sequenceState=(!isLive() || phase>=first+j)?'done':'pending';
         });
         const pattern=block.dataset.pattern;
+        if(pattern==='word-by-word'||pattern==='typewriter-code'){
+          const primary=patternPrimary(block);
+          if(!isLive())restoreSplit(primary);
+          else if(!done){
+            pattern==='word-by-word'?wrapWords(primary):wrapChars(primary);
+          } else if(active&&animate&&was==='pending'){
+            const count=primary.querySelectorAll(pattern==='word-by-word'?'.motion-word':'.motion-char').length;
+            const delay=pattern==='word-by-word'?Math.min(1600,640+Math.max(0,count-1)*65):Math.min(1400,180+Math.max(0,count-1)*22);
+            settleSplit(block,primary,delay);
+          } else restoreSplit(primary);
+        }
         if(pattern==='scramble-decode'){
           if(!isLive())restoreScramble(block);
           else if(!done)seedScramble(block);
