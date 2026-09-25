@@ -195,7 +195,7 @@ html,body{width:1920px!important;height:1080px!important;overflow:hidden!importa
         "durationSeconds": duration,
         "scenes": scenes,
     }
-    runtime = (registry.root / "core" / "hyperframes_runtime.js").read_text(encoding="utf-8")
+    runtime = (registry.root / "core" / "hyperframes_runtime.js").read_text(encoding="utf-8").replace("__HF_PLAN_ID__", "hf-plan").replace("__HF_ROOT_ID__", "html-slide-composition")
     if "</script" in runtime.lower():
         raise ContractError("unsafe script closing sequence in HyperFrames runtime")
     payload = (
