@@ -1,4 +1,4 @@
-"""Inspect and deterministically rank cross-renderer motion-expression patterns."""
+"""Inspect and deterministically rank the canonical HTML motion-expression patterns."""
 from __future__ import annotations
 
 import copy
@@ -10,9 +10,8 @@ from typing import Any, Iterable
 from .registry import ContractError
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG = ROOT / "video" / "motion-patterns.json"
+CATALOG = ROOT / "core" / "motion-patterns.json"
 INTENSITY_ORDER = {"low": 0, "medium": 1, "high": 2}
-RENDER_STATUS = {"supported", "limited", "unsupported"}
 COMPLEXITY = {"light", "medium", "heavy"}
 
 
@@ -36,8 +35,8 @@ def load_motion_patterns(path: str | Path = CATALOG) -> dict[str, dict[str, Any]
         payload = json.loads(source.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise MotionPatternError(f"cannot read motion pattern catalog: {exc}") from exc
-    if payload.get("version") != 2:
-        raise MotionPatternError("motion pattern catalog version must be 2")
+    if payload.get("version") != 3:
+        raise MotionPatternError("motion pattern catalog version must be 3")
     raw = payload.get("patterns")
     if not isinstance(raw, list) or not raw:
         raise MotionPatternError("motion pattern catalog must contain patterns")
@@ -55,11 +54,6 @@ def load_motion_patterns(path: str | Path = CATALOG) -> dict[str, dict[str, Any]
             raise MotionPatternError(f"{pattern_id}.label is required")
         if not isinstance(item.get("category"), str) or not item["category"]:
             raise MotionPatternError(f"{pattern_id}.category is required")
-        for renderer in ("html", "remotion"):
-            if item.get(renderer) not in RENDER_STATUS:
-                raise MotionPatternError(
-                    f"{pattern_id}.{renderer} must be one of {sorted(RENDER_STATUS)}"
-                )
         _strings(item.get("semanticModules"), "semanticModules", pattern_id)
         _strings(item.get("targets"), "targets", pattern_id)
         _strings(item.get("intents"), "intents", pattern_id)
@@ -74,6 +68,8 @@ def load_motion_patterns(path: str | Path = CATALOG) -> dict[str, dict[str, Any]
             raise MotionPatternError(f"{pattern_id}.complexity must be light, medium or heavy")
         if not isinstance(item.get("description"), str) or not item["description"]:
             raise MotionPatternError(f"{pattern_id}.description is required")
+        if "html" in item or "remotion" in item:
+            raise MotionPatternError(f"{pattern_id}: renderer-specific support flags are no longer allowed")
         patterns[pattern_id] = item
 
     ids = set(patterns)
@@ -88,9 +84,7 @@ def load_motion_patterns(path: str | Path = CATALOG) -> dict[str, dict[str, Any]
     for pattern_id, item in patterns.items():
         for other in item["conflicts"]:
             if pattern_id not in patterns[other]["conflicts"]:
-                raise MotionPatternError(
-                    f"conflict must be symmetric: {pattern_id} <-> {other}"
-                )
+                raise MotionPatternError(f"conflict must be symmetric: {pattern_id} <-> {other}")
     return patterns
 
 
@@ -107,27 +101,19 @@ def _compatible(
     *,
     target: str,
     semantic_module: str,
-    renderer: str,
     selected: Iterable[str],
     patterns: dict[str, dict[str, Any]],
 ) -> tuple[bool, list[str]]:
     reasons: list[str] = []
-    status = item.get(renderer)
-    if status not in ("supported", "limited"):
-        return False, [f"{renderer} renderer unsupported"]
     if target not in item["targets"]:
         return False, [f"target {target} unsupported"]
     if semantic_module not in item["semanticModules"]:
         return False, [f"semantic module {semantic_module} unsupported"]
     selected_ids = set(selected)
     selected_items = [patterns[pattern_id] for pattern_id in selected_ids if pattern_id in patterns]
-    if item["intensity"] == "high" and any(
-        other["intensity"] == "high" for other in selected_items
-    ):
+    if item["intensity"] == "high" and any(other["intensity"] == "high" for other in selected_items):
         return False, ["only one high-intensity pattern is allowed per scene"]
-    if item["complexity"] == "heavy" and any(
-        other["complexity"] == "heavy" for other in selected_items
-    ):
+    if item["complexity"] == "heavy" and any(other["complexity"] == "heavy" for other in selected_items):
         return False, ["only one heavy-complexity pattern is allowed per scene"]
     conflicts = selected_ids.intersection(set(item["conflicts"]))
     if conflicts:
@@ -135,7 +121,6 @@ def _compatible(
     for other in selected_ids:
         if other in patterns and item["id"] in patterns[other]["conflicts"]:
             return False, [f"conflicts with {other}"]
-    reasons.append(f"{renderer} {status}")
     reasons.append(f"target {target}")
     reasons.append(f"semantic {semantic_module}")
     return True, reasons
@@ -146,7 +131,6 @@ def rank_motion_patterns(
     intent: str,
     target: str,
     semantic_module: str,
-    renderer: str = "remotion",
     tones: Iterable[str] = (),
     intensity: str = "medium",
     density: str = "medium",
@@ -155,8 +139,6 @@ def rank_motion_patterns(
     recent: Iterable[str] = (),
     path: str | Path = CATALOG,
 ) -> list[dict[str, Any]]:
-    if renderer not in ("html", "remotion"):
-        raise MotionPatternError("renderer must be html or remotion")
     if intensity not in INTENSITY_ORDER:
         raise MotionPatternError("intensity must be low, medium or high")
     if density not in ("low", "medium", "high"):
@@ -172,7 +154,6 @@ def rank_motion_patterns(
             item,
             target=target,
             semantic_module=semantic_module,
-            renderer=renderer,
             selected=selected,
             patterns=patterns,
         )
@@ -222,20 +203,11 @@ def rank_motion_patterns(
             score += 4
             reasons.append("space for complex expression")
 
-        status = item[renderer]
-        if status == "supported":
-            score += 8
-        else:
-            score -= 14
-            warnings.append(f"{renderer} support is limited")
-
         if recent_ids:
             if item["id"] == recent_ids[-1]:
                 score -= 28
                 reasons.append("exact repetition penalty")
-            recent_categories = [
-                patterns[r]["category"] for r in recent_ids[-2:] if r in patterns
-            ]
+            recent_categories = [patterns[r]["category"] for r in recent_ids[-2:] if r in patterns]
             if item["category"] in recent_categories:
                 score -= 12
                 reasons.append("recent category penalty")
@@ -258,9 +230,7 @@ def rank_motion_patterns(
 def select_motion_pattern(**kwargs: Any) -> dict[str, Any]:
     ranked = rank_motion_patterns(**kwargs)
     if not ranked:
-        raise MotionPatternError(
-            "no compatible motion pattern for the target, semantic module and conflicts"
-        )
+        raise MotionPatternError("no compatible motion pattern for the target, semantic module and conflicts")
     return ranked[0]
 
 
@@ -269,7 +239,6 @@ def validate_pattern_use(
     *,
     target: str,
     semantic_module: str,
-    renderer: str = "remotion",
     selected: Iterable[str] = (),
     path: str | Path = CATALOG,
 ) -> None:
@@ -282,13 +251,11 @@ def validate_pattern_use(
         item,
         target=target,
         semantic_module=semantic_module,
-        renderer=renderer,
         selected=selected,
         patterns=patterns,
     )
     if not ok:
         raise MotionPatternError(f"{pattern_id}: {reasons[0]}")
-
 
 
 def default_motion_intensity(intent: str, density: str) -> str:
@@ -299,14 +266,8 @@ def default_motion_intensity(intent: str, density: str) -> str:
     return "medium"
 
 
-def resolve_motion_patterns(
-    spec: dict,
-    plan: dict,
-    registry,
-    *,
-    renderer: str,
-) -> dict:
-    """Resolve explicit/auto expression patterns for one renderer without mutating inputs."""
+def resolve_motion_patterns(spec: dict, plan: dict, registry) -> dict:
+    """Resolve explicit/auto expression patterns once for the canonical HTML renderer."""
     resolved = copy.deepcopy(plan)
     signals = spec.get("style", {}).get("signals", {})
     deck_tones = signals.get("tone", [])
@@ -329,16 +290,13 @@ def resolve_motion_patterns(
             requested = motion.get("pattern")
             if not requested:
                 continue
-            target_block = next(
-                block for block in source["blocks"] if block["id"] == motion["target"]
-            )
+            target_block = next(block for block in source["blocks"] if block["id"] == motion["target"])
             try:
                 if requested == "auto":
                     choice = select_motion_pattern(
                         intent=source["intent"],
                         target=target_block["module"],
                         semantic_module=motion["module"],
-                        renderer=renderer,
                         tones=deck_tones,
                         intensity=motion.get("intensity")
                         or default_motion_intensity(source["intent"], density),
@@ -357,17 +315,13 @@ def resolve_motion_patterns(
                         requested,
                         target=target_block["module"],
                         semantic_module=motion["module"],
-                        renderer=renderer,
                         selected=scene_patterns,
                     )
                     motion["patternSource"] = "explicit"
             except MotionPatternError as exc:
-                raise ContractError(
-                    f"{source['id']}.{motion['target']}: {exc}"
-                ) from exc
+                raise ContractError(f"{source['id']}.{motion['target']}: {exc}") from exc
             scene_patterns.append(motion["pattern"])
 
         recent_patterns.extend(scene_patterns)
         recent_patterns = recent_patterns[-4:]
     return resolved
-
