@@ -1,4 +1,4 @@
-name: Render Remotion video
+name: Render HyperFrames video
 
 on:
   workflow_dispatch:
@@ -13,10 +13,10 @@ on:
         required: true
         default: "html-slide-video"
         type: string
-      concurrency:
-        description: "Remotion render concurrency, for example 50% or 2"
+      workers:
+        description: "HyperFrames render workers (1-24)"
         required: true
-        default: "50%"
+        default: "3"
         type: string
   push:
     branches:
@@ -26,7 +26,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: remotion-render-${{ github.ref }}
+  group: hyperframes-render-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -62,7 +62,7 @@ jobs:
         env:
           MANUAL_SPEC_PATH: ${{ inputs.spec_path }}
           MANUAL_OUTPUT_NAME: ${{ inputs.output_name }}
-          MANUAL_CONCURRENCY: ${{ inputs.concurrency }}
+          MANUAL_WORKERS: ${{ inputs.workers }}
         run: |
           set -euo pipefail
           if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
@@ -74,7 +74,7 @@ jobs:
               --root "$GITHUB_WORKSPACE" \
               --spec-path "$MANUAL_SPEC_PATH" \
               --output-name "$MANUAL_OUTPUT_NAME" \
-              --concurrency "$MANUAL_CONCURRENCY" >> "$GITHUB_OUTPUT"
+              --workers "$MANUAL_WORKERS" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Set up Node
@@ -85,22 +85,22 @@ jobs:
       - name: Install Python contracts
         run: python -m pip install -r requirements-modular.txt
 
-      - name: Install Remotion runtime
+      - name: Install video runtime
         run: npm install --prefix video --no-audit --no-fund
 
-      - name: Run video contract tests
-        run: python -m unittest tests.test_video_pipeline
+      - name: Run HyperFrames video contract tests
+        run: python -m unittest tests.test_hyperframes_pipeline
 
       - name: Render and verify MP4
         env:
           OUTPUT_NAME: ${{ steps.request.outputs.output_name }}
-          RENDER_CONCURRENCY: ${{ steps.request.outputs.render_concurrency }}
+          RENDER_WORKERS: ${{ steps.request.outputs.render_workers }}
         run: |
           python tools/render_video.py "${{ steps.request.outputs.spec_real }}" \
             --asset-root "${{ steps.request.outputs.asset_root }}" \
             --out "$GITHUB_WORKSPACE/dist/render/$OUTPUT_NAME.mp4" \
             --work-dir "$GITHUB_WORKSPACE/dist/render/work" \
-            --concurrency "$RENDER_CONCURRENCY" \
+            --workers "$RENDER_WORKERS" \
             --keep-work
 
       - name: Upload rendered video and QA
@@ -111,7 +111,9 @@ jobs:
           path: |
             dist/render/*.mp4
             dist/render/*.qa.json
-            dist/render/work/storyboard.json
+            dist/render/work/index.html
+            dist/render/work/video.manifest.json
+            dist/render/work/hyperframes-check.json
             dist/render/work/frames/*.png
           if-no-files-found: warn
           retention-days: 7

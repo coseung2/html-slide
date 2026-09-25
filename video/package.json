@@ -1,22 +1,13 @@
 {
-  "name": "html-slide-remotion",
+  "name": "html-slide-video",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.3.0",
   "scripts": {
-    "studio": "remotion studio src/index.ts",
-    "render": "remotion render src/index.ts DeckVideo dist/video.mp4",
-    "still": "remotion still src/index.ts DeckVideo dist/poster.png --frame=0",
-    "typecheck": "tsc -p tsconfig.json"
+    "hf:check": "hyperframes check",
+    "hf:render": "hyperframes render"
   },
   "dependencies": {
-    "@remotion/cli": "4.0.526",
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
-    "remotion": "4.0.526"
-  },
-  "devDependencies": {
-    "@types/react": "19.1.13",
-    "@types/react-dom": "19.1.9",
-    "typescript": "5.9.2"
+    "gsap": "3.14.2",
+    "hyperframes": "0.8.41"
   }
 }

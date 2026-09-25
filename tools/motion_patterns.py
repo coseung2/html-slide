@@ -26,7 +26,7 @@ def _cli(argv: list[str] | None = None) -> int:
     search.add_argument("--intent", required=True)
     search.add_argument("--target", required=True)
     search.add_argument("--semantic", required=True)
-    search.add_argument("--renderer", choices=["html", "remotion"], default="remotion")
+    search.add_argument("--renderer", choices=["html", "hyperframes"], default="hyperframes")
     search.add_argument("--tone", action="append", default=[])
     search.add_argument("--intensity", choices=["low", "medium", "high"], default="medium")
     search.add_argument("--density", choices=["low", "medium", "high"], default="medium")

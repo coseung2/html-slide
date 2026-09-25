@@ -162,7 +162,7 @@
             pattern==='word-by-word'?wrapWords(primary):wrapChars(primary);
           } else if(active&&animate&&was==='pending'){
             const count=primary.querySelectorAll(pattern==='word-by-word'?'.motion-word':'.motion-char').length;
-            const delay=pattern==='word-by-word'?Math.min(1600,640+Math.max(0,count-1)*65):Math.min(1400,180+Math.max(0,count-1)*22);
+            const delay=pattern==='word-by-word'?Math.max(900,Math.min(1600,640+Math.max(0,count-1)*65)):Math.min(1400,180+Math.max(0,count-1)*22);
             settleSplit(block,primary,delay);
           } else restoreSplit(primary);
         }

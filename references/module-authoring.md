@@ -59,13 +59,17 @@ before changing automatic selection behavior.
 A motion manifest names allowed target block IDs and intents. Authoring specs must
 supply a real target ID and a reason. A new semantic runtime effect requires
 implementation in `core/runtime.js`, not just an attractive manifest name. Expression
-patterns are separate: shared selection lives in `core/motion_patterns.py`; HTML
+patterns are separate: shared selection and the canonical catalog live in
+`core/motion_patterns.py` and `core/motion-patterns.json`; presentation HTML
 expressions live in `core/motion_patterns.css` plus the pattern preparation hooks in
-`core/runtime.js`; Remotion keeps its renderer in `video/`. Do not mark a renderer
-`supported` in `video/motion-patterns.json` until its expression path is implemented
-and covered by a runtime regression. Gate phase CSS on `.deck-live`, preserve final
-static text and test forward/backward/reduced motion. No more than two semantic
-effects are accepted on a slide.
+`core/runtime.js`; seek-safe video expressions live in
+`core/hyperframes_runtime.js`. Do not mark `html` or `hyperframes` as
+`supported` until that expression path is implemented and covered by a runtime
+regression. HyperFrames motion must use a paused seekable timeline and must not depend
+on wall-clock timing, CSS transitions, non-deterministic randomness or DOM measurement
+inside seek callbacks. Gate presenter phase CSS on `.deck-live`, preserve final static
+text and test forward/backward/reduced motion. No more than two semantic effects are
+accepted on a slide.
 
 ## Acceptance
 
