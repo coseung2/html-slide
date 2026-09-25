@@ -89,15 +89,17 @@ The video renderer maintains 27 explicit patterns in `video/motion-patterns.json
 The typography-focused additions are cross-renderer expression patterns. They
 reuse the existing semantic motion modules instead of introducing a second meaning
 layer: `focus` drives word/line/highlight/strike/typewriter/path/crop treatments,
-while `number-count` and `score-reveal` can drive `number-counter`. HTML is not a
-second-class motion target: the same expression vocabulary can be implemented with
-CSS, SVG, Canvas and the Web Animations API while keeping the static final-frame
-contract intact.
+while `number-count` and `score-reveal` can drive `number-counter`. The HTML build
+uses the same deterministic selector in `core/motion_patterns.py`, writes the resolved
+choice to `data-pattern`, and expresses it through `core/motion_patterns.css` plus
+the browser hooks in `core/runtime.js`. Static, reduced-motion and no-JS modes still
+resolve directly to the complete accepted frame.
 
 Choose a pattern only after selecting the semantic target and writing the reason.
 The pattern is an expression layer; it must not become the reason a target is
-animated. Renderer metadata describes supported expression targets rather than
-assuming that a browser implementation is inherently less capable than Remotion.
+animated. Renderer metadata is an implementation contract: a renderer may be marked
+`supported` only when that expression path exists and has runtime regression
+coverage.
 
 Each catalog entry declares compatible semantic modules and target block types plus
 scene intents, tones, nominal intensity, dense-scene safety, implementation

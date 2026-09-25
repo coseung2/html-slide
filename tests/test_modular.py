@@ -13,6 +13,7 @@ from core import Registry, plan_deck, build_deck
 from core.composer import assign_slots
 from core.registry import ContractError, identifier
 from core.renderers import media_data, fmt
+from core.motion_patterns import load_motion_patterns
 from core.validation import load_spec, safe_url
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -169,6 +170,35 @@ class EngineTests(unittest.TestCase):
     def test_bound_focus_markup(self):
         self.spec['slides'][0]['motion']=[{'module':'focus','target':'message','reason':'emphasize'}]
         html,plan=build_deck(self.spec,self.registry);self.assertIn('data-target="#s-one--message"',html);self.assertEqual(plan['slides'][0]['steps'],1)
+    def test_explicit_html_motion_pattern_is_emitted(self):
+        self.spec['slides'][0]['motion']=[{'module':'focus','target':'message','reason':'Emphasize the thesis','pattern':'word-by-word','intensity':'medium'}]
+        html,plan=build_deck(self.spec,self.registry)
+        motion=plan['slides'][0]['motion'][0]
+        self.assertEqual(motion['pattern'],'word-by-word')
+        self.assertEqual(motion['patternSource'],'explicit')
+        self.assertIn('data-pattern="word-by-word"',html)
+        self.assertIn('data-intensity="medium"',html)
+
+    def test_auto_html_motion_pattern_is_resolved(self):
+        self.spec['slides'][0]['motion']=[{'module':'focus','target':'message','reason':'Emphasize the thesis','pattern':'auto'}]
+        html,plan=build_deck(self.spec,self.registry)
+        motion=plan['slides'][0]['motion'][0]
+        self.assertNotEqual(motion['pattern'],'auto')
+        self.assertEqual(motion['patternSource'],'auto')
+        self.assertTrue(motion['patternReasons'])
+        self.assertIn(f'data-pattern="{motion["pattern"]}"',html)
+
+    def test_incompatible_html_motion_pattern_is_rejected(self):
+        self.spec['slides'][0]['motion']=[{'module':'focus','target':'message','reason':'Emphasize the thesis','pattern':'number-counter'}]
+        with self.assertRaises(ContractError):build_deck(self.spec,self.registry)
+
+    def test_html_motion_pattern_css_covers_catalog(self):
+        css=(ROOT/'core/motion_patterns.css').read_text(encoding='utf-8')
+        for pattern in load_motion_patterns().values():
+            with self.subTest(pattern=pattern['id']):
+                self.assertEqual(pattern['html'],'supported')
+                self.assertIn(f'data-pattern="{pattern["id"]}"',css)
+
     def metric(self,value):
         self.spec['slides'][0]['intent']='kpi';self.spec['slides'][0]['blocks']=[{'id':'number','module':'metric','data':{'label':'Count','value':value}}]
     def test_number_bool_rejected(self):self.metric(True);self.reject(self.spec)
