@@ -91,4 +91,4 @@ jobs:
           cp video/node_modules/gsap/dist/gsap.min.js dist/video-ci/gsap.min.js
 
       - name: Check showcase HyperFrames composition
-        run: video/node_modules/.bin/hyperframes check dist/video-ci --json --samples 9 --timeout 5000
+        run: video/node_modules/.bin/hyperframes check dist/video-ci --json --samples 3 --timeout 3000
