@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Inspect and deterministically rank cross-renderer motion-expression patterns."""
+"""Inspect and deterministically rank canonical HTML motion-expression patterns."""
 from __future__ import annotations
 
 import argparse
