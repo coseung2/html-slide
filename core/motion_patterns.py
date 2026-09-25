@@ -10,7 +10,7 @@ from typing import Any, Iterable
 from .registry import ContractError
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG = ROOT / "video" / "motion-patterns.json"
+CATALOG = ROOT / "core" / "motion-patterns.json"
 INTENSITY_ORDER = {"low": 0, "medium": 1, "high": 2}
 RENDER_STATUS = {"supported", "limited", "unsupported"}
 COMPLEXITY = {"light", "medium", "heavy"}
