@@ -94,12 +94,14 @@ python tools/motion_patterns.py search \
 
 ## Canonical render command
 
-Install the isolated video dependencies once:
+Install the isolated video dependencies once. HyperFrames MP4 encoding and the QA probe also require system `ffmpeg`/`ffprobe` on `PATH`:
 
 ```sh
 cd video
 npm install
 cd ..
+ffmpeg -version
+ffprobe -version
 ```
 
 Then render through the repository entrypoint:
