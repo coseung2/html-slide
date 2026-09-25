@@ -2,8 +2,8 @@
 (() => {
   'use strict';
   const gsap = window.gsap;
-  const planNode = document.getElementById('hf-plan');
-  const stage = document.querySelector('[data-composition-id="html-slide"]');
+  const planNode = document.getElementById('__HF_PLAN_ID__');
+  const stage = document.getElementById('__HF_ROOT_ID__');
   if (!gsap || !planNode || !stage) return;
 
   const plan = JSON.parse(planNode.textContent);
@@ -357,6 +357,6 @@
   });
 
   window.__timelines = window.__timelines || {};
-  window.__timelines['html-slide'] = tl;
+  window.__timelines[stage.dataset.compositionId] = tl;
   tl.seek(0);
 })();
