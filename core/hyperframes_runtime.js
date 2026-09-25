@@ -90,7 +90,10 @@
   const pulseFrames = (timeline,target,at,duration,vars) => {
     const half = Math.max(.08,duration*.48);
     timeline.to(target,{...vars,duration:half,ease:cut},at);
-    timeline.to(target,{duration:Math.max(.08,duration-half),ease:cut,...Object.fromEntries(Object.keys(vars).map(key=>[key,key==='opacity'?0:0]))},at+half);
+    const settled = Object.fromEntries(
+      Object.keys(vars).map(key=>[key,key==='opacity'?0:key==='scale'?1:0])
+    );
+    timeline.to(target,{duration:Math.max(.08,duration-half),ease:cut,...settled},at+half);
   };
   const setPending = (timeline,target,at,vars) => timeline.set(target,vars,at);
   const tweenFinal = (timeline,target,at,duration,vars={}) =>
@@ -151,9 +154,9 @@
     if (!id) return;
     const p = primary(block);
     const layer = overlay(block);
-    const accent = getComputedStyle(block).getPropertyValue('--accent').trim() || '#54a8ff';
-    const ink = getComputedStyle(block).getPropertyValue('--ink').trim() || '#f7f9fc';
-    const surface = getComputedStyle(block).getPropertyValue('--surface').trim() || '#122033';
+    const accent = 'var(--accent)';
+    const ink = 'var(--ink)';
+    const surface = 'var(--surface)';
 
     if (id === 'kinetic-type') {
       setPending(tl,p,scene.start,{opacity:.08,y:'0.45em',scale:1.28,skewX:-4,filter:'blur(2px)'});
