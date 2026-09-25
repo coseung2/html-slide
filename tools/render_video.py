@@ -137,7 +137,16 @@ def main(argv=None) -> int:
         at = ",".join(f"{value:.6f}" for value in times)
 
         check = run_checked(
-            [hyperframes, "check", str(work), "--json", "--at", at],
+            [
+                hyperframes,
+                "check",
+                str(work),
+                "--json",
+                "--samples",
+                "9",
+                "--timeout",
+                "5000",
+            ],
             cwd=ROOT,
             label="HyperFrames check",
             capture_output=True,
